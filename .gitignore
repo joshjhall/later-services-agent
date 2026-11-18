@@ -1,0 +1,48 @@
+# OS
+.DS_Store
+._*
+Thumbs.db
+
+# FUSE artifacts from the bindfs overlay (deleted-while-open files)
+.fuse_hidden*
+
+# Editors: commit shared settings only
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+*~
+
+# Claude local state
+.claude/settings.local.json
+.claude/worktrees/
+.claude/memory/tmp/
+.claude/tmp/
+.worktrees/
+
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+*.tsbuildinfo
+*.local
+npm-debug.log*
+pnpm-debug.log*
+
+# Logs / temp
+*.log
+tmp/
+
+# Environment files (secrets)
+.env
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+
+# codegraph index (symlink to the /cache/codegraph volume)
+.codegraph/
+
+_notes.md
+

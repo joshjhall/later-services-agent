@@ -1,0 +1,11 @@
+{
+  // Node scripts that import app modules (run with tsx). Bundler resolution
+  // so they share src/ imports unchanged.
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.scripts.tsbuildinfo",
+    "types": ["node"],
+    "lib": ["ES2023"]
+  },
+  "include": ["scripts"]
+}

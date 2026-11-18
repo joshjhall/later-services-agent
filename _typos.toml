@@ -1,0 +1,21 @@
+# Spell-check config for the crate-ci/typos binary.
+# Docs: https://github.com/crate-ci/typos/blob/master/docs/reference.md
+
+[files]
+# Hidden paths are skipped by default; .claude/memory/ is agent context that
+# should be spell-checked like any other doc.
+ignore-hidden = false
+extend-exclude = [
+  ".git/**",
+  # The containers submodule has its own typos policy.
+  "containers/**",
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/pnpm-lock.yaml",
+  # Material received from Later; kept verbatim.
+  "reference/**",
+]
+
+[default.extend-words]
+# Microsoft HAX (Human-AI eXperience) guidelines.
+HAX = "HAX"

@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Services Agent Discovery</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=Inter+Tight:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Color: the Material 3 palette generated from app/src/theme/seed.ts ({{SEED}}).
+   Change the seed, run `just docs`, and this page re-themes with the prototype. */
+/*{{PALETTE}}*/
+
+/* Layout: a review dossier. A tonal cover band states the thesis; below it a
+   sticky contents rail (desktop) beside one reading column. Tables, diagrams
+   and verdict cards may run wider than the text measure. */
+:root {
+  --display: "Schibsted Grotesk", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Inter Tight", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --measure: 68ch;
+  --rail: 232px;
+  --radius: 14px;
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.1875rem;
+  --step-2: 1.5rem;
+  --step-3: clamp(1.75rem, 1.2rem + 1.8vw, 2.375rem);
+  --step-4: clamp(2.25rem, 1.4rem + 3.4vw, 3.75rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  font: 400 var(--step-0)/1.62 var(--body);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; z-index: 10;
+  height: env(safe-area-inset-top, 0px); background: var(--md-surface);
+}
+.gutter {
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+
+/* ---------- Cover ---------- */
+.cover {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  padding-block: 56px 48px;
+}
+.cover-inner { max-width: 1560px; margin: 0 auto; display: grid; gap: 22px; }
+.cover .meta {
+  display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center;
+  font: 500 var(--step--1)/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+}
+.cover .meta span + span::before { content: "/"; margin-right: 20px; opacity: .45; }
+.cover h1 {
+  margin: 0; max-width: 20ch;
+  font: 800 var(--step-4)/1.02 var(--display); letter-spacing: -.028em;
+  text-wrap: balance;
+}
+.cover p { margin: 0; max-width: 58ch; font-size: var(--step-1); line-height: 1.5; opacity: .92; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.legend .pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 12px 7px 9px; border-radius: 999px;
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface); font-size: var(--step--1); font-weight: 500;
+}
+
+/* ---------- Shell ---------- */
+.shell {
+  max-width: 1560px; margin: 0 auto;
+  display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); gap: 56px;
+  padding-block: 8px 120px;
+}
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; max-height: calc(100vh - 48px); overflow: auto; padding-top: 40px; }
+.rail ol { list-style: none; margin: 0; padding: 0; }
+.rail > ol { display: grid; gap: 18px; }
+.rail .nav-section {
+  display: block; font: 700 var(--step--1)/1.2 var(--mono); letter-spacing: .07em; text-transform: uppercase;
+  color: var(--md-on-surface); text-decoration: none; padding: 4px 0;
+}
+.rail li ol { display: grid; gap: 2px; margin-top: 6px; border-left: 1px solid var(--md-outline-variant); }
+.rail li ol a {
+  display: block; padding: 4px 0 4px 14px; margin-left: -1px; border-left: 2px solid transparent;
+  color: var(--md-on-surface-variant); text-decoration: none; font-size: .875rem; line-height: 1.35;
+}
+.rail a:hover { color: var(--md-primary); }
+.rail li ol a.active { color: var(--md-primary); border-left-color: var(--md-primary); font-weight: 500; }
+
+.topnav { display: none; }
+
+/* ---------- Sections ---------- */
+main { min-width: 0; }
+.doc { padding-top: 48px; scroll-margin-top: 16px; }
+.doc + .doc { margin-top: 56px; border-top: 1px solid var(--md-outline-variant); }
+.doc-head { display: grid; gap: 8px; margin-bottom: 20px; }
+.kicker {
+  margin: 0; font: 500 var(--step--1)/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--md-primary);
+}
+.doc-title { margin: 0; max-width: 24ch; font: 800 var(--step-3)/1.08 var(--display); letter-spacing: -.02em; text-wrap: balance; }
+.src { margin: 0; font-size: var(--step--1); color: var(--md-on-surface-variant); }
+.src code { background: none; padding: 0; }
+
+.doc h2 {
+  display: flex; align-items: baseline; gap: 14px;
+  margin: 52px 0 14px; max-width: var(--measure);
+  font: 700 var(--step-2)/1.2 var(--display); letter-spacing: -.012em; text-wrap: balance;
+  scroll-margin-top: 16px;
+}
+.hnum {
+  flex: none; font: 500 var(--step--1)/1 var(--mono); color: var(--md-primary);
+  padding: 5px 8px; border-radius: 8px; background: var(--md-primary-container); color: var(--md-on-primary-container);
+  font-variant-numeric: tabular-nums; transform: translateY(-3px);
+}
+.doc h3 { margin: 32px 0 8px; font: 700 var(--step-1)/1.3 var(--display); }
+.doc p, .doc li { max-width: var(--measure); }
+.doc p { margin: 0 0 14px; }
+.doc .lede { font-size: var(--step-1); line-height: 1.55; color: var(--md-on-surface-variant); }
+.doc ul, .doc ol { margin: 0 0 18px; padding-left: 22px; display: grid; gap: 8px; }
+.doc li::marker { color: var(--md-primary); font-weight: 600; }
+.doc strong { font-weight: 600; color: var(--md-on-surface); }
+.doc em { font-style: italic; color: var(--md-on-surface-variant); }
+.doc a { color: var(--md-primary); text-decoration-thickness: 1px; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.doc a:hover { text-decoration-thickness: 2px; }
+.doc code {
+  font: 400 .86em var(--mono); padding: 2px 6px; border-radius: 6px;
+  background: var(--md-surface-container-high); color: var(--md-on-surface);
+}
+
+.thesis {
+  margin: 8px 0 20px; padding: 28px 32px; max-width: 76ch;
+  border-radius: var(--radius); background: var(--md-surface-container-low);
+  border: 1px solid var(--md-outline-variant);
+}
+.thesis p { margin: 0; max-width: none; font: 500 var(--step-1)/1.55 var(--body); }
+.thesis strong { color: var(--md-primary); }
+
+/* ---------- Tables ---------- */
+.table-wrap {
+  margin: 12px 0 28px; overflow-x: auto;
+  border: 1px solid var(--md-outline-variant); border-radius: var(--radius);
+  background: var(--md-surface-container-lowest);
+}
+table { width: 100%; border-collapse: collapse; font-size: .9375rem; line-height: 1.5; }
+th {
+  text-align: left; padding: 12px 16px; white-space: nowrap;
+  font: 500 .75rem/1.3 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--md-on-surface-variant); background: var(--md-surface-container);
+  border-bottom: 1px solid var(--md-outline-variant);
+}
+td { padding: 13px 16px; vertical-align: top; border-bottom: 1px solid var(--md-outline-variant); min-width: 150px; }
+td:first-child { min-width: 120px; font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: var(--md-surface-container-low); }
+
+/* ---------- Verdict cards (framing §3) ---------- */
+.verdicts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; margin: 16px 0 28px; }
+.verdict-card {
+  display: grid; align-content: start; gap: 10px; padding: 18px 20px 20px;
+  border-radius: var(--radius); background: var(--md-surface-container-lowest);
+  border: 1px solid var(--md-outline-variant);
+}
+.verdict-card header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.vnum { font: 500 var(--step--1)/1 var(--mono); color: var(--md-on-surface-variant); }
+.vchip {
+  font: 600 .75rem/1 var(--body); letter-spacing: .02em;
+  padding: 6px 10px; border-radius: 999px;
+}
+.verdict-card.ok .vchip { background: var(--success-container); color: var(--on-success-container); }
+.verdict-card.partial .vchip { background: var(--warning-container); color: var(--on-warning-container); }
+.verdict-card.no .vchip { background: var(--md-error-container); color: var(--md-on-error-container); }
+.verdict-card h4 { margin: 0; font: 700 1.0625rem/1.35 var(--display); }
+.verdict-card p { margin: 0; font-size: .9375rem; line-height: 1.55; color: var(--md-on-surface-variant); }
+
+/* ---------- Lanes: agent / proposes / human ---------- */
+.lane {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  vertical-align: baseline; margin-right: 4px; transform: translateY(-1px);
+}
+.lane.auto { background: var(--success); }
+.lane.propose { background: var(--md-primary); }
+.lane.human { background: var(--md-tertiary); }
+.legend .lane { margin: 0; transform: none; }
+
+/* ---------- Diagrams ---------- */
+.diagram {
+  margin: 14px 0 32px; border-radius: var(--radius);
+  background: var(--md-surface-container-lowest); border: 1px solid var(--md-outline-variant);
+}
+.diagram-scroll { overflow-x: auto; padding: 24px; }
+.diagram pre.mermaid {
+  margin: 0; background: none; text-align: center; min-width: min-content;
+  font: 400 .8125rem/1.4 var(--mono); color: var(--md-on-surface-variant);
+}
+.diagram pre.mermaid:not([data-processed]) { white-space: pre; text-align: left; }
+.diagram svg { max-width: none; height: auto; }
+.diagram svg .er.entityBox { fill: var(--md-secondary-container); stroke: var(--md-secondary); }
+.diagram svg .er.entityLabel { fill: var(--md-on-secondary-container); }
+.diagram svg .er.relationshipLabelBox { fill: var(--md-surface-container-lowest); opacity: 1; }
+.diagram svg .er.relationshipLabel { fill: var(--md-on-surface); }
+
+/* ---------- Focus, motion ---------- */
+a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; border-radius: 4px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+/* ---------- Narrow ---------- */
+@media (max-width: 960px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .rail { display: none; }
+  .topnav {
+    display: flex; gap: 6px; overflow-x: auto; position: sticky; z-index: 5;
+    top: env(safe-area-inset-top, 0px); padding-block: 10px;
+    background: var(--md-surface); border-bottom: 1px solid var(--md-outline-variant);
+  }
+  .topnav a {
+    flex: none; padding: 8px 14px; border-radius: 999px; text-decoration: none; white-space: nowrap;
+    font-size: .875rem; font-weight: 500; color: var(--md-on-surface-variant);
+  }
+  .topnav a.active { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+  .doc { scroll-margin-top: 64px; }
+  .doc h2 { scroll-margin-top: 64px; }
+}
+@media (max-width: 560px) {
+  .cover { padding-block: 40px 32px; }
+  .thesis { padding: 20px; }
+  .diagram-scroll { padding: 14px; }
+  td { min-width: 130px; }
+}
+</style>
+</head>
+<body>
+
+<header class="cover gutter">
+  <div class="cover-inner">
+    <div class="meta"><span>Later</span><span>VP, UX take-home</span><span>Discovery</span></div>
+    <h1>A campaign manager and an agent, running managed creator campaigns</h1>
+    <p>The working frame for the prototype: who does what, where the agent acts on its own, where it asks, and what always stays with a person. Read this before the demo.</p>
+    <div class="legend" aria-label="Legend">
+      <span class="pill"><span class="lane auto"></span>Agent acts alone, logged and undoable</span>
+      <span class="pill"><span class="lane propose"></span>Agent proposes, CM approves</span>
+      <span class="pill"><span class="lane human"></span>Human only</span>
+    </div>
+  </div>
+</header>
+
+<nav class="topnav gutter" aria-label="Sections">
+  <a href="#framing">Framing</a><a href="#flows">Flows</a><a href="#assumptions">Assumptions</a><a href="#research">Research</a>
+</nav>
+
+<div class="shell gutter">
+  <nav class="rail" aria-label="Contents">
+    <ol>
+{{NAV}}
+    </ol>
+  </nav>
+  <main>
+{{BODY}}
+  </main>
+</div>
+
+<script>
+  // Contents: mark the heading in view (rail) and the section in view (top nav).
+  (() => {
+    const railLinks = new Map([...document.querySelectorAll(".rail li ol a")].map((a) => [a.hash.slice(1), a]));
+    const topLinks = new Map([...document.querySelectorAll(".topnav a")].map((a) => [a.hash.slice(1), a]));
+    const mark = (map, id) => { if (!map.has(id)) return; map.forEach((a) => a.classList.remove("active")); map.get(id).classList.add("active"); };
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const id = e.target.id;
+        if (e.target.tagName === "SECTION") mark(topLinks, id); else mark(railLinks, id);
+      }
+    }, { rootMargin: "-15% 0px -70% 0px" });
+    document.querySelectorAll("section.doc, .doc h2[id]").forEach((el) => io.observe(el));
+  })();
+
+  // Show each diagram whole: natural size when it fits, otherwise scale it to
+  // the frame width (down to 70%), and only then fall back to scrolling.
+  function fitDiagrams() {
+    document.querySelectorAll(".diagram-scroll").forEach((box) => {
+      const svg = box.querySelector("svg");
+      if (!svg) return;
+      if (!svg.dataset.w) {
+        const vb = svg.viewBox.baseVal;
+        svg.dataset.w = vb && vb.width ? vb.width : svg.getBoundingClientRect().width;
+        svg.dataset.h = vb && vb.height ? vb.height : svg.getBoundingClientRect().height;
+      }
+      const w = +svg.dataset.w, h = +svg.dataset.h;
+      const avail = box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) * 2;
+      const scale = Math.max(0.7, Math.min(1, avail / w));
+      svg.style.width = `${w * scale}px`;
+      svg.style.height = `${h * scale}px`;
+      svg.style.maxWidth = "none";
+    });
+  }
+
+  // Mermaid, themed from the same palette tokens as the page.
+  (() => {
+    const blocks = document.querySelectorAll("pre.mermaid");
+    if (!blocks.length) return;
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js";
+    s.onload = () => {
+      const v = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+      window.mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: "strict",
+        theme: "base",
+        fontFamily: '"Inter Tight", system-ui, sans-serif',
+        // Every fill is a Material container paired with its on-color, so
+        // text contrast holds in both themes for any seed. Lines use outline
+        // (>= 3:1 on surfaces, the WCAG non-text minimum).
+        themeVariables: {
+          background: v("--md-surface-container-lowest"),
+          fontSize: "14px",
+          // Default nodes
+          primaryColor: v("--md-secondary-container"),
+          primaryTextColor: v("--md-on-secondary-container"),
+          primaryBorderColor: v("--md-secondary"),
+          mainBkg: v("--md-secondary-container"),
+          nodeBorder: v("--md-secondary"),
+          nodeTextColor: v("--md-on-secondary-container"),
+          secondaryColor: v("--md-tertiary-container"),
+          secondaryTextColor: v("--md-on-tertiary-container"),
+          secondaryBorderColor: v("--md-tertiary"),
+          tertiaryColor: v("--md-surface-container-high"),
+          tertiaryTextColor: v("--md-on-surface"),
+          tertiaryBorderColor: v("--md-outline"),
+          // Text on the diagram canvas
+          textColor: v("--md-on-surface"),
+          titleColor: v("--md-on-surface"),
+          // Edges and their labels
+          lineColor: v("--md-outline"),
+          defaultLinkColor: v("--md-outline"),
+          edgeLabelBackground: v("--md-surface-container-lowest"),
+          // Subgraphs
+          clusterBkg: v("--md-surface-container"),
+          clusterBorder: v("--md-outline-variant"),
+          // Sequence diagrams
+          actorBkg: v("--md-secondary-container"),
+          actorTextColor: v("--md-on-secondary-container"),
+          actorBorder: v("--md-secondary"),
+          actorLineColor: v("--md-outline"),
+          signalColor: v("--md-on-surface"),
+          signalTextColor: v("--md-on-surface"),
+          labelBoxBkgColor: v("--md-surface-container-high"),
+          labelBoxBorderColor: v("--md-outline"),
+          labelTextColor: v("--md-on-surface"),
+          loopTextColor: v("--md-on-surface"),
+          activationBkgColor: v("--md-surface-container-highest"),
+          activationBorderColor: v("--md-outline"),
+          sequenceNumberColor: v("--md-surface"),
+          noteBkgColor: v("--md-tertiary-container"),
+          noteTextColor: v("--md-on-tertiary-container"),
+          noteBorderColor: v("--md-tertiary"),
+          // State diagrams
+          altBackground: v("--md-surface-container-high"),
+          stateLabelColor: v("--md-on-secondary-container"),
+          compositeBackground: v("--md-surface-container"),
+          compositeTitleBackground: v("--md-surface-container-high"),
+          transitionColor: v("--md-outline"),
+          transitionLabelColor: v("--md-on-surface"),
+          specialStateColor: v("--md-on-surface"),
+          innerEndBackground: v("--md-on-surface"),
+          // ER diagrams
+          attributeBackgroundColorOdd: v("--md-surface-container-lowest"),
+          attributeBackgroundColorEven: v("--md-surface-container-low"),
+        },
+        // Natural size; wide diagrams scroll inside their figure rather than
+        // shrinking to unreadable text.
+        flowchart: { curve: "basis", padding: 14, htmlLabels: true, useMaxWidth: false },
+        sequence: { mirrorActors: false, useMaxWidth: false },
+        er: { useMaxWidth: false },
+        state: { useMaxWidth: false },
+      });
+      window.mermaid.run({ nodes: blocks }).then(fitDiagrams);
+      let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(fitDiagrams, 120); });
+    };
+    document.head.appendChild(s);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,1167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Services Agent Discovery</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=Inter+Tight:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Color: the Material 3 palette generated from app/src/theme/seed.ts (#6a3fd1).
+   Change the seed, run `just docs`, and this page re-themes with the prototype. */
+/* Generated from seed #6a3fd1 by src/theme/scheme.ts. Do not edit. */
+
+:root {
+  --md-primary: #521fb8;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #6a3fd1;
+  --md-on-primary-container: #dfd2ff;
+  --md-secondary: #655591;
+  --md-on-secondary: #ffffff;
+  --md-secondary-container: #ccbafe;
+  --md-on-secondary-container: #574782;
+  --md-tertiary: #6f3800;
+  --md-on-tertiary: #ffffff;
+  --md-tertiary-container: #924b00;
+  --md-on-tertiary-container: #ffceac;
+  --md-error: #ba1a1a;
+  --md-on-error: #ffffff;
+  --md-error-container: #ffdad6;
+  --md-on-error-container: #93000a;
+  --md-surface: #fdf7ff;
+  --md-surface-dim: #ded8e4;
+  --md-surface-bright: #fdf7ff;
+  --md-on-surface: #1d1a23;
+  --md-on-surface-variant: #494454;
+  --md-surface-container-lowest: #ffffff;
+  --md-surface-container-low: #f8f1fe;
+  --md-surface-container: #f2ebf8;
+  --md-surface-container-high: #ece6f2;
+  --md-surface-container-highest: #e7e0ed;
+  --md-outline: #7a7485;
+  --md-outline-variant: #cbc3d6;
+  --md-inverse-surface: #322f38;
+  --md-inverse-on-surface: #f5eefb;
+  --md-inverse-primary: #cfbdff;
+  --background: #fdf7ff;
+  --foreground: #1d1a23;
+  --card: #ffffff;
+  --card-foreground: #1d1a23;
+  --popover: #ece6f2;
+  --popover-foreground: #1d1a23;
+  --primary: #521fb8;
+  --primary-foreground: #ffffff;
+  --secondary: #ccbafe;
+  --secondary-foreground: #574782;
+  --muted: #ece6f2;
+  --muted-foreground: #494454;
+  --accent: #6a3fd1;
+  --accent-foreground: #dfd2ff;
+  --destructive: #ba1a1a;
+  --destructive-foreground: #ffffff;
+  --border: #cbc3d6;
+  --input: #7a7485;
+  --ring: #521fb8;
+  --sidebar: #f8f1fe;
+  --sidebar-foreground: #1d1a23;
+  --sidebar-primary: #521fb8;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ccbafe;
+  --sidebar-accent-foreground: #574782;
+  --sidebar-border: #cbc3d6;
+  --sidebar-ring: #521fb8;
+  --chart-1: #774dde;
+  --chart-2: #a25710;
+  --chart-3: #71619e;
+  --chart-4: #b69cff;
+  --chart-5: #f0964c;
+  --success: #006d43;
+  --success-foreground: #ffffff;
+  --success-container: #92f7bc;
+  --on-success-container: #002111;
+  --warning: #974806;
+  --warning-foreground: #ffffff;
+  --warning-container: #ffdbc8;
+  --on-warning-container: #321300;
+  --info: #3f56ba;
+  --info-foreground: #ffffff;
+  --info-container: #dde1ff;
+  --on-info-container: #001257;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  color-scheme: dark;
+    --md-primary: #cfbdff;
+    --md-on-primary: #3a0093;
+    --md-primary-container: #6a3fd1;
+    --md-on-primary-container: #dfd2ff;
+    --md-secondary: #cfbdff;
+    --md-on-secondary: #362660;
+    --md-secondary-container: #4c3d78;
+    --md-on-secondary-container: #bdabee;
+    --md-tertiary: #ffb781;
+    --md-on-tertiary: #4e2500;
+    --md-tertiary-container: #924b00;
+    --md-on-tertiary-container: #ffceac;
+    --md-error: #ffb4ab;
+    --md-on-error: #690005;
+    --md-error-container: #93000a;
+    --md-on-error-container: #ffdad6;
+    --md-surface: #14121a;
+    --md-surface-dim: #14121a;
+    --md-surface-bright: #3b3841;
+    --md-on-surface: #e7e0ed;
+    --md-on-surface-variant: #cbc3d6;
+    --md-surface-container-lowest: #0f0d15;
+    --md-surface-container-low: #1d1a23;
+    --md-surface-container: #211e27;
+    --md-surface-container-high: #2b2932;
+    --md-surface-container-highest: #36333d;
+    --md-outline: #948ea0;
+    --md-outline-variant: #494454;
+    --md-inverse-surface: #e7e0ed;
+    --md-inverse-on-surface: #322f38;
+    --md-inverse-primary: #6a3fd1;
+    --background: #14121a;
+    --foreground: #e7e0ed;
+    --card: #211e27;
+    --card-foreground: #e7e0ed;
+    --popover: #2b2932;
+    --popover-foreground: #e7e0ed;
+    --primary: #cfbdff;
+    --primary-foreground: #3a0093;
+    --secondary: #4c3d78;
+    --secondary-foreground: #bdabee;
+    --muted: #2b2932;
+    --muted-foreground: #cbc3d6;
+    --accent: #6a3fd1;
+    --accent-foreground: #dfd2ff;
+    --destructive: #ffb4ab;
+    --destructive-foreground: #690005;
+    --border: #494454;
+    --input: #948ea0;
+    --ring: #cfbdff;
+    --sidebar: #1d1a23;
+    --sidebar-foreground: #e7e0ed;
+    --sidebar-primary: #cfbdff;
+    --sidebar-primary-foreground: #3a0093;
+    --sidebar-accent: #4c3d78;
+    --sidebar-accent-foreground: #bdabee;
+    --sidebar-border: #494454;
+    --sidebar-ring: #cfbdff;
+    --chart-1: #c2acff;
+    --chart-2: #ffa35a;
+    --chart-3: #c1aff2;
+    --chart-4: #9d79ff;
+    --chart-5: #d07c35;
+    --success: #76daa1;
+    --success-foreground: #003920;
+    --success-container: #005231;
+    --on-success-container: #92f7bc;
+    --warning: #ffb68a;
+    --warning-foreground: #522300;
+    --warning-container: #743400;
+    --on-warning-container: #ffdbc8;
+    --info: #b9c3ff;
+    --info-foreground: #00228a;
+    --info-container: #243ca1;
+    --on-info-container: #dde1ff;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --md-primary: #cfbdff;
+  --md-on-primary: #3a0093;
+  --md-primary-container: #6a3fd1;
+  --md-on-primary-container: #dfd2ff;
+  --md-secondary: #cfbdff;
+  --md-on-secondary: #362660;
+  --md-secondary-container: #4c3d78;
+  --md-on-secondary-container: #bdabee;
+  --md-tertiary: #ffb781;
+  --md-on-tertiary: #4e2500;
+  --md-tertiary-container: #924b00;
+  --md-on-tertiary-container: #ffceac;
+  --md-error: #ffb4ab;
+  --md-on-error: #690005;
+  --md-error-container: #93000a;
+  --md-on-error-container: #ffdad6;
+  --md-surface: #14121a;
+  --md-surface-dim: #14121a;
+  --md-surface-bright: #3b3841;
+  --md-on-surface: #e7e0ed;
+  --md-on-surface-variant: #cbc3d6;
+  --md-surface-container-lowest: #0f0d15;
+  --md-surface-container-low: #1d1a23;
+  --md-surface-container: #211e27;
+  --md-surface-container-high: #2b2932;
+  --md-surface-container-highest: #36333d;
+  --md-outline: #948ea0;
+  --md-outline-variant: #494454;
+  --md-inverse-surface: #e7e0ed;
+  --md-inverse-on-surface: #322f38;
+  --md-inverse-primary: #6a3fd1;
+  --background: #14121a;
+  --foreground: #e7e0ed;
+  --card: #211e27;
+  --card-foreground: #e7e0ed;
+  --popover: #2b2932;
+  --popover-foreground: #e7e0ed;
+  --primary: #cfbdff;
+  --primary-foreground: #3a0093;
+  --secondary: #4c3d78;
+  --secondary-foreground: #bdabee;
+  --muted: #2b2932;
+  --muted-foreground: #cbc3d6;
+  --accent: #6a3fd1;
+  --accent-foreground: #dfd2ff;
+  --destructive: #ffb4ab;
+  --destructive-foreground: #690005;
+  --border: #494454;
+  --input: #948ea0;
+  --ring: #cfbdff;
+  --sidebar: #1d1a23;
+  --sidebar-foreground: #e7e0ed;
+  --sidebar-primary: #cfbdff;
+  --sidebar-primary-foreground: #3a0093;
+  --sidebar-accent: #4c3d78;
+  --sidebar-accent-foreground: #bdabee;
+  --sidebar-border: #494454;
+  --sidebar-ring: #cfbdff;
+  --chart-1: #c2acff;
+  --chart-2: #ffa35a;
+  --chart-3: #c1aff2;
+  --chart-4: #9d79ff;
+  --chart-5: #d07c35;
+  --success: #76daa1;
+  --success-foreground: #003920;
+  --success-container: #005231;
+  --on-success-container: #92f7bc;
+  --warning: #ffb68a;
+  --warning-foreground: #522300;
+  --warning-container: #743400;
+  --on-warning-container: #ffdbc8;
+  --info: #b9c3ff;
+  --info-foreground: #00228a;
+  --info-container: #243ca1;
+  --on-info-container: #dde1ff;
+}
+
+
+/* Layout: a review dossier. A tonal cover band states the thesis; below it a
+   sticky contents rail (desktop) beside one reading column. Tables, diagrams
+   and verdict cards may run wider than the text measure. */
+:root {
+  --display: "Schibsted Grotesk", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Inter Tight", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --measure: 68ch;
+  --rail: 232px;
+  --radius: 14px;
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.1875rem;
+  --step-2: 1.5rem;
+  --step-3: clamp(1.75rem, 1.2rem + 1.8vw, 2.375rem);
+  --step-4: clamp(2.25rem, 1.4rem + 3.4vw, 3.75rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  font: 400 var(--step-0)/1.62 var(--body);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; z-index: 10;
+  height: env(safe-area-inset-top, 0px); background: var(--md-surface);
+}
+.gutter {
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+
+/* ---------- Cover ---------- */
+.cover {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  padding-block: 56px 48px;
+}
+.cover-inner { max-width: 1560px; margin: 0 auto; display: grid; gap: 22px; }
+.cover .meta {
+  display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center;
+  font: 500 var(--step--1)/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+}
+.cover .meta span + span::before { content: "/"; margin-right: 20px; opacity: .45; }
+.cover h1 {
+  margin: 0; max-width: 20ch;
+  font: 800 var(--step-4)/1.02 var(--display); letter-spacing: -.028em;
+  text-wrap: balance;
+}
+.cover p { margin: 0; max-width: 58ch; font-size: var(--step-1); line-height: 1.5; opacity: .92; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.legend .pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 12px 7px 9px; border-radius: 999px;
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface); font-size: var(--step--1); font-weight: 500;
+}
+
+/* ---------- Shell ---------- */
+.shell {
+  max-width: 1560px; margin: 0 auto;
+  display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); gap: 56px;
+  padding-block: 8px 120px;
+}
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; max-height: calc(100vh - 48px); overflow: auto; padding-top: 40px; }
+.rail ol { list-style: none; margin: 0; padding: 0; }
+.rail > ol { display: grid; gap: 18px; }
+.rail .nav-section {
+  display: block; font: 700 var(--step--1)/1.2 var(--mono); letter-spacing: .07em; text-transform: uppercase;
+  color: var(--md-on-surface); text-decoration: none; padding: 4px 0;
+}
+.rail li ol { display: grid; gap: 2px; margin-top: 6px; border-left: 1px solid var(--md-outline-variant); }
+.rail li ol a {
+  display: block; padding: 4px 0 4px 14px; margin-left: -1px; border-left: 2px solid transparent;
+  color: var(--md-on-surface-variant); text-decoration: none; font-size: .875rem; line-height: 1.35;
+}
+.rail a:hover { color: var(--md-primary); }
+.rail li ol a.active { color: var(--md-primary); border-left-color: var(--md-primary); font-weight: 500; }
+
+.topnav { display: none; }
+
+/* ---------- Sections ---------- */
+main { min-width: 0; }
+.doc { padding-top: 48px; scroll-margin-top: 16px; }
+.doc + .doc { margin-top: 56px; border-top: 1px solid var(--md-outline-variant); }
+.doc-head { display: grid; gap: 8px; margin-bottom: 20px; }
+.kicker {
+  margin: 0; font: 500 var(--step--1)/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--md-primary);
+}
+.doc-title { margin: 0; max-width: 24ch; font: 800 var(--step-3)/1.08 var(--display); letter-spacing: -.02em; text-wrap: balance; }
+.src { margin: 0; font-size: var(--step--1); color: var(--md-on-surface-variant); }
+.src code { background: none; padding: 0; }
+
+.doc h2 {
+  display: flex; align-items: baseline; gap: 14px;
+  margin: 52px 0 14px; max-width: var(--measure);
+  font: 700 var(--step-2)/1.2 var(--display); letter-spacing: -.012em; text-wrap: balance;
+  scroll-margin-top: 16px;
+}
+.hnum {
+  flex: none; font: 500 var(--step--1)/1 var(--mono); color: var(--md-primary);
+  padding: 5px 8px; border-radius: 8px; background: var(--md-primary-container); color: var(--md-on-primary-container);
+  font-variant-numeric: tabular-nums; transform: translateY(-3px);
+}
+.doc h3 { margin: 32px 0 8px; font: 700 var(--step-1)/1.3 var(--display); }
+.doc p, .doc li { max-width: var(--measure); }
+.doc p { margin: 0 0 14px; }
+.doc .lede { font-size: var(--step-1); line-height: 1.55; color: var(--md-on-surface-variant); }
+.doc ul, .doc ol { margin: 0 0 18px; padding-left: 22px; display: grid; gap: 8px; }
+.doc li::marker { color: var(--md-primary); font-weight: 600; }
+.doc strong { font-weight: 600; color: var(--md-on-surface); }
+.doc em { font-style: italic; color: var(--md-on-surface-variant); }
+.doc a { color: var(--md-primary); text-decoration-thickness: 1px; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.doc a:hover { text-decoration-thickness: 2px; }
+.doc code {
+  font: 400 .86em var(--mono); padding: 2px 6px; border-radius: 6px;
+  background: var(--md-surface-container-high); color: var(--md-on-surface);
+}
+
+.thesis {
+  margin: 8px 0 20px; padding: 28px 32px; max-width: 76ch;
+  border-radius: var(--radius); background: var(--md-surface-container-low);
+  border: 1px solid var(--md-outline-variant);
+}
+.thesis p { margin: 0; max-width: none; font: 500 var(--step-1)/1.55 var(--body); }
+.thesis strong { color: var(--md-primary); }
+
+/* ---------- Tables ---------- */
+.table-wrap {
+  margin: 12px 0 28px; overflow-x: auto;
+  border: 1px solid var(--md-outline-variant); border-radius: var(--radius);
+  background: var(--md-surface-container-lowest);
+}
+table { width: 100%; border-collapse: collapse; font-size: .9375rem; line-height: 1.5; }
+th {
+  text-align: left; padding: 12px 16px; white-space: nowrap;
+  font: 500 .75rem/1.3 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--md-on-surface-variant); background: var(--md-surface-container);
+  border-bottom: 1px solid var(--md-outline-variant);
+}
+td { padding: 13px 16px; vertical-align: top; border-bottom: 1px solid var(--md-outline-variant); min-width: 150px; }
+td:first-child { min-width: 120px; font-weight: 500; }
+tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: var(--md-surface-container-low); }
+
+/* ---------- Verdict cards (framing §3) ---------- */
+.verdicts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; margin: 16px 0 28px; }
+.verdict-card {
+  display: grid; align-content: start; gap: 10px; padding: 18px 20px 20px;
+  border-radius: var(--radius); background: var(--md-surface-container-lowest);
+  border: 1px solid var(--md-outline-variant);
+}
+.verdict-card header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.vnum { font: 500 var(--step--1)/1 var(--mono); color: var(--md-on-surface-variant); }
+.vchip {
+  font: 600 .75rem/1 var(--body); letter-spacing: .02em;
+  padding: 6px 10px; border-radius: 999px;
+}
+.verdict-card.ok .vchip { background: var(--success-container); color: var(--on-success-container); }
+.verdict-card.partial .vchip { background: var(--warning-container); color: var(--on-warning-container); }
+.verdict-card.no .vchip { background: var(--md-error-container); color: var(--md-on-error-container); }
+.verdict-card h4 { margin: 0; font: 700 1.0625rem/1.35 var(--display); }
+.verdict-card p { margin: 0; font-size: .9375rem; line-height: 1.55; color: var(--md-on-surface-variant); }
+
+/* ---------- Lanes: agent / proposes / human ---------- */
+.lane {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  vertical-align: baseline; margin-right: 4px; transform: translateY(-1px);
+}
+.lane.auto { background: var(--success); }
+.lane.propose { background: var(--md-primary); }
+.lane.human { background: var(--md-tertiary); }
+.legend .lane { margin: 0; transform: none; }
+
+/* ---------- Diagrams ---------- */
+.diagram {
+  margin: 14px 0 32px; border-radius: var(--radius);
+  background: var(--md-surface-container-lowest); border: 1px solid var(--md-outline-variant);
+}
+.diagram-scroll { overflow-x: auto; padding: 24px; }
+.diagram pre.mermaid {
+  margin: 0; background: none; text-align: center; min-width: min-content;
+  font: 400 .8125rem/1.4 var(--mono); color: var(--md-on-surface-variant);
+}
+.diagram pre.mermaid:not([data-processed]) { white-space: pre; text-align: left; }
+.diagram svg { max-width: none; height: auto; }
+.diagram svg .er.entityBox { fill: var(--md-secondary-container); stroke: var(--md-secondary); }
+.diagram svg .er.entityLabel { fill: var(--md-on-secondary-container); }
+.diagram svg .er.relationshipLabelBox { fill: var(--md-surface-container-lowest); opacity: 1; }
+.diagram svg .er.relationshipLabel { fill: var(--md-on-surface); }
+
+/* ---------- Focus, motion ---------- */
+a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; border-radius: 4px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+/* ---------- Narrow ---------- */
+@media (max-width: 960px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .rail { display: none; }
+  .topnav {
+    display: flex; gap: 6px; overflow-x: auto; position: sticky; z-index: 5;
+    top: env(safe-area-inset-top, 0px); padding-block: 10px;
+    background: var(--md-surface); border-bottom: 1px solid var(--md-outline-variant);
+  }
+  .topnav a {
+    flex: none; padding: 8px 14px; border-radius: 999px; text-decoration: none; white-space: nowrap;
+    font-size: .875rem; font-weight: 500; color: var(--md-on-surface-variant);
+  }
+  .topnav a.active { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+  .doc { scroll-margin-top: 64px; }
+  .doc h2 { scroll-margin-top: 64px; }
+}
+@media (max-width: 560px) {
+  .cover { padding-block: 40px 32px; }
+  .thesis { padding: 20px; }
+  .diagram-scroll { padding: 14px; }
+  td { min-width: 130px; }
+}
+</style>
+</head>
+<body>
+
+<header class="cover gutter">
+  <div class="cover-inner">
+    <div class="meta"><span>Later</span><span>VP, UX take-home</span><span>Discovery</span></div>
+    <h1>A campaign manager and an agent, running managed creator campaigns</h1>
+    <p>The working frame for the prototype: who does what, where the agent acts on its own, where it asks, and what always stays with a person. Read this before the demo.</p>
+    <div class="legend" aria-label="Legend">
+      <span class="pill"><span class="lane auto"></span>Agent acts alone, logged and undoable</span>
+      <span class="pill"><span class="lane propose"></span>Agent proposes, CM approves</span>
+      <span class="pill"><span class="lane human"></span>Human only</span>
+    </div>
+  </div>
+</header>
+
+<nav class="topnav gutter" aria-label="Sections">
+  <a href="#framing">Framing</a><a href="#flows">Flows</a><a href="#assumptions">Assumptions</a><a href="#research">Research</a>
+</nav>
+
+<div class="shell gutter">
+  <nav class="rail" aria-label="Contents">
+    <ol>
+<li><a class="nav-section" href="#framing">Framing</a><ol><li><a href="#framing-1-the-thesis-in-one-paragraph">The thesis in one paragraph</a></li><li><a href="#framing-2-domain-model-and-terminology">Domain model and terminology</a></li><li><a href="#framing-3-testing-the-assumptions">Testing the assumptions</a></li><li><a href="#framing-4-what-the-thesis-is-missing">What the thesis is missing</a></li><li><a href="#framing-5-who-does-what-the-autonomy-split">Who does what: the autonomy split</a></li><li><a href="#framing-6-order-independence-and-concurrent-updates">Order independence and concurrent updates</a></li><li><a href="#framing-7-experience-concepts">Experience concepts</a></li><li><a href="#framing-8-scoping-for-the-prototype">Scoping for the prototype</a></li><li><a href="#framing-9-open-questions">Open questions</a></li></ol></li>
+<li><a class="nav-section" href="#flows">Flows</a><ol><li><a href="#flows-1-the-system-at-a-glance-two-sides-meeting-at-the-partnership">The system at a glance: two sides meeting at the partnership</a></li><li><a href="#flows-2-demand-side-objective-to-kpi-framework-the-state-the-goal-moment">Demand side: objective to KPI framework (the "state the goal" moment)</a></li><li><a href="#flows-3-supply-side-creator-intake-vetting-and-the-roster">Supply side: creator intake, vetting, and the roster</a></li><li><a href="#flows-4-matching-building-and-reviewing-the-lineup">Matching: building and reviewing the lineup</a></li><li><a href="#flows-5-production-one-deliverables-life">Production: one deliverable's life</a></li><li><a href="#flows-6-hard-moment-a-creator-goes-quiet-with-a-deadline-close">Hard moment: a creator goes quiet with a deadline close</a></li><li><a href="#flows-7-in-flight-optimization-and-budget-pacing">In-flight optimization and budget pacing</a></li><li><a href="#flows-8-the-cms-day-from-signals-to-the-decision-queue">The CM's day: from signals to the decision queue</a></li><li><a href="#flows-9-order-independent-updates-and-conflicts">Order-independent updates and conflicts</a></li></ol></li>
+<li><a class="nav-section" href="#assumptions">Assumptions</a><ol><li><a href="#assumptions-about-later-and-the-services-team">About Later and the Services team</a></li><li><a href="#assumptions-about-the-campaign-manager">About the campaign manager</a></li><li><a href="#assumptions-about-campaigns-and-money">About campaigns and money</a></li><li><a href="#assumptions-about-the-agent">About the agent</a></li><li><a href="#assumptions-about-the-prototype">About the prototype</a></li></ol></li>
+<li><a class="nav-section" href="#research">Research</a><ol><li><a href="#research-later">Later</a></li><li><a href="#research-competitors">Competitors</a></li><li><a href="#research-industry-workflow-facts">Industry workflow facts</a></li><li><a href="#research-adjacent-industries-and-hitl-guidance">Adjacent industries and HITL guidance</a></li><li><a href="#research-prior-writing-joshua-hall-medium">Prior writing (Joshua Hall, Medium)</a></li></ol></li>
+    </ol>
+  </nav>
+  <main>
+<section id="framing" class="doc"><header class="doc-head"><p class="kicker">Framing</p><p class="doc-title">The problem, tested assumptions, and the autonomy split</p><p class="src">Source: <code>docs/discovery/framing.md</code></p></header><p class="lede">The initial thesis, organized and tested against public research. Sources live in <a href="#research">research.md</a>; the workflow diagrams live in <a href="#flows">../flows.md</a>. Verdicts: ✅ holds, 🔶 holds with a correction, ❌ does not hold as stated.</p>
+<h2 id="framing-1-the-thesis-in-one-paragraph"><span class="hnum">1</span>The thesis in one paragraph</h2><blockquote class="thesis"><p>A Services campaign manager runs a <strong>two-sided matchmaking business</strong>: brands bring business objectives, creators bring audiences, and the human's job is to make good matches and then deliver them — on time, on brief, on budget — while keeping both sides' trust. Most of the day is lost to coordination (chasing, tracking, status updates), not judgment. The agent should absorb the coordination, <strong>prepare</strong> the judgment calls so they take seconds instead of minutes, and escalate the moments that genuinely need a human voice. The interface is a <strong>state-driven workspace</strong> (what needs me, why, and what I need to decide it), not a chat window.</p></blockquote>
+<h2 id="framing-2-domain-model-and-terminology"><span class="hnum">2</span>Domain model and terminology</h2>
+<p>The hierarchy is CRM-like, as suspected, but two corrections matter.</p>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">erDiagram
+  POD ||--o{ ACCOUNT : &quot;serves&quot;
+  ACCOUNT ||--o{ CAMPAIGN : &quot;funds&quot;
+  ACCOUNT ||--o{ CONTACT : &quot;has&quot;
+  CAMPAIGN ||--|| OBJECTIVE : &quot;measured by&quot;
+  CAMPAIGN ||--o{ PARTNERSHIP : &quot;books&quot;
+  CREATOR ||--o{ PARTNERSHIP : &quot;joins&quot;
+  PARTNERSHIP ||--o{ DELIVERABLE : &quot;owes&quot;
+  DELIVERABLE ||--o{ DRAFT : &quot;revised as&quot;
+  DELIVERABLE ||--o| POST : &quot;goes live as&quot;
+  PARTNERSHIP ||--|| TERMS : &quot;governed by&quot;
+  CREATOR ||--o| TALENT_MANAGER : &quot;represented by&quot;
+</pre></div></figure>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+<th>Later's own word</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Campaign manager (CM)</td>
+<td>The human accountable for delivery. The exercise term.</td>
+<td><strong>Account Manager</strong> owns a "portfolio" of accounts; Coordinators and Co-Ops execute under them</td>
+</tr>
+<tr>
+<td>Pod</td>
+<td>The team serving an account: AM, coordinators, talent partnerships, with strategy, paid media and creative alongside</td>
+<td>"account pod"</td>
+</tr>
+<tr>
+<td>Account</td>
+<td>The brand client (e.g. a CPG brand) and its contacts</td>
+<td>client, customer, brand</td>
+</tr>
+<tr>
+<td>Campaign</td>
+<td>One program with one objective, budget, and timeline</td>
+<td>campaign, program</td>
+</tr>
+<tr>
+<td>Creator</td>
+<td>The talent</td>
+<td>creator (newer), influencer (older)</td>
+</tr>
+<tr>
+<td>Partnership</td>
+<td>A creator booked on a campaign, with negotiated terms</td>
+<td>— (<em>invented term</em>; Later tracks creators through workflow stages)</td>
+</tr>
+<tr>
+<td>Terms</td>
+<td>Fee, deliverables, usage rights, whitelisting rights, exclusivity, disclosure</td>
+<td>contract, incentives, usage rights</td>
+</tr>
+<tr>
+<td>Deliverable</td>
+<td>A unit of content owed: "1 TikTok + 2 Stories"</td>
+<td>deliverables</td>
+</tr>
+<tr>
+<td>Draft review</td>
+<td>Brand/AM review of content before posting</td>
+<td>Approved / Approved with Corrections / Needs Work</td>
+</tr>
+<tr>
+<td>Wrap report, SBR</td>
+<td>End-of-campaign report; strategic business review with the client</td>
+<td>same</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Correction 1: the unit of daily work is smaller than the campaign.</strong> It is <em>creator × deliverable × stage</em>, plus budget pacing. A campaign with 30 creators and 3 deliverables each is ~90 things moving through a 12-stage workflow. That is where the coordination load comes from.</p>
+<p><strong>Correction 2: it is a pod, not one person.</strong> The AM delegates execution to coordinators and quality-checks their work. That matters for the agent: it is effectively <strong>another member of the pod</strong> — an extremely fast coordinator — and the AM already knows how to supervise one. That's a useful mental model for trust: "review the agent the way you'd review a new coordinator."</p>
+<h2 id="framing-3-testing-the-assumptions"><span class="hnum">3</span>Testing the assumptions</h2>
+<div class="verdicts"><article class="verdict-card partial"><header><span class="vnum">A1</span><span class="vchip">Corrected</span></header><h4>It's CRM-like: AM → accounts → campaigns → creators/content</h4><p>Right shape, but pod-based, and the working unit is creator × deliverable × stage (§2).</p></article><article class="verdict-card partial"><header><span class="vnum">A2</span><span class="vchip">Corrected</span></header><h4>The human's core value is matching creators to campaigns</h4><p>Matching matters, but Later has a dedicated <strong>Talent Partnerships</strong> casting role and is pushing matching into AI (EdgeAI, Brand Suitability Insights). Public AM job descriptions emphasize <strong>client trust, on-time/on-brief delivery, compliance, turning data into insight, renewal/expansion</strong>. Reframe: the human's value is <strong>judgment and trust on both sides</strong> — matching is one expression of it.</p></article><article class="verdict-card no"><header><span class="vnum">A3</span><span class="vchip">Doesn't hold</span></header><h4>Pivot after ~20% of budget is spent and KPIs lag; AM authorizes the next tranche</h4><p>No evidence of tranche release or a 20% trigger. Creator fees are mostly committed at contracting (flat fee or 50/50). The documented flex is: <strong>(a) a paid amplification reserve</strong> used to boost top organic posts within 48–72h (Later's Crumbl and Chobani case studies), <strong>(b) swapping or adding creators</strong>, <strong>(c) scaling top creators and dropping underperformers</strong> in the next wave. Later calls this <strong>budget pacing</strong>. The decision moment is real; the mechanism is different.</p></article><article class="verdict-card partial"><header><span class="vnum">A4</span><span class="vchip">Corrected</span></header><h4>Second side: new creators arrive seeking partnerships and must be vetted</h4><p>Real, but largely a <strong>separate org and product</strong> (Creator Operations, the Later Creator app / Mavely, HubSpot). For Services it shows up as (a) creators in a campaign's <strong>Applied</strong> stage and (b) the pod's <strong>roster</strong> of known, trusted creators. The creator-side view for a CM is "my bench," not an intake funnel.</p></article><article class="verdict-card ok"><header><span class="vnum">A5</span><span class="vchip">Holds</span></header><h4>Deadline reminders can run on a cron; escalate to a human ~3 days out</h4><p>Matches recruiting automation ("notify recruiter if no activity in 3 days") and Later's own workback (brief T-14, draft T-7, approval T-3, live T-0). <strong>Refinement:</strong> escalate against the <em>draft</em> deadline, not go-live, and weight by slack, substitutability, and the creator's history. Missing T-7 is the real alarm.</p></article><article class="verdict-card ok"><header><span class="vnum">A6</span><span class="vchip">Holds</span></header><h4>Showing the right information the right way compresses review (as in Meridian/Tyrell)</h4><p>Strongly supported. Recruiting agents converged on <strong>per-criterion evidence</strong> ("met / partly / not met") instead of a single score; HAX G11 ("make clear why") is the most-violated guideline.</p></article><article class="verdict-card ok"><header><span class="vnum">A7</span><span class="vchip">Holds</span></header><h4>A library of state-driven widgets beats fixed pages</h4><p>Consistent with sales/CS tooling: Gong's tunable deal warnings, HubSpot health bands that create tasks only on band change, Salesforce Next Best Action cards with accept/reject. The model <em>selects and fills</em> curated widgets; it does not generate UI ("Generative UI Is Three Things. Only One Ships.").</p></article><article class="verdict-card ok"><header><span class="vnum">A8</span><span class="vchip">Holds</span></header><h4>Client-centric primary view, creator-centric secondary</h4><p>AMs are measured per account (renewal, expansion), so client-centric fits. Creator view = roster/bench, with reliability history.</p></article><article class="verdict-card ok"><header><span class="vnum">A9</span><span class="vchip">Holds</span></header><h4>Chat is secondary to analysis, summaries, focused UI</h4><p>"Chat is a good input primitive but a bad operating environment for agents" (Crosley), and the same argument in "Chat Is an Input, Not an Interface." Keep a command/ask affordance; don't make it the home screen.</p></article><article class="verdict-card partial"><header><span class="vnum">A10</span><span class="vchip">Corrected</span></header><h4>It resembles recruiting more than a marketplace</h4><p>Holds for matching (job order ≈ brief, talent pool ≈ roster, internal submittal gate ≈ AM review before the brand sees a lineup). <strong>Breaks</strong> on two points: a placement ends at hire, but a booking starts a production tail (drafts, revisions, compliance, go-live, reporting); and creators are repeat suppliers booked by competing brands, so conflicts and reliability matter more.</p></article></div>
+<h2 id="framing-4-what-the-thesis-is-missing"><span class="hnum">4</span>What the thesis is missing</h2>
+<p>These came out of the research and aren't in the original notes. Several are better "hard moments" than the obvious ones.</p>
+<ol type="1">
+<li><strong>Rights are separate, priced, and time-boxed.</strong> Usage rights, whitelisting/Spark/Partnership Ads permissions, and exclusivity are negotiated separately. If whitelisting wasn't contracted, the "boost the top post" pivot can't happen. If it expires mid-flight, ads silently stop.</li>
+<li><strong>The brand is also a source of delay.</strong> Brand review and (in regulated categories) legal review are separate gates with their own SLAs. Most delay comes from feedback loops, not creators. The agent should chase <em>the brand</em> too, politely.</li>
+<li><strong>FTC disclosure is ongoing liability.</strong> The brand (and therefore the agency) shares liability. Checking disclosure at draft review isn't enough; the live post must be checked too.</li>
+<li><strong>Gifting ≠ paid.</strong> Seeded product carries no posting obligation (post rates ~10–40%). Different expectations, different chasing rules.</li>
+<li><strong>Payment is a relationship lever.</strong> Late payment is common and creators remember it. The agent should chase <em>internal</em> payment approvals as hard as it chases creators.</li>
+<li><strong>Macro creators come through talent managers.</strong> Different counterpart, different tone, own approval loop.</li>
+<li><strong>Client reporting is a deliverable, not overhead.</strong> Status updates, wrap reports and SBRs drive renewal. Drafting them is ideal agent work; the narrative ("why this matters") stays human.</li>
+<li><strong>Measurement is contested.</strong> EMV is widely criticized (Later still reports it via the Ayzenberg index); promo codes under- and over-count. The KPI framework must be agreed with the client up front, and the agent should not imply false precision.</li>
+<li><strong>Competitors' agents all live at the front of the funnel</strong> (discovery, outreach, shortlists). The middle of the campaign — deliverable tracking, brief compliance with evidence, live-post QA, feedback consolidation — is still manual everywhere. That is exactly what the exercise asks about, and it is where Later Services can differentiate.</li>
+</ol>
+<h2 id="framing-5-who-does-what-the-autonomy-split"><span class="hnum">5</span>Who does what: the autonomy split</h2>
+<p>A first pass, using the pattern the recruiting industry converged on: <strong>automate logistics, the agent proposes judgment calls, and every external voice and every dollar is gated until trust is earned.</strong> Autonomy is set <strong>per action type</strong>, not globally, and can be raised or revoked.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Work</th>
+<th>Agent acts alone (logged, undoable)</th>
+<th>Agent proposes, CM approves</th>
+<th>Always human</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Objective → KPIs</td>
+<td>Pull benchmarks for category/tier</td>
+<td>Draft KPI framework and targets from the brief</td>
+<td>Agree targets with the client</td>
+</tr>
+<tr>
+<td>Matching</td>
+<td>Rediscover past creators; screen for conflicts and brand safety</td>
+<td>Lineup with per-criterion evidence; backups</td>
+<td>Final lineup; anything taste- or relationship-based</td>
+</tr>
+<tr>
+<td>Terms</td>
+<td>Track rights expiry; flag missing whitelisting</td>
+<td>Offer within the approved rate band</td>
+<td>Out-of-band rates, exclusivity, contracts</td>
+</tr>
+<tr>
+<td>Production</td>
+<td>Reminders on cadence; receipt tracking; status updates to pod</td>
+<td>Brief-compliance check with evidence; consolidated brand feedback</td>
+<td>Creative judgment; calling a quiet creator</td>
+</tr>
+<tr>
+<td>Go-live</td>
+<td>Verify post is up with link, code, tags, disclosure</td>
+<td>Fix requests for non-compliant posts</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Optimization</td>
+<td>Daily pacing vs. forecast</td>
+<td>"Boost these 3 posts with $X from reserve"; "swap creator B for C"</td>
+<td>Spend from reserve above threshold; dropping a creator</td>
+</tr>
+<tr>
+<td>Client comms</td>
+<td>Assemble data for status and wrap reports</td>
+<td>Draft status update and wrap report</td>
+<td>Send to client (initially); SBR narrative</td>
+</tr>
+<tr>
+<td>Payments</td>
+<td>Chase internal approvals</td>
+<td>Release payment on verified delivery</td>
+<td>Disputes, withholding</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="framing-6-order-independence-and-concurrent-updates"><span class="hnum">6</span>Order independence and concurrent updates</h2>
+<p>Most of what a campaign needs can arrive in any order, from several people at once. Ana's rate, her usage-rights scope, her shipping address and her disclosure acknowledgement can land in any sequence. The CM, a coordinator, the agent and the brand may each touch the same partnership in the same hour, often as part of larger batches that overlap: the CM approves a lineup that includes Ana while a coordinator confirms her offer and the agent's daily run sends her a reminder. The system has to give the same result regardless of order or repetition, and it has to surface real disagreements instead of letting the last writer win. This applies "Idempotent Design: When Order Shouldn't Matter."</p>
+<p><strong>Principles</strong></p>
+<ol type="1">
+<li><strong>Milestones gate on sets, not sequences.</strong> Each milestone (ready to brief, lineup approved, ready to post, ready to pay) is a checklist of facts and decisions. Inside a milestone, collect them in any order; the milestone opens when the set is complete. Any required order that exists only because of the data model (for example "contract before rate entry") is a shadow constraint and should be removed.</li>
+<li><strong>Every update is keyed, so repeats are no-ops.</strong> A fact is identified by what it is about and what it says, such as <em>Ana / deliverable 2 / brand approval</em>. Recording the same value twice changes nothing. It also leaves an attribution trail, so the second person sees "already approved by Priya, 10 min ago" instead of a duplicate action.</li>
+<li><strong>External effects are idempotent by construction.</strong> Messages, offers and payments are the irreversible actions. Each carries an idempotency key, such as <em>reminder / deliverable 2 / T-8</em>, so a retried agent run, a re-run schedule or two people clicking "nudge" never double-message a creator or double-pay. A double-sent reminder is the most visible way this design can fail, and a creator notices it immediately.</li>
+<li><strong>Writes say what they were based on.</strong> An update carries the version its author saw. If the fact has changed since then, the update becomes a <strong>conflict card</strong> rather than an overwrite. The card shows both values, who made each change, when, and why. Authority (client &gt; CM &gt; coordinator &gt; agent) can settle a conflict automatically only when the rule is explicit and logged. Decisions are never settled silently by timestamp.</li>
+<li><strong>Proposals expire when their inputs change.</strong> Each agent proposal records the facts it used. If Ana submits her draft while a "swap Ana for Ben" card waits in the queue, the card withdraws itself and says why. A batch approval skips items that are already resolved or stale, and reports what it skipped.</li>
+<li><strong>Passing a milestone seals what came before it.</strong> Once the lineup is approved and sent to the client, changing a member means explicitly reopening that milestone, which is visible and attributed. Changes after a milestone never mutate earlier decisions quietly.</li>
+</ol>
+<p><strong>Why this belongs in a UX brief.</strong> These are trust mechanics. A CM can only delegate to an agent, and share work across a pod, if repeats are safe and disagreements are visible. "Already handled" and "this changed while you were looking" are the two states this produces in the interface. Both should be first-class widget states.</p>
+<h2 id="framing-7-experience-concepts"><span class="hnum">7</span>Experience concepts</h2>
+<p><strong>Hierarchy of cognition</strong> (as with Reva): <em>what needs me → why → what I need to decide it → do it.</em></p>
+<ul>
+<li><strong>Today</strong> (cross-account): a sized <strong>decision queue</strong>, not a feed. Each item is a card with the agent's proposal, its evidence, its confidence, and accept / edit / reject. Ordered by consequence × time-to-deadline, not recency.</li>
+<li><strong>Account</strong> (primary view, e.g. a beverage brand): health of all campaigns against their objectives, budget pacing, what's waiting on the client, what's waiting on us.</li>
+<li><strong>Campaign</strong>: the creator × deliverable board by stage, with named risk warnings (Ghosted, Draft overdue, Brand feedback stalled, Rights expiring, Post missing, Below forecast).</li>
+<li><strong>Roster</strong> (secondary view, creator-centric): the bench. Reliability (on-time rate, revisions, responsiveness), audience fit, past performance, conflicts, relationship notes. No platform exposes a reliability score today; the agent produces this data naturally while chasing.</li>
+<li><strong>Agent log</strong>: what the agent did on its own, with undo. This is how trust is earned and audited.</li>
+</ul>
+<p><strong>One widget, many states.</strong> A campaign widget renders differently depending on what the campaign needs: "approve lineup," "review 4 drafts," "Creator X is quiet, draft due in 2 days," "top post is outperforming, boost?" The widget library is the reusable pattern set, and the strongest answer to the brief's question about standardizing patterns across several agents. It only stays standard if someone owns it as a permanent function ("Owning the Design System").</p>
+<p><strong>Chat</strong> is a command/ask affordance (e.g. "why did you rank her above him?", "draft a note to the client about the delay"), scoped to the current object. It is not the home screen.</p>
+<h2 id="framing-8-scoping-for-the-prototype"><span class="hnum">8</span>Scoping for the prototype</h2>
+<p>The brief requires: <strong>state the goal</strong>, <strong>review the proposed lineup</strong>, and <strong>one hard moment</strong>.</p>
+<ul>
+<li><strong>State the goal</strong> → the demand-side flow: objective → KPI framework → constraints. The agent drafts; the CM edits and confirms.</li>
+<li><strong>Review the lineup</strong> → the matching flow: per-criterion evidence, roster rediscovery, conflicts, backups, and the internal gate before anything reaches the brand.</li>
+<li><strong>Hard moment</strong> → <strong>a creator goes quiet with a deadline close.</strong> It uses the cron-plus-escalation idea, shows the autonomy ladder end to end (agent nudges alone → agent escalates → human calls), and connects to the roster (reliability history) and to the client (do we tell them, and what do we say). The candidate twist: the best fallback is a <strong>backup from the approved lineup</strong>, which pays off the lineup review earlier in the demo.</li>
+</ul>
+<p><strong>Probable cuts</strong> (to state in the brief; rank candidate agent tasks with CFS, Commonality × Frequency × Severity, so the cuts are defensible): creator intake funnel (separate org), contracting and payments UI, paid media buying, the full analytics surface, real LLM integration.</p>
+<h2 id="framing-9-open-questions"><span class="hnum">9</span>Open questions</h2>
+<ol type="1">
+<li>How much of the pod does the agent replace versus amplify? (Coordinator workload is the obvious target; say so carefully.)</li>
+<li>Does the brand see the agent at all, or only the agency's output? (Recommendation: the brand sees only what the CM puts their name on.)</li>
+<li>Where is the line for autonomous external messages? Reminders to creators feel safe; anything to the client does not, at first.</li>
+<li>How do we show confidence without false precision, especially on performance forecasts?</li>
+<li>How does autonomy get <em>earned</em>: per CM, per account, per action type? What's the revocation path after a mistake?</li>
+<li>What is the authority order for automatic conflict resolution, and which fact types must never resolve automatically? (Draft answer: money, rights and anything client-facing always go to a human.)</li>
+</ol>
+</section>
+<section id="flows" class="doc"><header class="doc-head"><p class="kicker">Flows</p><p class="doc-title">How information moves between brand, creators, agent and CM</p><p class="src">Source: <code>docs/flows.md</code></p></header><p class="lede">How information moves through the system. Diagrams are Mermaid, so they render on GitHub and in VS Code with <code>bierner.markdown-mermaid</code>. The reasoning behind them is in <a href="#framing">discovery/framing.md</a>.</p>
+<p>Legend used in the swimlane notes: <span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> the agent acts alone (logged, undoable) · <span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> the agent proposes and the CM approves · <span class="lane human" title="Human only" aria-label="Human only"></span> the human only.</p>
+<h2 id="flows-1-the-system-at-a-glance-two-sides-meeting-at-the-partnership"><span class="hnum">1</span>The system at a glance: two sides meeting at the partnership</h2>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">flowchart TB
+  subgraph Demand[&quot;Demand side: the brand&quot;]
+    OBJ[Business objective] --&gt; KPI[KPI framework + targets] --&gt; CON[Constraints: budget, timing,&lt;br/&gt;rights, brand safety]
+  end
+  subgraph Supply[&quot;Supply side: creators&quot;]
+    APP[Applied / inbound creators] --&gt; VET[Vetting] --&gt; ROS[(Roster: vetted,&lt;br/&gt;known creators)]
+  end
+
+  CON --&gt; MATCH{{Matching}}
+  ROS --&gt; MATCH
+  MATCH --&gt; LINEUP[Proposed lineup + backups] --&gt; PROD[Production:&lt;br/&gt;partnerships × deliverables]
+  PROD --&gt; LIVE[Live posts] --&gt; PERF[Performance vs. KPI] --&gt; REP[Client reporting:&lt;br/&gt;status, wrap, SBR]
+
+  PERF -.-&gt;|pacing + optimization| PROD
+  ROS &lt;-.-&gt;|reliability + results| PERF
+  REP -.-&gt;|renewal, next campaign| OBJ
+</pre></div></figure>
+<p>The loops matter more than the line. <strong>Performance feeds the roster</strong> (the roster also informs what performance to expect): every campaign updates what we know about each creator's reliability and results, which makes the next match better. <strong>Reporting feeds renewal</strong>: the account comes back with the next objective. That second loop is how the AM is measured.</p>
+<h2 id="flows-2-demand-side-objective-to-kpi-framework-the-state-the-goal-moment"><span class="hnum">2</span>Demand side: objective to KPI framework (the "state the goal" moment)</h2>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">flowchart TD
+  A[Client request: brief, call notes, prior campaigns] --&gt; B[🤖 Agent extracts: product, audience, markets, timing, budget]
+  B --&gt; C[🤝 Agent proposes objective type: awareness / consideration / conversion]
+  C --&gt; D[🤝 Agent drafts KPI framework: primary KPI, targets, benchmarks, measurement method]
+  D --&gt; E{CM reviews}
+  E --&gt;|edit| D
+  E --&gt;|gaps found| F[🤝 Agent drafts clarifying questions for the client]
+  F --&gt; G[🧑 CM confirms with client]
+  G --&gt; D
+  E --&gt;|confirm| H[🧑 Targets agreed with client]
+  H --&gt; I[Campaign plan: tiers, creator count, deliverables, workback, reserve]
+  I --&gt; J[[Matching]]
+</pre></div></figure>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Objective</th>
+<th>Primary KPIs</th>
+<th>Measurement caveats</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Awareness</td>
+<td>Reach, impressions, video views, CPM</td>
+<td>Platform-reported; reach is estimated</td>
+</tr>
+<tr>
+<td>Consideration</td>
+<td>Engagement rate, saves, shares, CTR, CPE, sentiment</td>
+<td>Engagement rate varies hugely by tier</td>
+</tr>
+<tr>
+<td>Conversion</td>
+<td>Attributed revenue, codes, affiliate sales, CPA, ROAS</td>
+<td>Codes leak and undercount the halo effect; agree the method up front</td>
+</tr>
+<tr>
+<td>(Reported, contested)</td>
+<td>EMV</td>
+<td>Later uses the Ayzenberg index; many clients distrust it</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="flows-3-supply-side-creator-intake-vetting-and-the-roster"><span class="hnum">3</span>Supply side: creator intake, vetting, and the roster</h2>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">flowchart TB
+  subgraph In[&quot;Where creators come from&quot;]
+    direction LR
+    S1[Applies to&lt;br/&gt;a campaign]
+    S3[🤖 Rediscovered:&lt;br/&gt;past or shortlisted]
+    S4[Talent Partnerships&lt;br/&gt;sources new talent]
+    S2[Later Creator app sign-up&lt;br/&gt;&lt;i&gt;Creator Ops, not Services&lt;/i&gt;]
+  end
+
+  S1 &amp; S3 &amp; S4 &amp; S2 --&gt; V[🤖 Automated screen]
+
+  subgraph Checks[&quot;Screening checks&quot;]
+    direction LR
+    V1[Audience: geo,&lt;br/&gt;demo, authenticity]
+    V2[Brand safety:&lt;br/&gt;past content scan]
+    V3[Conflicts: competitor&lt;br/&gt;deals, exclusivity]
+    V4[History: reliability,&lt;br/&gt;results, rates]
+  end
+
+  V --&gt; V1 &amp; V2 &amp; V3 &amp; V4
+  V1 &amp; V2 &amp; V3 &amp; V4 --&gt; R{Flags?}
+  R --&gt;|clean| ROS[(Roster)]
+  R --&gt;|flagged| H[🤝 Agent summarizes evidence;&lt;br/&gt;CM or Talent decides]
+  H --&gt;|accept| ROS
+  H --&gt;|reject| X[Not now,&lt;br/&gt;reason recorded]
+  ROS --&gt; N[🤖 Nurture: stay in touch,&lt;br/&gt;keep data fresh]
+</pre></div></figure>
+<p>Most new-creator intake belongs to Creator Ops, not Services. For a CM, the supply side is mostly <strong>the roster</strong>: who I trust, who delivers, who performed for whom.</p>
+<h2 id="flows-4-matching-building-and-reviewing-the-lineup"><span class="hnum">4</span>Matching: building and reviewing the lineup</h2>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">flowchart TD
+  P[Campaign plan + KPI targets] --&gt; Q[🤝 Agent drafts match criteria: audience, vertical, tier mix, content style, rate band]
+  Q --&gt; Q1{CM approves criteria}
+  Q1 --&gt;|edit| Q
+  Q1 --&gt;|approve| R[🤖 Search roster first, then the wider index]
+  R --&gt; S[🤖 Screen: safety, conflicts, rights, availability]
+  S --&gt; T[🤝 Proposed lineup + backups, each with per-criterion evidence and forecast contribution]
+  T --&gt; U{CM reviews lineup}
+  U --&gt;|swap, remove, ask why| T
+  U --&gt;|approve| W[🧑 Internal gate passed]
+  W --&gt; X[🤝 Agent drafts client-facing lineup deck]
+  X --&gt; Y[🧑 CM presents; client approves]
+  Y --&gt; Z[Outreach + terms]
+  Z --&gt; Z1[🤝 Offers within the approved rate band]
+  Z --&gt; Z2[🧑 Out-of-band rates, exclusivity, talent managers]
+</pre></div></figure>
+<p>Approving the criteria <em>before</em> the search means the agent's later reasoning can be checked against something the CM already agreed to. That is the recruiting pattern (LinkedIn, Ashby).</p>
+<h2 id="flows-5-production-one-deliverables-life"><span class="hnum">5</span>Production: one deliverable's life</h2>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">stateDiagram-v2
+  [*] --&gt; Briefed: T-14 brief + product sent
+  Briefed --&gt; Drafting
+  Drafting --&gt; DraftSubmitted: T-7 draft due
+  Drafting --&gt; Quiet: no response past cadence
+  Quiet --&gt; Drafting: creator responds
+  Quiet --&gt; Escalated: slack below threshold
+  Escalated --&gt; Drafting: CM call resolves
+  Escalated --&gt; Replaced: swap to backup
+  DraftSubmitted --&gt; AgentCheck: brief compliance with evidence
+  AgentCheck --&gt; CMReview
+  CMReview --&gt; Revisions: needs work
+  Revisions --&gt; DraftSubmitted
+  CMReview --&gt; BrandReview: approved internally
+  BrandReview --&gt; Revisions: brand feedback
+  BrandReview --&gt; Approved: T-3
+  Approved --&gt; Live: T-0
+  Live --&gt; Verified: link, code, tags, disclosure checked
+  Verified --&gt; Paid
+  Paid --&gt; [*]
+  Replaced --&gt; [*]
+</pre></div></figure>
+<h2 id="flows-6-hard-moment-a-creator-goes-quiet-with-a-deadline-close"><span class="hnum">6</span>Hard moment: a creator goes quiet with a deadline close</h2>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">sequenceDiagram
+  autonumber
+  participant Cr as Creator
+  participant Ag as Agent
+  participant CM as CM
+  participant Br as Brand
+
+  Note over Ag: Draft due T-7.&lt;br/&gt;Cadence: T-10, T-8, T-7.
+  Ag-&gt;&gt;Cr: 🤖 Reminder (email), T-10
+  Ag-&gt;&gt;Cr: 🤖 Reminder (email + DM), T-8
+  Note over Ag: No reply, no draft.&lt;br/&gt;Weigh slack to go-live,&lt;br/&gt;creator history, backup,&lt;br/&gt;share of KPI at risk.
+  Ag-&gt;&gt;CM: 🤝 Escalation card
+  Note over CM: &quot;Ana is quiet, draft 1 day late.&lt;br/&gt;9/10 on time historically.&lt;br/&gt;Backup Ben is approved.&lt;br/&gt;Call · extend 2 days · swap&quot;
+  alt CM calls and creator recovers
+    CM-&gt;&gt;Cr: 🧑 Call
+    CM-&gt;&gt;Ag: Extend 2 days
+    Ag-&gt;&gt;Ag: 🤖 Reschedule, update forecast
+  else Swap to backup
+    CM-&gt;&gt;Ag: Swap to Ben
+    Ag-&gt;&gt;Cr: 🤝 Offer to Ben, CM approves send
+    Ag-&gt;&gt;Ag: 🤖 Log reliability event (Ana)
+  end
+  Ag-&gt;&gt;CM: 🤝 Draft client note&lt;br/&gt;(only if go-live or KPI affected)
+  CM-&gt;&gt;Br: 🧑 Send, or decide not to
+</pre></div></figure>
+<p>What makes this "hard" rather than a cron job: the escalation threshold depends on <strong>slack, substitutability, and history</strong>. The agent's job is to reduce the decision to a call with the context already loaded, and to keep the client informed only when it actually matters.</p>
+<h2 id="flows-7-in-flight-optimization-and-budget-pacing"><span class="hnum">7</span>In-flight optimization and budget pacing</h2>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">flowchart TB
+  L[Post goes live] --&gt; M[🤖 Pull metrics at 24h, 48h, 72h]
+  M --&gt; N{Vs. forecast}
+  N --&gt;|on track| O[🤖 Note in&lt;br/&gt;daily pacing]
+  N --&gt;|outperforming| P[🤝 Boost with $X&lt;br/&gt;from reserve]
+  N --&gt;|underperforming| Q[🤝 Adjust next wave,&lt;br/&gt;swap creator,&lt;br/&gt;shift tier mix]
+  P --&gt; P1{Whitelisting&lt;br/&gt;in contract?}
+  P1 --&gt;|no| P2[🤝 Propose rights&lt;br/&gt;extension: cost, time]
+  P1 --&gt;|yes| P3{Above spend&lt;br/&gt;threshold?}
+  P3 --&gt;|no| P4[🧑 CM approves]
+  P3 --&gt;|yes| P5[🧑 CM + client&lt;br/&gt;approve]
+  Q --&gt; Q1[🧑 CM decides; client&lt;br/&gt;told in next status]
+</pre></div></figure>
+<p>This replaces the original "tranche" idea. Creator fees are mostly committed at contracting, so the levers are the <strong>reserve</strong>, the <strong>next wave</strong>, and <strong>swaps</strong>.</p>
+<h2 id="flows-8-the-cms-day-from-signals-to-the-decision-queue"><span class="hnum">8</span>The CM's day: from signals to the decision queue</h2>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">flowchart TB
+  subgraph Signals[&quot;Signals&quot;]
+    direction LR
+    s1[Creator replies,&lt;br/&gt;silence]
+    s2[Drafts&lt;br/&gt;submitted]
+    s3[Brand&lt;br/&gt;feedback]
+    s4[Post&lt;br/&gt;metrics]
+    s5[Rights +&lt;br/&gt;payment dates]
+    s6[Client&lt;br/&gt;requests]
+  end
+  s1 &amp; s2 &amp; s3 &amp; s4 &amp; s5 &amp; s6 --&gt; AG[Agent]
+  AG --&gt;|handled alone| LOG[(Agent log,&lt;br/&gt;undoable)]
+  AG --&gt;|needs a decision| QUEUE[Decision queue,&lt;br/&gt;ranked by consequence × time]
+  QUEUE --&gt; W1[Today:&lt;br/&gt;cross-account]
+  QUEUE --&gt; W2[Account view:&lt;br/&gt;campaign widgets in state]
+  QUEUE --&gt; W3[Roster&lt;br/&gt;view]
+  W1 &amp; W2 &amp; W3 --&gt; CM((CM))
+  CM -.-&gt;|accept, edit,&lt;br/&gt;reject + reason| AG
+  CM -.-&gt;|raise or lower autonomy&lt;br/&gt;per action type| AG
+</pre></div></figure>
+<p>Rejections with reasons are the agent's training signal, and the record of how autonomy is earned.</p>
+<h2 id="flows-9-order-independent-updates-and-conflicts"><span class="hnum">9</span>Order-independent updates and conflicts</h2>
+<p>Facts arrive in any order up to a milestone, and the same update may be repeated by different people as part of overlapping batches. Principles are in <a href="#framing">discovery/framing.md</a> §6.</p>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">flowchart LR
+  subgraph M1[&quot;Milestone: ready to brief (any order)&quot;]
+    f1[Rate agreed]
+    f2[Usage rights scoped]
+    f3[Whitelisting: yes or no]
+    f4[Product shipped]
+    f5[Disclosure acknowledged]
+  end
+  f1 &amp; f2 &amp; f3 &amp; f4 &amp; f5 --&gt; G{Set complete?}
+  G --&gt;|no| W[Show what&#x27;s missing and who owns it]
+  G --&gt;|yes| B[Brief sent; milestone sealed]
+  B -.-&gt;|change needs explicit reopen| M1
+</pre></div></figure>
+<figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">flowchart TB
+  U[&quot;Update from CM, coordinator,&lt;br/&gt;agent, or brand&lt;br/&gt;&lt;i&gt;key = subject + field&lt;/i&gt;&lt;br/&gt;&lt;i&gt;based-on = version seen&lt;/i&gt;&quot;] --&gt; K{Fact with this&lt;br/&gt;key exists?}
+  K --&gt;|no| A[Apply, attribute,&lt;br/&gt;re-check milestone]
+  K --&gt;|yes, same value| N[No-op: record attribution&lt;br/&gt;UI: already done by Priya]
+  K --&gt;|yes, different value| V{Based on&lt;br/&gt;current version?}
+  V --&gt;|yes| A
+  V --&gt;|no, stale| R{Explicit&lt;br/&gt;authority rule?}
+  R --&gt;|yes; not money, rights,&lt;br/&gt;or client-facing| AR[Auto-resolve,&lt;br/&gt;log the rule]
+  R --&gt;|no| C[Conflict card:&lt;br/&gt;both values, who, when, why]
+  C --&gt; H[Human decides]
+  A --&gt; P[Re-check pending proposals;&lt;br/&gt;withdraw any whose inputs changed]
+  A --&gt; X{External&lt;br/&gt;effect?}
+  X --&gt;|message, offer,&lt;br/&gt;payment| O[Send once per idempotency key&lt;br/&gt;e.g. reminder / deliverable 2 / T-8]
+</pre></div></figure>
+</section>
+<section id="assumptions" class="doc"><header class="doc-head"><p class="kicker">Assumptions</p><p class="doc-title">What is public, what is invented, what is a design call</p><p class="src">Source: <code>docs/assumptions.md</code></p></header><p class="lede">Each entry is either public information about Later (sources in <a href="#research">discovery/research.md</a>) or <em>invented</em> for the exercise. The brief asks for assumptions to be written down, so add them as they are made.</p>
+<h2 id="assumptions-about-later-and-the-services-team">About Later and the Services team</h2>
+<ul>
+<li>Later Services runs fully managed campaigns for enterprise brands, from strategy through sourcing, production and reporting. Kickoff to first post takes 2–4 weeks. <em>Public.</em></li>
+<li>Work is done by <strong>account pods</strong>: Account Manager, Coordinators/Co-Ops, Talent Partnerships, with Strategy, Paid Media and Creative alongside. <em>Public (job postings).</em></li>
+<li>Later Influence is the system of record for campaigns, with a 12-stage creator workflow, draft review states, and stage-triggered automations. The agent operates on top of it. <em>Public; integration invented.</em></li>
+<li>Later EdgeAI already provides performance forecasts and creator-mix recommendations, and the agent consumes them rather than reinventing them. <em>Public product; usage invented.</em></li>
+<li>Creator intake (sign-ups, the Later Creator app) belongs to Creator Operations, not Services. <em>Public (job postings).</em></li>
+</ul>
+<h2 id="assumptions-about-the-campaign-manager">About the campaign manager</h2>
+<ul>
+<li>"Campaign manager" in the brief corresponds to Later's <strong>Account Manager</strong>: owns a portfolio of client accounts and is measured on delivery, client trust, renewal and expansion. <em>Public (job postings); the mapping is ours.</em></li>
+<li>A CM runs about 4–6 accounts with 2–4 live campaigns each, and each campaign has 10–40 creators. <em>Invented.</em></li>
+<li>The CM already supervises human coordinators, so "review the agent the way you'd review a new coordinator" is a familiar model. <em>Inference.</em></li>
+</ul>
+<h2 id="assumptions-about-campaigns-and-money">About campaigns and money</h2>
+<ul>
+<li>Creator fees are mostly committed at contracting (flat fee or 50/50). Mid-flight flexibility comes from an amplification reserve, the next wave, and swaps, not from released tranches. <em>Industry practice; Later's specifics not public.</em></li>
+<li>Each campaign holds a 20% paid amplification reserve. Spending more than $5k of it, or more than 25%, needs client approval. <em>Invented.</em></li>
+<li>Production workback: brief T-14, draft T-7, approval T-3, live T-0. <em>Public (Later blog).</em></li>
+<li>Whitelisting/Spark rights are negotiated per creator and may be missing or expiring. <em>Industry practice.</em></li>
+</ul>
+<h2 id="assumptions-about-the-agent">About the agent</h2>
+<ul>
+<li>The agent acts alone on logistics (reminders, receipt tracking, post verification, internal status), proposes judgment calls, and never speaks to the client or commits money without approval in v1. <em>Design decision.</em></li>
+<li>Autonomy is set per action type and can be raised or revoked. <em>Design decision.</em></li>
+<li>The reminder cadence before a draft deadline is T-10, T-8 and T-7. The agent escalates when the draft is late and slack to go-live falls below a threshold that depends on the creator's history and whether a backup is available. <em>Invented.</em></li>
+<li>Every proposal carries per-criterion evidence and a confidence level, not a single opaque score. <em>Design decision.</em></li>
+<li>Several people and the agent update the same campaign concurrently, often through overlapping batches. Updates are keyed and idempotent, milestones gate on sets of facts rather than sequences, and stale writes become conflict cards rather than overwrites. <em>Design decision.</em></li>
+</ul>
+<h2 id="assumptions-about-the-prototype">About the prototype</h2>
+<ul>
+<li>LLM behavior is simulated with scripted, deterministic responses. <em>Constraint of the 2–4 hour timebox.</em></li>
+<li>All brands, creators, campaigns and numbers in the demo are fictional. <em>Invented.</em></li>
+<li>The demo's hard moment is "a creator goes quiet with a deadline close." <em>Design decision.</em></li>
+</ul>
+</section>
+<section id="research" class="doc"><header class="doc-head"><p class="kicker">Research</p><p class="doc-title">Sources behind every claim</p><p class="src">Source: <code>docs/discovery/research.md</code></p></header><p class="lede">Public research compiled 2026-11-17 to ground <a href="#framing">framing.md</a>. "Stated" = a public source says it; "inference" = our reading. Several sources are vendor blogs (some selling competing tools); treat benchmarks as directional. Confirm third-party claims before quoting them in the deliverable.</p>
+<h2 id="research-later">Later</h2>
+<p><strong>Company.</strong> Mavrck acquired Later in 2022; they unified under the Later brand in 2024, and Mavrck's product became <strong>Later Influence</strong>. Later acquired Mavely (affiliate) in January 2025, now "Later Creator." Lineup: Later Influence, Later Social, Later Creator, Social Listening, Linkin.bio, Later 360 reporting. The About page claims an index of 28M creators (other pages say 16M and 20M+). <a target="_blank" rel="noopener" href="https://later.com/about/">https://later.com/about/</a></p>
+<p><strong>AI.</strong> Brand Suitability Insights (Sept 2025) is AI creator safety/suitability. <strong>Later EdgeAI</strong> (Oct 2025) is a per-brand engine that predicts performance, recommends creator mixes, and sets budgets and benchmarks; it is described as powering both the software and the services team. <a target="_blank" rel="noopener" href="https://www.prnewswire.com/news-releases/introducing-later-edgeai-the-industrys-most-advanced-predictive-intelligence-solution-302596310.html">https://www.prnewswire.com/news-releases/introducing-later-edgeai-the-industrys-most-advanced-predictive-intelligence-solution-302596310.html</a>. No Later <em>agent</em> product is public. The VP, UX posting asks the hire to lead "agentic UX workflows" and define patterns for "human-in-the-loop interactions, AI trust mechanisms, and agentic failure states" across Later Influence, Later Social and Mavely. <a target="_blank" rel="noopener" href="https://job-boards.greenhouse.io/later/jobs/8726004002">https://job-boards.greenhouse.io/later/jobs/8726004002</a></p>
+<p><strong>Services offering.</strong> "Get a team to plan, produce, and manage your creator campaigns." Four stages: strategy → creator selection → content &amp; scale → reporting &amp; ROI. <a target="_blank" rel="noopener" href="https://later.com/influencer-marketing-services/">https://later.com/influencer-marketing-services/</a>. The blog breaks it into six steps, including "usage rights and exclusivity terms," whitelisting/Spark/Partnership Ads, and "scale top creators and drop underperformers"; kickoff to first post takes 2–4 weeks; pilot programs are offered. <a target="_blank" rel="noopener" href="https://later.com/blog/how-influencer-marketing-services-drive-measurable-roi/">https://later.com/blog/how-influencer-marketing-services-drive-measurable-roi/</a></p>
+<p><strong>Platform workflow.</strong> Later Influence has a 12-stage default workflow in 4 phases (stages include Applied, Confirmation, Draft, Draft Review, Content Creation, Pre-Payment, Post-Payment, Dropped). Draft review states are Approved / Approved with Corrections / Needs Work. Stages can trigger automations. <a target="_blank" rel="noopener" href="https://help-influence.later.com/hc/en-us/articles/20462368851735-Draft-Draft-Review">https://help-influence.later.com/hc/en-us/articles/20462368851735-Draft-Draft-Review</a>, <a target="_blank" rel="noopener" href="https://help-influence.later.com/hc/en-us/articles/20462374876951-Workflow-Automation">https://help-influence.later.com/hc/en-us/articles/20462374876951-Workflow-Automation</a></p>
+<p><strong>Roles</strong> (Greenhouse postings). These are the best source on the real workflow.</p>
+<ul>
+<li><strong>Account Manager:</strong> a portfolio of accounts from onboarding to renewal; content quality, on-time delivery, KPI alignment; budgets and contracts; delegates to and QAs Coordinators/Co-Ops; client status meetings, SBRs, wrap reports; measured on renewal and expansion. <a target="_blank" rel="noopener" href="https://jobs.summitpartners.com/companies/later/jobs/51350394-account-manager-influencer-marketing">https://jobs.summitpartners.com/companies/later/jobs/51350394-account-manager-influencer-marketing</a></li>
+<li><strong>Coordinator:</strong> "brief creation and sourcing to contracting, product fulfillment, and reporting"; acts as "voice of the influencer." <a target="_blank" rel="noopener" href="https://job-boards.greenhouse.io/later/jobs/8792586002">https://job-boards.greenhouse.io/later/jobs/8792586002</a></li>
+<li><strong>Senior Coordinator, Talent Partnerships:</strong> a casting expert embedded in an "account pod"; negotiates with agents and managers; asked for experience applying AI to operations. <a target="_blank" rel="noopener" href="https://job-boards.greenhouse.io/later/jobs/8861465002">https://job-boards.greenhouse.io/later/jobs/8861465002</a></li>
+<li><strong>Director, Creator Operations:</strong> owns the creator intake funnel in HubSpot and decides when outreach is automated versus handled by a human. <a target="_blank" rel="noopener" href="https://job-boards.greenhouse.io/later/jobs/8939751002">https://job-boards.greenhouse.io/later/jobs/8939751002</a></li>
+</ul>
+<p><strong>KPIs.</strong> Awareness covers reach, impressions and views. Consideration covers engagement rate, saves and shares. Conversion covers attributed revenue, promo codes and CTR. Production workback is brief and product at T-14, draft at T-7, approval at T-3, live at T-0. <a target="_blank" rel="noopener" href="https://later.com/blog/influencer-campaign-management-the-results-first-guide/">https://later.com/blog/influencer-campaign-management-the-results-first-guide/</a>. EMV uses the Ayzenberg index, and ROI = EMV ÷ cost. <a target="_blank" rel="noopener" href="https://help-influence.later.com/hc/en-us/articles/21083269843607-Earned-Media-Value-EMV-Return-on-Investment-ROI">https://help-influence.later.com/hc/en-us/articles/21083269843607-Earned-Media-Value-EMV-Return-on-Investment-ROI</a></p>
+<p><strong>Case studies.</strong></p>
+<ul>
+<li><strong>Crumbl:</strong> objectives were set up front (≥30M impressions, &gt;150K engagements). Mid-campaign, the team turned top organic posts into paid ads and engagement doubled; the result was 71.4M impressions. <a target="_blank" rel="noopener" href="https://shortyawards.com/17th/tbd-7">https://shortyawards.com/17th/tbd-7</a></li>
+<li><strong>Bibigo:</strong> about 11 macro and mega creators; 3% TikTok CTR against a 1.3% benchmark. <a target="_blank" rel="noopener" href="https://later.com/case-studies/bibigo/">https://later.com/case-studies/bibigo/</a></li>
+<li><strong>Premier Protein:</strong> 78 creators; the brand supplied draft feedback and legal disclaimers. <a target="_blank" rel="noopener" href="https://later.com/case-studies/premier-protein/">https://later.com/case-studies/premier-protein/</a></li>
+</ul>
+<h2 id="research-competitors">Competitors</h2>
+<p>The pattern: every major platform shipped a named agent in 2025–26, almost all aimed at <strong>discovery, outreach, and reporting</strong>. Mid-campaign execution remains manual.</p>
+<ul>
+<li><strong>CreatorIQ Q</strong> (Oct 2026): agentic discovery, recruiting and setup; "scoped to the user's governance, markets, and approval thresholds"; autonomy extends "as brands watch an agent get things right." <a target="_blank" rel="noopener" href="https://www.creatoriq.com/press/releases/applied-creator-intelligence">https://www.creatoriq.com/press/releases/applied-creator-intelligence</a></li>
+<li><strong>Upfluence Jaice</strong> (Sept 2026): end-to-end; resolved about two-thirds of creator exchanges without a human in internal tests; escalates when unsure; the role shifts "from operator to supervisor." <a target="_blank" rel="noopener" href="https://www.netinfluencer.com/upfluence-turns-its-creator-marketing-platform-fully-agentic-betting-ai-can-run-campaigns-end-to-end/">https://www.netinfluencer.com/upfluence-turns-its-creator-marketing-platform-fully-agentic-betting-ai-can-run-campaigns-end-to-end/</a></li>
+<li><strong>Traackr Abigail</strong> (Sept 2026): turns a brief into a shortlist and data into a narrative report; built on patterns from Traackr's own services team. <a target="_blank" rel="noopener" href="https://www.traackr.com/influencer-marketing-blog/abigail-ai-creator-marketing-strategist-built-for-global-enterprise">https://www.traackr.com/influencer-marketing-blog/abigail-ai-creator-marketing-strategist-built-for-global-enterprise</a></li>
+<li><strong>GRIN Gia</strong> (2025): discovery, vetting, recruiting, forecasting. <a target="_blank" rel="noopener" href="https://finance.yahoo.com/news/grin-launches-gia-first-agentic-130000918.html">https://finance.yahoo.com/news/grin-launches-gia-first-agentic-130000918.html</a></li>
+<li><strong>LTK</strong> agentic Brand Platform (Aug 2026): goal in, creator suggestions and a proactive "next best action" out. <a target="_blank" rel="noopener" href="https://onbrand.shopltk.com/en/latest-news/agentic-experience">https://onbrand.shopltk.com/en/latest-news/agentic-experience</a></li>
+<li><strong>impact.com</strong> Recruitment Agent (beta) "maintain[s] approval controls and oversight." <a target="_blank" rel="noopener" href="https://impact.com/press-releases/impact-unveils-ai-creator-commerce-ipx/">https://impact.com/press-releases/impact-unveils-ai-creator-commerce-ipx/</a></li>
+<li><strong>Billion Dollar Boy SafeMatch</strong> flags past content <em>for human review</em>. <a target="_blank" rel="noopener" href="https://hellopartner.com/companion-launches-safematch-r-and-community-builder-to-scale-creator-campaigns-safely/">https://hellopartner.com/companion-launches-safematch-r-and-community-builder-to-scale-creator-campaigns-safely/</a></li>
+<li><strong>Brief-compliance point tools</strong> exist (OnBriefing: on brief / off brief / needs review). <a target="_blank" rel="noopener" href="https://onbriefing.com/">https://onbriefing.com/</a></li>
+</ul>
+<h2 id="research-industry-workflow-facts">Industry workflow facts</h2>
+<ul>
+<li>Brief to live takes about 3–4 weeks. Brand review typically has a 48–72h SLA and two revision rounds; legal is often a separate 2–5 day gate, and comes <em>before</em> the brief in regulated categories. <a target="_blank" rel="noopener" href="https://postpaidonline.com/guides/influencer-campaign-brief">https://postpaidonline.com/guides/influencer-campaign-brief</a></li>
+<li>Tracking takes 15–20+ hours per campaign (vendor estimate). <a target="_blank" rel="noopener" href="https://sup.co/blog/the-real-cost-of-running-influencer-campaigns-in-house">https://sup.co/blog/the-real-cost-of-running-influencer-campaigns-in-house</a></li>
+<li>Payment: 50/50 is common for new relationships, and net 30–60 for large brands. 48% of creators report being paid late, and many won't rework with that brand. <a target="_blank" rel="noopener" href="https://influenceradvisory.com/blog/influencer-payment-terms/">https://influenceradvisory.com/blog/influencer-payment-terms/</a></li>
+<li>Budget flex: practitioners hold back 20–30% as an amplification reserve and boost top posts within 48–72h. Spark/whitelisting must be in the contract. <a target="_blank" rel="noopener" href="https://www.influencers-time.com/tiktok-spark-ads-whitelisting-a-brand-tiered-budget-guide/">https://www.influencers-time.com/tiktok-spark-ads-whitelisting-a-brand-tiered-budget-guide/</a></li>
+<li>EMV is criticized; AMEC discourages it. <a target="_blank" rel="noopener" href="https://www.britopian.com/measurement/do-not-use-earned-media-value/">https://www.britopian.com/measurement/do-not-use-earned-media-value/</a></li>
+<li>FTC: the brand shares disclosure liability and must monitor. <a target="_blank" rel="noopener" href="https://www.kirkland.com/publications/kirkland-alert/2023/07/federal-trade-commission-releases-first-updates-to-endorsement-guides-in-14-years">https://www.kirkland.com/publications/kirkland-alert/2023/07/federal-trade-commission-releases-first-updates-to-endorsement-guides-in-14-years</a></li>
+<li>Vetting: audience geo/demo fit, fake-follower share, comment authenticity, a brand-safety scan of past posts, competitor deals in the last 90 days, usage rights scope. <a target="_blank" rel="noopener" href="https://inbeat.agency/blog/influencer-vetting-checklist">https://inbeat.agency/blog/influencer-vetting-checklist</a></li>
+</ul>
+<h2 id="research-adjacent-industries-and-hitl-guidance">Adjacent industries and HITL guidance</h2>
+<ul>
+<li><strong>Bullhorn</strong> (staffing): <em>Internal Submission</em> lets the account manager review a candidate before the client sees them; automations "notify recruiter if no activity in 3 days." <a target="_blank" rel="noopener" href="https://www.bullhorn.com/customer-blog/support-tip-master-standard-bullhorn-hiring-workflow/">https://www.bullhorn.com/customer-blog/support-tip-master-standard-bullhorn-hiring-workflow/</a></li>
+<li><strong>Gem</strong>: rediscovery ("scans your existing pipeline for people who now fit"); "every match score includes clear reasoning that your team can read, question, and override." <a target="_blank" rel="noopener" href="https://www.gem.com/product/recruiting-ai">https://www.gem.com/product/recruiting-ai</a></li>
+<li><strong>Juicebox Agents</strong>: Manual mode means you approve each lead; Automatic mode means the agent approves. Calibration is "approve 3 in a row." The daily lead target is sized to what you have time to review, and an activity trace explains each batch. <a target="_blank" rel="noopener" href="https://docs.juicebox.ai/juicebox-agents">https://docs.juicebox.ai/juicebox-agents</a></li>
+<li><strong>Ashby</strong>: per-criterion Meets / Does not Meet with an explanation; humans make advance/reject decisions. <a target="_blank" rel="noopener" href="https://www.ashbyhq.com/product-updates/ai-assisted-application-review">https://www.ashbyhq.com/product-updates/ai-assisted-application-review</a></li>
+<li><strong>Gong</strong>: eight tunable deal warnings (Ghosted, Overdue, Stalled…), each with mitigation suggestions. <a target="_blank" rel="noopener" href="https://help.gong.io/docs/understanding-ai-deal-monitor">https://help.gong.io/docs/understanding-ai-deal-monitor</a></li>
+<li><strong>HubSpot</strong>: health bands, with tasks created only when a band changes. <a target="_blank" rel="noopener" href="https://knowledge.hubspot.com/customer-success/use-the-customer-success-workspace">https://knowledge.hubspot.com/customer-success/use-the-customer-success-workspace</a></li>
+<li><strong>Salesforce Next Best Action</strong>: accept/reject per recommendation, each launching a flow. <a target="_blank" rel="noopener" href="https://admin.salesforce.com/blog/2024/deliver-improved-recommendations-through-next-best-action-and-agentforce">https://admin.salesforce.com/blog/2024/deliver-improved-recommendations-through-next-best-action-and-agentforce</a></li>
+<li><strong>Microsoft HAX</strong> guidelines: G2 (make clear how well the system does what it does), G9 (efficient correction), G10 (scope when in doubt), G11 (make clear why), G15 (granular feedback), G16 (convey consequences). <a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/wp-content/uploads/2019/01/Guidelines-for-Human-AI-Interaction-camera-ready.pdf">https://www.microsoft.com/en-us/research/wp-content/uploads/2019/01/Guidelines-for-Human-AI-Interaction-camera-ready.pdf</a></li>
+<li><strong>Google PAIR</strong>: aim for <em>calibrated</em> trust; showing uncertainty lowers trust in a single prediction but improves reliance over time. <a target="_blank" rel="noopener" href="https://pair.withgoogle.com/chapter/explainability-trust/">https://pair.withgoogle.com/chapter/explainability-trust/</a></li>
+<li><strong>Levels of autonomy</strong> (Feng et al. 2025): Operator → Collaborator → Consultant → Approver → Observer; autonomy is a design choice separate from capability. <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2506.12469">https://arxiv.org/abs/2506.12469</a></li>
+<li><strong>Agentic UX patterns</strong> (Smashing, Feb 2026): intent preview, autonomy dial, explainable rationale, confidence signal, action audit &amp; undo, escalation pathway. <a target="_blank" rel="noopener" href="https://www.smashingmagazine.com/2026/02/designing-agentic-ai-practical-ux-patterns/">https://www.smashingmagazine.com/2026/02/designing-agentic-ai-practical-ux-patterns/</a></li>
+<li><strong>Chat vs. ops UI</strong>: "Chat is a good input primitive but a bad operating environment for agents." <a target="_blank" rel="noopener" href="https://blakecrosley.com/blog/chat-is-the-wrong-interface">https://blakecrosley.com/blog/chat-is-the-wrong-interface</a></li>
+</ul>
+<h2 id="research-prior-writing-joshua-hall-medium">Prior writing (Joshua Hall, Medium)</h2>
+<p>The author's own published positions that this work builds on.</p>
+<ul>
+<li><strong>Chat Is an Input, Not an Interface</strong> (June 2026). Conversation suits genuinely unstructured input. Forms, grids and direct manipulation stay better for most work, so the LLM should sit behind those surfaces. This grounds A9 and the decision to keep chat as a scoped ask affordance. <a target="_blank" rel="noopener" href="https://medium.com/design-bootcamp/chat-is-an-input-not-an-interface-2686ba8b542d">https://medium.com/design-bootcamp/chat-is-an-input-not-an-interface-2686ba8b542d</a></li>
+<li><strong>Generative UI Is Three Things. Only One Ships.</strong> (May 2026). Of fully generated code, model-assembled layouts, and a fixed shell with a bounded area of dynamically chosen widgets, only the last is reliable enough to ship. This grounds A7: a curated widget library selected by state, not UI the model invents. <a target="_blank" rel="noopener" href="https://medium.com/design-bootcamp/generative-ui-is-three-things-only-one-ships-136478c1a67b">https://medium.com/design-bootcamp/generative-ui-is-three-things-only-one-ships-136478c1a67b</a></li>
+<li><strong>CFS: Scoring Features Before You Argue About Them</strong> (June 2026). Rate Commonality × Frequency × Severity on a 1–5 scale and record the score with the decision. It is used here to rank which agent tasks to take on first and to justify the cuts. <a target="_blank" rel="noopener" href="https://medium.com/design-bootcamp/cfs-scoring-features-before-you-argue-about-them-efa239a4ab74">https://medium.com/design-bootcamp/cfs-scoring-features-before-you-argue-about-them-efa239a4ab74</a></li>
+<li><strong>Idempotent Design: When Order Shouldn't Matter</strong> (June 2026). Independent actions should give the same result in any order. Real sequencing constraints are separated from "shadow constraints" that the data model imposes. This grounds §6 of the framing: milestones that gate on sets, keyed idempotent updates, and conflict cards for overlapping work across the pod. <a target="_blank" rel="noopener" href="https://medium.com/design-bootcamp/idempotent-design-when-order-shouldnt-matter-ca940b4cbf83">https://medium.com/design-bootcamp/idempotent-design-when-order-shouldnt-matter-ca940b4cbf83</a></li>
+<li><strong>Owning the Design System</strong> (June 2026). A design system works only as a permanent, owned function measured by adoption and downstream value. This answers the brief's question of which patterns to standardize if this agent is one of several, and who owns them. <a target="_blank" rel="noopener" href="https://medium.com/design-bootcamp/owning-the-design-system-8a28ea61372b">https://medium.com/design-bootcamp/owning-the-design-system-8a28ea61372b</a></li>
+</ul>
+</section>
+  </main>
+</div>
+
+<script>
+  // Contents: mark the heading in view (rail) and the section in view (top nav).
+  (() => {
+    const railLinks = new Map([...document.querySelectorAll(".rail li ol a")].map((a) => [a.hash.slice(1), a]));
+    const topLinks = new Map([...document.querySelectorAll(".topnav a")].map((a) => [a.hash.slice(1), a]));
+    const mark = (map, id) => { if (!map.has(id)) return; map.forEach((a) => a.classList.remove("active")); map.get(id).classList.add("active"); };
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const id = e.target.id;
+        if (e.target.tagName === "SECTION") mark(topLinks, id); else mark(railLinks, id);
+      }
+    }, { rootMargin: "-15% 0px -70% 0px" });
+    document.querySelectorAll("section.doc, .doc h2[id]").forEach((el) => io.observe(el));
+  })();
+
+  // Show each diagram whole: natural size when it fits, otherwise scale it to
+  // the frame width (down to 70%), and only then fall back to scrolling.
+  function fitDiagrams() {
+    document.querySelectorAll(".diagram-scroll").forEach((box) => {
+      const svg = box.querySelector("svg");
+      if (!svg) return;
+      if (!svg.dataset.w) {
+        const vb = svg.viewBox.baseVal;
+        svg.dataset.w = vb && vb.width ? vb.width : svg.getBoundingClientRect().width;
+        svg.dataset.h = vb && vb.height ? vb.height : svg.getBoundingClientRect().height;
+      }
+      const w = +svg.dataset.w, h = +svg.dataset.h;
+      const avail = box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) * 2;
+      const scale = Math.max(0.7, Math.min(1, avail / w));
+      svg.style.width = `${w * scale}px`;
+      svg.style.height = `${h * scale}px`;
+      svg.style.maxWidth = "none";
+    });
+  }
+
+  // Mermaid, themed from the same palette tokens as the page.
+  (() => {
+    const blocks = document.querySelectorAll("pre.mermaid");
+    if (!blocks.length) return;
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js";
+    s.onload = () => {
+      const v = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+      window.mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: "strict",
+        theme: "base",
+        fontFamily: '"Inter Tight", system-ui, sans-serif',
+        // Every fill is a Material container paired with its on-color, so
+        // text contrast holds in both themes for any seed. Lines use outline
+        // (>= 3:1 on surfaces, the WCAG non-text minimum).
+        themeVariables: {
+          background: v("--md-surface-container-lowest"),
+          fontSize: "14px",
+          // Default nodes
+          primaryColor: v("--md-secondary-container"),
+          primaryTextColor: v("--md-on-secondary-container"),
+          primaryBorderColor: v("--md-secondary"),
+          mainBkg: v("--md-secondary-container"),
+          nodeBorder: v("--md-secondary"),
+          nodeTextColor: v("--md-on-secondary-container"),
+          secondaryColor: v("--md-tertiary-container"),
+          secondaryTextColor: v("--md-on-tertiary-container"),
+          secondaryBorderColor: v("--md-tertiary"),
+          tertiaryColor: v("--md-surface-container-high"),
+          tertiaryTextColor: v("--md-on-surface"),
+          tertiaryBorderColor: v("--md-outline"),
+          // Text on the diagram canvas
+          textColor: v("--md-on-surface"),
+          titleColor: v("--md-on-surface"),
+          // Edges and their labels
+          lineColor: v("--md-outline"),
+          defaultLinkColor: v("--md-outline"),
+          edgeLabelBackground: v("--md-surface-container-lowest"),
+          // Subgraphs
+          clusterBkg: v("--md-surface-container"),
+          clusterBorder: v("--md-outline-variant"),
+          // Sequence diagrams
+          actorBkg: v("--md-secondary-container"),
+          actorTextColor: v("--md-on-secondary-container"),
+          actorBorder: v("--md-secondary"),
+          actorLineColor: v("--md-outline"),
+          signalColor: v("--md-on-surface"),
+          signalTextColor: v("--md-on-surface"),
+          labelBoxBkgColor: v("--md-surface-container-high"),
+          labelBoxBorderColor: v("--md-outline"),
+          labelTextColor: v("--md-on-surface"),
+          loopTextColor: v("--md-on-surface"),
+          activationBkgColor: v("--md-surface-container-highest"),
+          activationBorderColor: v("--md-outline"),
+          sequenceNumberColor: v("--md-surface"),
+          noteBkgColor: v("--md-tertiary-container"),
+          noteTextColor: v("--md-on-tertiary-container"),
+          noteBorderColor: v("--md-tertiary"),
+          // State diagrams
+          altBackground: v("--md-surface-container-high"),
+          stateLabelColor: v("--md-on-secondary-container"),
+          compositeBackground: v("--md-surface-container"),
+          compositeTitleBackground: v("--md-surface-container-high"),
+          transitionColor: v("--md-outline"),
+          transitionLabelColor: v("--md-on-surface"),
+          specialStateColor: v("--md-on-surface"),
+          innerEndBackground: v("--md-on-surface"),
+          // ER diagrams
+          attributeBackgroundColorOdd: v("--md-surface-container-lowest"),
+          attributeBackgroundColorEven: v("--md-surface-container-low"),
+        },
+        // Natural size; wide diagrams scroll inside their figure rather than
+        // shrinking to unreadable text.
+        flowchart: { curve: "basis", padding: 14, htmlLabels: true, useMaxWidth: false },
+        sequence: { mirrorActors: false, useMaxWidth: false },
+        er: { useMaxWidth: false },
+        state: { useMaxWidth: false },
+      });
+      window.mermaid.run({ nodes: blocks }).then(fitDiagrams);
+      let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(fitDiagrams, 120); });
+    };
+    document.head.appendChild(s);
+  })();
+</script>
+</body>
+</html>

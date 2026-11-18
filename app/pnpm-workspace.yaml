@@ -1,0 +1,10 @@
+allowBuilds:
+  esbuild: false
+# pnpm settings (single-package project; no workspace members).
+# node_modules is shared between the macOS host and the Linux devcontainer
+# through the bind mount, so install native binaries (rollup, lightningcss,
+# tailwind oxide, esbuild) for both platforms.
+supportedArchitectures:
+  os: [current, linux, darwin]
+  cpu: [current, x64, arm64]
+  libc: [current, glibc]
