@@ -17,9 +17,10 @@ services:
         INCLUDE_DEV_TOOLS: "true"
         INCLUDE_OP: "true"
         INCLUDE_HOST_EVENTS: "true"
-        # Node LTS + pnpm (corepack) + typescript-language-server.
+        # Node 26 (active LTS) + pnpm + typescript-language-server. Node 25+ no
+        # longer bundles corepack; the containers node feature installs it.
         INCLUDE_NODE_DEV: "true"
-        NODE_VERSION: "24"
+        NODE_VERSION: "26"
         # Docker CLI + docker group; talks to the host daemon via the socket
         # mounted below (not docker-in-docker).
         INCLUDE_DOCKER: "true"

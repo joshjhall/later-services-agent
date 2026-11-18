@@ -18,7 +18,7 @@ Built for the Later VP, UX take-home exercise (`reference/`).
 
 ## Run it
 
-In the devcontainer, or on a host with Node 24+, pnpm, and `just`:
+In the devcontainer, or on a host with Node 26+, pnpm, and `just`:
 
 ```sh
 just dev   # http://localhost:5173
