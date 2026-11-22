@@ -77,3 +77,6 @@ These inputs are thin: three conversations and public material, with no time spe
 - LLM behavior is simulated with scripted, deterministic responses. *Constraint of the 2–4 hour timebox.*
 - All brands, creators, campaigns and numbers in the demo are fictional. *Invented.*
 - The demo's hard moment is "a creator goes quiet with a deadline close." *Design decision.*
+- Find or ask suggestions and conversation answers are scripted: a fixed list of places and actions, and a small table of replies keyed on recognizable questions (`app/src/components/palette/`). A production build would pass the current object and its data to an agent. *Constraint of the timebox.*
+- Creators have no page of their own in the prototype, so choosing a creator in Find or ask goes to the roster. *Invented.*
+- The conversation opens full screen; docking it into the rail so it follows you as you navigate (information architecture step 5) is cut for now. *Design decision; to build next.*

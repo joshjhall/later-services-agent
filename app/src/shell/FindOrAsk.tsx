@@ -1,18 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
-const OPEN = "find-or-ask:open";
+/** Window event that opens the palette (`FindOrAskPalette`). */
+export const FIND_OR_ASK_OPEN = "find-or-ask:open";
 
 /** Open Find or ask from anywhere: the top bar button, ⌘K, `/`, or any future caller. */
 export function openFindOrAsk() {
-  window.dispatchEvent(new Event(OPEN));
+  window.dispatchEvent(new Event(FIND_OR_ASK_OPEN));
 }
 
 const isTyping = (t: EventTarget | null) =>
@@ -46,27 +40,5 @@ export function FindOrAskButton() {
       <span>⌕ Find or ask</span>
       <kbd className="rounded border px-1.5 text-xs">⌘K</kbd>
     </Button>
-  );
-}
-
-/** Stand-in until the palette lands (#12): proves the entry point and shortcuts are wired. */
-export function FindOrAskPlaceholder() {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    const on = () => setOpen(true);
-    addEventListener(OPEN, on);
-    return () => removeEventListener(OPEN, on);
-  }, []);
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Find or ask</DialogTitle>
-          <DialogDescription>
-            Coming next: places to go, actions, and a conversation about this page.
-          </DialogDescription>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
   );
 }
