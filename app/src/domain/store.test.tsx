@@ -227,3 +227,26 @@ test("store: spend that lands exactly on the cap runs; anything external never r
   };
   expect(autoRun([external], policy)).toEqual({ resolved: {}, entries: [] });
 });
+
+test("store: an internal auto option runs unasked and never counts toward the spending cap", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 8_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const internal = {
+    ...boost,
+    id: `${boost.id}:internal`,
+    options: boost.options.map(({ amount: _, ...o }) =>
+      o.primary ? { ...o, effect: "internal" as const } : o,
+    ),
+  };
+  // The internal change goes first; the $8,000 boost after it must still fit the cap.
+  const { resolved, entries } = autoRun([internal, boost], policy);
+  expect(resolved[internal.id]).toMatchObject({ by: "agent" });
+  expect(resolved[boost.id]).toMatchObject({ by: "agent" });
+  expect(entries.find((e) => e.id === `act-auto-${internal.id}`)).toMatchObject({
+    actor: "agent",
+    effect: "internal",
+  });
+});
