@@ -11,7 +11,7 @@ import type { Benchmark, Comparison } from "@/domain/types";
 import { href } from "@/router";
 import { activityIn, openIn, pendingIn } from "./scope";
 import type { WidgetId } from "./select";
-import { summarize } from "./summary";
+import { firstOf, summarize } from "./summary";
 
 /** Every widget gets the same input: the campaigns in view. It fetches and shapes its own data. */
 export interface WidgetProps {
@@ -35,7 +35,7 @@ function Empty({ children }: { children: string }) {
 function SummaryWidget({ scope }: WidgetProps) {
   const { proposals, resolved } = useStore();
   const open = openIn(proposals, resolved, scope);
-  const first = open[0];
+  const first = firstOf(open);
   return (
     <div className="grid gap-2">
       <p className="text-sm">{summarize(open)}</p>

@@ -10,6 +10,11 @@ const REST: Record<Exclude<Need, "now">, string> = {
   todo: "to do later",
 };
 
+/** The item to act on first: the top of the most urgent need group. Links and text both use it. */
+export function firstOf<P extends Pick<Proposal, "kind" | "severity">>(open: P[]): P | undefined {
+  return groupByNeed(open)[0]?.items[0];
+}
+
 const items = (n: number) => `${n} open item${n === 1 ? "" : "s"}`;
 
 /**
@@ -21,7 +26,7 @@ export function summarize(open: Pick<Proposal, "kind" | "severity" | "title">[])
   if (open.length === 0) return "Nothing needs you here. The agent is handling it.";
 
   const groups = groupByNeed(open);
-  const first = `Start with “${groups[0].items[0].title}”.`;
+  const first = `Start with “${firstOf(open)?.title}”.`;
   const counts = groups
     .filter((g): g is typeof g & { need: keyof typeof REST } => g.need !== "now")
     .map((g) => `${g.items.length} ${REST[g.need]}`);

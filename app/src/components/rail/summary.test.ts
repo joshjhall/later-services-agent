@@ -1,6 +1,6 @@
 import type { Proposal } from "@/agent/rules";
 import { isAbout } from "./scope";
-import { summarize } from "./summary";
+import { firstOf, summarize } from "./summary";
 
 type P = Pick<Proposal, "kind" | "severity" | "title">;
 const quiet: P = { kind: "quiet-creator", severity: "critical", title: "Ana is quiet" };
@@ -43,4 +43,23 @@ test("activity matches campaigns by short name", () => {
   );
   expect(isAbout({ target: "Trail season" }, "Trail season")).toBe(true);
   expect(isAbout({ target: "Trail season" }, "Sparkling Citrus launch")).toBe(false);
+});
+
+test("several urgent items, all of them", () => {
+  const late: P = { kind: "state-goal", severity: "info", title: "Confirm goal" };
+  expect(summarize([quiet, late])).toBe(
+    "All 2 open items need you now. Start with “Ana is quiet”.",
+  );
+});
+
+test("several urgent items out of more", () => {
+  const late: P = { kind: "state-goal", severity: "info", title: "Confirm goal" };
+  expect(summarize([review, quiet, late, pacing])).toBe(
+    "2 of 4 open items need you now. Start with “Ana is quiet”. The rest: 1 ready to move and 1 to do later.",
+  );
+});
+
+test("the link target is the item the text names, not the first in input order", () => {
+  expect(firstOf([pacing, review, quiet])).toBe(quiet);
+  expect(firstOf([])).toBeUndefined();
 });
