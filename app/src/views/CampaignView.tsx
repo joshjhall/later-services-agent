@@ -97,7 +97,11 @@ export function CampaignView({ id, tab }: { id: string; tab?: CampaignTab }) {
                   </a>
                 )}
                 {!goalDrafts[id] && !lineupDrafts[id] && (
-                  <p>The goal and lineup were approved before this campaign moved on.</p>
+                  <p>
+                    {campaignPhase(c) === "Plan"
+                      ? "No goal or lineup draft to review yet."
+                      : "The goal and lineup were settled before this campaign moved on."}
+                  </p>
                 )}
                 <p className="text-muted-foreground capitalize">
                   {c.objective} · {c.kpis.map((k) => k.metric).join(", ") || "No KPIs yet"}

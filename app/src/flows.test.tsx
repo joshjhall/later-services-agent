@@ -454,5 +454,5 @@ test("today: on track is empty while every campaign has a card, and heading coun
 test("campaign: Plan explains a missing goal and lineup instead of showing no entry point", () => {
   renderApp();
   go("#campaign/cmp-trail-season/plan");
-  expect(screen.getByText(/approved before this campaign moved on/)).toBeInTheDocument();
+  expect(screen.getByText(/settled before this campaign moved on/)).toBeInTheDocument();
 });
