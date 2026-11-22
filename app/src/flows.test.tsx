@@ -463,7 +463,9 @@ test("campaign: the Run tab shows pacing and only Run proposals", () => {
   go("#campaign/cmp-trail-season/run");
   const run = screen.getByRole("tabpanel");
   expect(within(run).getByText("Pacing against targets")).toBeInTheDocument();
-  expect(within(run).getAllByRole("progressbar").length).toBeGreaterThan(0);
+  const revenue = within(run).getByRole("progressbar", { name: "Attributed revenue" });
+  expect(revenue).toHaveAttribute("aria-valuenow", "24.4");
+  expect(revenue).toHaveAttribute("aria-valuetext", "$61K of $250K");
   expect(within(run).queryByText("Creators and deliverables")).toBeNull();
   expect(within(run).queryByText(/is quiet/)).toBeNull();
   expect(within(run).getAllByText(/pacing below forecast/).length).toBeGreaterThan(0);
