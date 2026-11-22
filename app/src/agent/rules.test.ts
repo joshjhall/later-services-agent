@@ -57,15 +57,34 @@ describe("deriveProposals", () => {
     expect(boost?.options.map((o) => o.lane)).toEqual(["propose", "propose", "human"]);
   });
 
-  test("the cap row and the boost buttons name the same amounts", () => {
-    const boost = deriveProposals(world, undefined, undefined, {
-      ...AGENT_POLICY,
-      maxDailySpend: 5_000,
-    }).find((p) => p.kind === "boost-post");
-    const cap = boost?.evidence.find((e) => e.label === "Agent cap")?.value ?? "";
-    const smaller = boost?.options.find((o) => o.id === "smaller")?.label.replace("Boost ", "");
-    expect(cap).toBe("$5,000/day, if spent in one day · $4,000 is within it; the rest needs you");
-    expect(cap).toContain(`${smaller} is within it`);
+  test("the cap row, the proposed spend, and the boost buttons share one list of amounts", () => {
+    const boost = proposals.find((p) => p.kind === "boost-post");
+    const boosts = (boost?.options ?? []).filter((o) => o.effect === "spend");
+    const amount = (label: string) => Number(label.replace(/[^0-9]/g, ""));
+    expect(boosts.length).toBeGreaterThan(1);
+    // Each button's amount flips the cap verdict exactly at that amount, so the cap row reads the same list.
+    for (const o of boosts) {
+      const at = deriveProposals(world, undefined, undefined, {
+        ...AGENT_POLICY,
+        maxDailySpend: amount(o.label),
+      }).find((p) => p.kind === "boost-post");
+      const below = deriveProposals(world, undefined, undefined, {
+        ...AGENT_POLICY,
+        maxDailySpend: amount(o.label) - 1,
+      }).find((p) => p.kind === "boost-post");
+      // The verdict only: the part after "·", so the cap figure itself never matches.
+      const cap = (p?: typeof boost) =>
+        p?.evidence.find((e) => e.label === "Agent cap")?.value.split("· ")[1];
+      const shown = o.label.replace("Boost ", "");
+      const listed = (v?: string) => v === "within it" || !!v?.startsWith(`${shown} is within`);
+      expect(listed(cap(at))).toBe(true);
+      expect(cap(below)).not.toContain(`${shown} is within`);
+      expect(cap(below)).not.toBe("within it");
+    }
+    const primary = boosts.find((o) => o.primary);
+    expect(boost?.evidence.find((e) => e.label === "Proposed spend")?.value).toMatch(
+      new RegExp(`^\\${primary?.label.replace("Boost ", "")} of`),
+    );
   });
 
   test("cap evidence: above, partly within, at, within, and no options, in plain English", () => {
@@ -113,6 +132,13 @@ describe("deriveProposals", () => {
     expect(kinds({ escalateWithinDays: -999 })).not.toContain("quiet-creator");
     expect(kinds({})).toContain("below-forecast");
     expect(kinds({ belowForecastRatio: 0 })).not.toContain("below-forecast");
+    const forecasts = (ratio: number) =>
+      deriveProposals(world, undefined, undefined, {
+        ...AGENT_POLICY,
+        belowForecastRatio: ratio,
+      }).filter((p) => p.kind === "below-forecast").length;
+    // Raising the ratio flags KPIs the default does not.
+    expect(forecasts(100)).toBeGreaterThan(forecasts(AGENT_POLICY.belowForecastRatio));
   });
 
   test("cap evidence rounds odd amounts to whole dollars", () => {

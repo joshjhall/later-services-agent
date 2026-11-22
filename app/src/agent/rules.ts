@@ -239,6 +239,7 @@ export function deriveProposals(
         { id: "boost", amount: 8000, primary: true },
         { id: "smaller", amount: 4000 },
       ];
+      const primary = boosts.find((b) => b.primary) ?? boosts[0];
       out.push({
         id: `boost:${d.id}`,
         kind: "boost-post",
@@ -251,7 +252,7 @@ export function deriveProposals(
           { label: "Whitelisting", value: `Yes, ${p.usageRightsDays} days`, tone: "good" },
           {
             label: "Proposed spend",
-            value: `${usd(boosts[0].amount)} of $36,000 reserve`,
+            value: `${usd(primary.amount)} of $36,000 reserve`,
             tone: "neutral",
           },
           capEvidence(
