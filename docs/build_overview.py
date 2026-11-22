@@ -30,7 +30,7 @@ SECTIONS = [
 ]
 MERMAID = re.compile(r"^```mermaid\n(.*?)^```\n", re.S | re.M)
 VERDICT = {"✅": ("ok", "Holds"), "🔶": ("partial", "Corrected"), "❌": ("no", "Doesn't hold")}
-LANE = {"🤖": ("auto", "Agent acts alone"), "🤝": ("propose", "Agent proposes, CM approves"), "🧑": ("human", "Human only")}
+LANE = {"🤖": ("auto", "Automatic"), "🤝": ("propose", "Needs approval"), "🧑": ("human", "A person only")}
 
 
 def pandoc(md: str, slug: str) -> str:

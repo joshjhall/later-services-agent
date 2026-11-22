@@ -9,7 +9,7 @@ How to read it: the **backbone** runs left to right in the order a campaign is l
 - **R2**: the agent acts alone on more action types and the pod shares the record.
 - **Later**: valuable, but depends on R1/R2 data or on other teams.
 
-Lanes follow the flows legend: 🤖 agent acts alone · 🤝 agent proposes, Maya approves · 🧑 human only. Each activity is tagged **design time** or **run time** (the conductor agent's two modes, *Interview*).
+Lanes follow the flows legend: 🤖 automatic · 🤝 needs approval (Maya approves) · 🧑 a person only. Each activity is tagged **design time** or **run time** (the conductor agent's two modes, *Interview*).
 
 ## Backbone
 
