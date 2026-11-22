@@ -93,8 +93,9 @@ export function capEvidence(
   amounts: number[],
   policy: Pick<AgentPolicy, "maxDailySpend"> = AGENT_POLICY,
 ): Evidence {
-  const { maxDailySpend } = policy;
-  const within = amounts.filter((n) => n <= maxDailySpend);
+  // Compare in whole dollars, as displayed, so the row never contradicts itself at the cap.
+  const cap = Math.round(policy.maxDailySpend);
+  const within = amounts.filter((n) => Math.round(n) <= cap);
   const verdict =
     amounts.length === 0 || within.length === 0
       ? "above it, so it needs you"
@@ -103,7 +104,7 @@ export function capEvidence(
         : `${list(within.map(usd))} ${within.length === 1 ? "is" : "are"} within it; the rest needs you`;
   return {
     label: "Agent cap",
-    value: `${usd(maxDailySpend)}/day, if spent in one day · ${verdict}`,
+    value: `${usd(cap)}/day, if spent in one day · ${verdict}`,
     tone: "neutral",
   };
 }

@@ -42,7 +42,7 @@ A path through the prototype for the 20-minute walkthrough. Run `just dev` and o
 ## 6. Tuning the robot (if time)
 
 - Change `AGENT_POLICY.escalateWithinDays` live. A CM's repeated correction would propose exactly this change; today it's one line in the rules layer.
-- Change `AGENT_POLICY.maxDailySpend` live. The boost card's "Agent cap" row is read from it: set it to $5,000 and the card says the $4,000 option is within the cap; raise it above $8,000 and both are. The row compares each boost as if spent in one day, and says so, because the demo data has no boost duration. Say it out loud: the cap is shown, not yet enforced. Both options still wait for the CM, and wiring the cap into each option's lane is the next step.
+- Change `AGENT_POLICY.maxDailySpend` live. The boost card's "Agent cap" row is read from it: set it to $5,000 and the card says the $4,000 option is within the cap; raise it to $8,000 or more and both are. The row compares each boost as if spent in one day, and says so, because the demo data has no boost duration. Say it out loud: the cap is shown, not yet enforced. Both options still wait for the CM, and wiring the cap into each option's lane is the next step.
 
 ## Live-change candidates
 

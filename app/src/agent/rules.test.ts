@@ -100,6 +100,15 @@ describe("deriveProposals", () => {
       );
     expect(kinds({})).toContain("quiet-creator");
     expect(kinds({ autoReminders: 99 })).not.toContain("quiet-creator");
+    // Loosening a threshold makes a proposal fire where the default would not.
+    const fresh = deliverables.map((d) =>
+      d.id === "d-ana-1" ? { ...d, remindersSent: AGENT_POLICY.autoReminders - 1 } : d,
+    );
+    const loosened = deriveProposals({ ...world, deliverables: fresh }, undefined, undefined, {
+      ...AGENT_POLICY,
+      autoReminders: AGENT_POLICY.autoReminders - 1,
+    });
+    expect(loosened.some((p) => p.kind === "quiet-creator")).toBe(true);
     expect(kinds({ quietAfterDays: 999 })).not.toContain("quiet-creator");
     expect(kinds({ escalateWithinDays: -999 })).not.toContain("quiet-creator");
     expect(kinds({})).toContain("below-forecast");
@@ -109,6 +118,19 @@ describe("deriveProposals", () => {
   test("cap evidence rounds odd amounts to whole dollars", () => {
     expect(capEvidence([8001, 4000.5], { maxDailySpend: 5000 }).value).toBe(
       "$5,000/day, if spent in one day · $4,001 is within it; the rest needs you",
+    );
+  });
+
+  test("cap evidence compares in whole dollars, so the row never contradicts itself", () => {
+    // $5,000 shown against a $5,000 cap reads as within it, from either side of the rounding.
+    expect(capEvidence([5000.4], { maxDailySpend: 5000 }).value).toBe(
+      "$5,000/day, if spent in one day · within it",
+    );
+    expect(capEvidence([5000], { maxDailySpend: 4999.6 }).value).toBe(
+      "$5,000/day, if spent in one day · within it",
+    );
+    expect(capEvidence([5001], { maxDailySpend: 5000 }).value).toMatch(
+      /above it, so it needs you$/,
     );
   });
 
