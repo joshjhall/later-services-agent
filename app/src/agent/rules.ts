@@ -75,7 +75,10 @@ export const daysBetween = (a: string, b: string) =>
 
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 
-/** The "Agent cap" evidence row for a spend proposal: the caps, then which options fit under them. */
+/**
+ * The "Agent cap" evidence row for a spend proposal: the caps, then which options fit under them.
+ * Display only: the cap does not yet change an option's lane. No options reads as above the cap.
+ */
 export function capEvidence(
   options: number[],
   policy: { maxTestSpend: number; maxDailySpend: number } = AGENT_POLICY,
@@ -83,10 +86,10 @@ export function capEvidence(
   const { maxTestSpend, maxDailySpend } = policy;
   const within = options.filter((n) => n <= maxDailySpend);
   const verdict =
-    within.length === options.length
-      ? "within it, so the agent could run it"
-      : within.length === 0
-        ? "above it, so it needs you"
+    options.length === 0 || within.length === 0
+      ? "above it, so it needs you"
+      : within.length === options.length
+        ? "within it"
         : `${within.map(usd).join(", ")} is within it; the rest needs you`;
   return {
     label: "Agent cap",
