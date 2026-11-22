@@ -6,7 +6,7 @@ import {
   deliverables,
   partnerships,
 } from "@/domain/fixtures";
-import { audienceMarket, infoRequestDraft, messageDrafts } from "./drafts";
+import { audienceMarket, fixRequestDraft, infoRequestDraft, messageDrafts } from "./drafts";
 import { deriveProposals } from "./rules";
 
 const proposals = deriveProposals({ accounts, campaigns, creators, partnerships, deliverables });
@@ -68,6 +68,38 @@ describe("info request draft", () => {
     expect(d.body.startsWith("Hi Ana,")).toBe(true);
     expect(d.body).toMatch(/your latest TikTok analytics/);
     expect(d.body).toMatch(/the Holiday gifting campaign/);
+  });
+});
+
+describe("fix request draft", () => {
+  const campaign = { id: "cmp-sparkling-launch", name: "Sparkling Citrus launch" };
+
+  test("a hand-written draft wins", () => {
+    const d = fixRequestDraft({
+      deliverable: { id: "d-rio-1", kind: "IG Reel", goLive: "2026-11-25" },
+      creator: { name: "Rio Castillo" },
+      campaign,
+    });
+    expect(d).toBe(messageDrafts["fix:d-rio-1"]);
+  });
+
+  test("otherwise it is built from the deliverable, creator, and go-live date", () => {
+    const d = fixRequestDraft({
+      deliverable: { id: "d-new", kind: "TikTok video", goLive: "2026-12-01" },
+      creator: { name: "Mei Tanaka" },
+      campaign,
+    });
+    expect(d).toMatchObject({
+      id: "fix:d-new",
+      kind: "fix request",
+      to: "Mei Tanaka",
+      target: "Mei Tanaka · Sparkling Citrus launch",
+      campaignId: "cmp-sparkling-launch",
+      subject: "One fix before we approve your TikTok video",
+    });
+    expect(d.body).toMatch(/^Hi Mei,/);
+    // Read as a calendar date: the first of the month never slips to the previous day.
+    expect(d.body).toMatch(/Go-live stays Dec 1\./);
   });
 });
 
