@@ -69,6 +69,9 @@ test("generated info request: the card opens the agent's email, and sending reco
   expect(within(sheet).getByLabelText("Subject")).toHaveValue(
     "Quick check on Ben's audience split",
   );
+  expect((within(sheet).getByLabelText("Message") as HTMLTextAreaElement).value).toMatch(
+    /^Hi Ben,[\s\S]*Your TikTok profile suggests your audience is mostly US\./,
+  );
   fireEvent.click(within(sheet).getByRole("button", { name: /Send/ }));
   go("#activity");
   const sent = entries(/Sent info request to .*Ben Okafor/);
@@ -85,6 +88,9 @@ test("generated fix request: the card opens the agent's email, and sending recor
   expect(within(sheet).getByText(/Draft: fix request to Mei Tanaka/)).toBeInTheDocument();
   expect(within(sheet).getByLabelText("Subject")).toHaveValue(
     "One fix before we approve your IG Reel + Story ×2",
+  );
+  expect((within(sheet).getByLabelText("Message") as HTMLTextAreaElement).value).toMatch(
+    /^Hi Mei,[\s\S]*Go-live stays Nov 15\./,
   );
   fireEvent.click(within(sheet).getByRole("button", { name: /Send/ }));
   go("#activity");
