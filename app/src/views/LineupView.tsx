@@ -211,7 +211,7 @@ export function LineupView({ id }: { id: string }) {
                 <Button
                   disabled={over}
                   onClick={() => {
-                    if (proposal) resolve(proposal, "open");
+                    if (proposal) resolve(proposal, "open", "Approved lineup");
                     toast(
                       "Lineup approved internally. The agent is drafting the client deck for your review.",
                     );

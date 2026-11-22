@@ -249,6 +249,38 @@ test("stating the goal: closing the client email draft leaves the goal unconfirm
   ).toBeInTheDocument();
 });
 
+test("reviewing the lineup: approving records the decision, not the queue card's button", () => {
+  renderApp();
+  const card = screen
+    .getByText(/Approve proposed lineup for/)
+    .closest("[data-severity]") as HTMLElement;
+  // The queue card still navigates with "Review lineup".
+  expect(within(card).getByRole("button", { name: "Review lineup" })).toBeInTheDocument();
+  go("#lineup/cmp-holiday-gifting");
+  fireEvent.click(screen.getByRole("button", { name: /Approve lineup/ }));
+  go("#activity");
+  expect(within(entry(/Approved lineup/)).getByText("Maya")).toBeInTheDocument();
+  expect(screen.queryByText(/Chose "Review lineup"/)).toBeNull();
+  go("");
+  expect(screen.getByText(/Approved lineup · logged/)).toBeInTheDocument();
+});
+
+test("stating the goal: confirming records the decision, not the queue card's button", () => {
+  renderApp();
+  const card = screen
+    .getByText(/Confirm goal and KPIs for/)
+    .closest("[data-severity]") as HTMLElement;
+  expect(within(card).getByRole("button", { name: "Review goal" })).toBeInTheDocument();
+  go("#goal/cmp-spring-serum");
+  fireEvent.click(screen.getByRole("button", { name: "Confirm and draft client email" }));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: /Send/ }));
+  go("#activity");
+  expect(within(entry(/Sent client email to Priya Rao/)).getByText("Maya")).toBeInTheDocument();
+  expect(screen.queryByText(/Chose "Review goal"/)).toBeNull();
+  go("");
+  expect(screen.getByText(/Confirmed goal · logged/)).toBeInTheDocument();
+});
+
 test("draft: a double-click on Send records one entry", () => {
   renderApp();
   const card = screen
@@ -282,6 +314,29 @@ test("store: sending a draft for an already-resolved proposal keeps the first de
   expect(result.current.resolved[p.id].optionId).toBe("confirmed");
   // The message still went out, once.
   expect(result.current.activity.length).toBe(before + 1);
+});
+
+test("store: an action label names the decision; without one, the option label is used", async () => {
+  const { renderHook } = await import("@testing-library/react");
+  const { StoreProvider, useStore } = await import("@/domain/store");
+  const { messageDrafts } = await import("@/agent/drafts");
+  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
+  const goal = result.current.proposals.find((x) => x.id === "goal:cmp-spring-serum");
+  const info = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
+  if (!goal || !info) throw new Error("proposal missing");
+  // The goal view's no-email path: resolve directly with the decision.
+  act(() => result.current.resolve(goal, "open", "Confirmed goal"));
+  expect(result.current.resolved[goal.id].label).toBe("Confirmed goal");
+  expect(result.current.activity[0]).toMatchObject({ actor: "Maya", action: "Confirmed goal" });
+  // An earlier decision keeps its label, whatever a later call names.
+  act(() => result.current.resolve(goal, "open", "Approved lineup"));
+  expect(result.current.resolved[goal.id].label).toBe("Confirmed goal");
+  // A draft that answers a proposal without an action keeps the option label.
+  act(() =>
+    result.current.send(messageDrafts["info:cr-ana"], { proposal: info, optionId: "draft-email" }),
+  );
+  const option = info.options.find((o) => o.id === "draft-email");
+  expect(result.current.resolved[info.id].label).toBe(option?.label);
 });
 
 test("undo rule and the #log alias", async () => {

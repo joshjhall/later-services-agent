@@ -1,7 +1,6 @@
 import { Send } from "lucide-react";
 import { useState } from "react";
 import type { MessageDraft } from "@/agent/drafts";
-import type { Proposal } from "@/agent/rules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +13,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { CURRENT_USER, useStore } from "@/domain/store";
+import { type Answers, CURRENT_USER, useStore } from "@/domain/store";
 import { LaneBadge } from "./LaneBadge";
 
 /**
@@ -29,8 +28,8 @@ export function DraftSheet({
   onOpenChange,
 }: {
   draft: MessageDraft;
-  /** The proposal this draft resolves when sent, and as which option. */
-  answers?: { proposal: Proposal; optionId: string };
+  /** The proposal this draft resolves when sent, as which option, and what was decided. */
+  answers?: Answers;
   open: boolean;
   onOpenChange: (o: boolean) => void;
 }) {
