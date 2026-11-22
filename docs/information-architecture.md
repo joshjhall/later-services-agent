@@ -76,7 +76,7 @@ A campaign screen has three working areas, matching the phases in the brief: **P
 | **Make** | Are the right assets getting made? | Briefs, nudges, drafts, approvals, scheduling | Run time, part 1 |
 | **Run** | Is it working, and how do we push what works? | **Measure:** KPIs against targets, pacing against forecast, per-asset results, comparable campaigns. **Amplify:** boosts from the reserve, small tests, next-wave changes | Run time, part 2 |
 
-The campaign's state picks the default tab: Plan until the lineup is approved, Make until the first post is live, Run after that. All three are always one click away. *Open question: whether Amplify belongs to the account manager or to Paid Media.*
+The campaign's state picks the default tab: Plan until the lineup is approved, Make until the first post is live, Run after that. All three are always one click away. A card can belong to a tab the campaign doesn't open on, for example a quiet creator (Make) on a campaign already in Run. The default tab stays tied to the phase, so the screen is predictable; the tab shows a count of open cards, and every card links its campaign name to the tab that holds it. *Open question: whether Amplify belongs to the account manager or to Paid Media.*
 
 ## 5. The throughline: always know where you are and what's next
 

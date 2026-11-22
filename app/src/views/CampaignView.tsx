@@ -1,5 +1,5 @@
 import { goalDrafts, lineupDrafts } from "@/agent/drafts";
-import { PROPOSAL_PHASE } from "@/agent/needs";
+import { PHASE_TAB, proposalTab } from "@/agent/needs";
 import { daysBetween, fmt } from "@/agent/rules";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -23,10 +23,6 @@ import { CAMPAIGN_TABS, type CampaignTab, href } from "@/router";
 import { PageHeader } from "./PageHeader";
 
 const TAB_PHASE: Record<CampaignTab, CampaignPhase> = { plan: "Plan", make: "Make", run: "Run" };
-const PHASE_TAB = { Plan: "plan", Make: "make", Run: "run" } as const satisfies Record<
-  CampaignPhase,
-  CampaignTab
->;
 
 /**
  * Campaign detail in three tabs, Plan, Make, and Run (information-architecture.md §4),
@@ -48,7 +44,7 @@ export function CampaignView({ id, tab }: { id: string; tab?: CampaignTab }) {
     }));
 
   const mine = proposals.filter((p) => p.campaignId === id);
-  const inTab = (t: CampaignTab) => mine.filter((p) => PROPOSAL_PHASE[p.kind] === TAB_PHASE[t]);
+  const inTab = (t: CampaignTab) => mine.filter((p) => proposalTab(p) === t);
   const openIn = (t: CampaignTab) => inTab(t).filter((p) => !resolved[p.id]).length;
   const cards = (t: CampaignTab) => inTab(t).map((p) => <ProposalCard key={p.id} proposal={p} />);
 

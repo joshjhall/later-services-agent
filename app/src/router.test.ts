@@ -71,3 +71,17 @@ test("goal and lineup deep links are unchanged", () => {
     id: "cmp-holiday-gifting",
   });
 });
+
+test("a campaign tab keeps the campaign trail, with the campaign as the current page", () => {
+  const trail = crumbs({ view: "campaign", id: "cmp-trail-season", tab: "run" }, world);
+  expect(trail).toEqual(crumbs({ view: "campaign", id: "cmp-trail-season" }, world));
+  expect(trail.at(-1)).toEqual({ label: "Trail season" });
+});
+
+test("extra segments on goal and lineup links are ignored", () => {
+  expect(parse("#goal/cmp-spring-serum/extra")).toEqual({ view: "goal", id: "cmp-spring-serum" });
+  expect(parse("#lineup/cmp-holiday-gifting/x/y")).toEqual({
+    view: "lineup",
+    id: "cmp-holiday-gifting",
+  });
+});

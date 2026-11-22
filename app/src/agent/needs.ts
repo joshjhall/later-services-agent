@@ -1,4 +1,5 @@
 import type { CampaignPhase } from "@/domain/types";
+import type { CampaignTab } from "@/router";
 import type { Proposal } from "./rules";
 
 /**
@@ -70,3 +71,16 @@ export const PROPOSAL_PHASE: Record<Proposal["kind"], CampaignPhase> = {
   "boost-post": "Run",
   "below-forecast": "Run",
 };
+
+/** The campaign tab that shows each phase. */
+export const PHASE_TAB = { Plan: "plan", Make: "make", Run: "run" } as const satisfies Record<
+  CampaignPhase,
+  CampaignTab
+>;
+
+/**
+ * The tab a card lives on. A card links here, so an urgent card from another
+ * phase is one click away without changing which tab a campaign opens on.
+ */
+export const proposalTab = (p: Pick<Proposal, "kind">): CampaignTab =>
+  PHASE_TAB[PROPOSAL_PHASE[p.kind]];
