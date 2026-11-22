@@ -123,9 +123,14 @@ test("expand brings the same conversation back full screen, about the page you'r
 test("closing the docked conversation gives the rail back to its widgets", () => {
   renderApp();
   fireEvent.click(within(ask()).getByRole("button", { name: /Dock/ }));
+  fireEvent.change(within(rail()).getByRole("textbox", { name: "Message" }), {
+    target: { value: "half-typed" },
+  });
   fireEvent.click(within(rail()).getByRole("button", { name: "Close" }));
   expect(screen.queryByRole("region", { name: "Conversation" })).toBeNull();
   expect(rail().querySelector('[data-widget="compare"]')).not.toBeNull();
+  // The closed conversation's draft doesn't carry into the next one.
+  expect(within(ask()).getByRole("textbox", { name: "Message" })).toHaveValue("");
 });
 
 test("an answer can be a widget from the rail library, full screen and docked", () => {

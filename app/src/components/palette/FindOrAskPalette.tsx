@@ -98,7 +98,7 @@ export function FindOrAskPalette({ route }: { route: Route }) {
           </CommandList>
         </Command>
       </CommandDialog>
-      {/* Mounted only while open, so each conversation starts with an empty draft. */}
+      {/* Full screen only while undocked; docked, AppShell shows it in the rail. The draft resets in start() and close() (chat.tsx). */}
       {chat && !docked && (
         <Conversation
           open

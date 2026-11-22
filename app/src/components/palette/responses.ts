@@ -45,6 +45,20 @@ export const REPLIES: ScriptedReply[] = [
       "Ana's draft was due Nov 17 and she hasn't replied since Nov 11, after two reminders. Her go-live is Nov 24, so there are six days left. Ben is the approved backup. In Today I've proposed a last nudge through her manager, with a swap to Ben if she doesn't answer by tomorrow.",
   },
   {
+    // Answered with a widget from the rail library, not a paragraph (principles §8).
+    // Before the creator and compare entries, so "similar campaigns" stays about
+    // the campaign when it names Mei, Ben, or others (tested). Ana still wins: her story first.
+    match: /\bsimilar campaigns?\b/i,
+    where: onOneCampaign,
+    reply: "Here's this campaign against similar ones. It's the same compare widget as the rail.",
+    widget: "compare",
+  },
+  {
+    // Nothing single to compare from here; the same pointer as the compare widget's empty state.
+    match: /\bsimilar campaigns?\b/i,
+    reply: "Which campaign? Open one and ask again, and I'll compare it with similar campaigns.",
+  },
+  {
     // A compare question about another creator: only Mei has a live post, so say so
     // rather than answer about her. Drop a name once that creator has a live post.
     // Keep this before the Mei entry: a question naming both declines (tested).
@@ -55,19 +69,6 @@ export const REPLIES: ScriptedReply[] = [
     // Naming Mei says whose post it means, so answer from anywhere.
     match: comparesCreator("mei"),
     reply: MEI_COMPARE,
-  },
-  {
-    // Answered with a widget from the rail library, not a paragraph (principles §8).
-    // Before the broad compare entries, so "similar campaigns" never gets Mei's Reel.
-    match: /\bsimilar campaigns?\b/i,
-    where: onOneCampaign,
-    reply: "Here's this campaign against similar ones. It's the same compare widget as the rail.",
-    widget: "compare",
-  },
-  {
-    // Nothing single to compare from here; the same pointer as the compare widget's empty state.
-    match: /\bsimilar campaigns?\b/i,
-    reply: "Which campaign? Open one and ask again, and I'll compare it with similar campaigns.",
   },
   // Entries that name their subject come first, so "How does Ana compare with Ben?"
   // gets Ana wherever it's asked. The broad risk summary comes last.

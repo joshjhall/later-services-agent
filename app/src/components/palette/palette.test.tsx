@@ -126,6 +126,13 @@ test("asking about similar campaigns answers with the compare widget, only on on
   for (const route of [today, { view: "account", id: "acc-brightside" }] as Route[]) {
     expect(answerTo(SIMILAR, route)).toEqual({ text: expect.stringMatching(/^Which campaign\?/) });
   }
+  // Naming a creator doesn't turn a campaign question into a post question.
+  for (const q of [
+    "How does Mei's campaign compare with similar campaigns?",
+    "Compare Ben with similar campaigns",
+  ]) {
+    expect(answerTo(q, citrus).widget, q).toBe("compare");
+  }
   // Post questions still get Mei's Reel, as text.
   expect(answerTo(COMPARE_Q, citrus)).toEqual({ text: replyTo(COMPARE_Q, citrus) });
   expect(answerTo(COMPARE_Q, citrus).text).toMatch(/early performance/);
