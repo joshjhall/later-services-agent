@@ -345,3 +345,57 @@ test("store: an option it can't match is recorded as permanent, never undoable",
   act(() => result.current.resolve(p, "no-such-option"));
   expect(result.current.activity[0]).toMatchObject({ actor: "Maya", effect: "external" });
 });
+
+test("today: proposals sit under need headings, and on-track campaigns collapse to a count", () => {
+  renderApp();
+  const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+  expect(headings[0]).toMatch(/^Needs you now/);
+  const order = [
+    "Needs you now",
+    "Ready to move",
+    "Waiting on someone",
+    "Things to do",
+    "On track",
+  ];
+  const seen = order.filter((l) => headings.some((h) => h?.startsWith(l)));
+  expect(headings.map((h) => order.find((l) => h?.startsWith(l)))).toEqual(seen);
+  const now = screen.getByRole("region", { name: /Needs you now/ });
+  expect(within(now).getAllByText(/is quiet/)[0]).toHaveTextContent("Ana Reyes is quiet");
+  const onTrack = screen.getByRole("button", { name: /On track · \d+ campaigns?/ });
+  expect(onTrack).toHaveAttribute("aria-expanded", "false");
+});
+
+test("campaign: tabs default to the campaign's current phase", () => {
+  renderApp();
+  const expected = {
+    "cmp-holiday-gifting": "Plan",
+    "cmp-spring-serum": "Plan",
+    "cmp-trail-season": "Run",
+    "cmp-sparkling-launch": "Make",
+  } as const;
+  for (const [id, phase] of Object.entries(expected)) {
+    go(`#campaign/${id}`);
+    expect(screen.getByRole("tab", { selected: true })).toHaveTextContent(phase);
+  }
+});
+
+test("campaign: choosing a tab deep-links it, and goal and lineup links still land", () => {
+  renderApp();
+  go("#campaign/cmp-holiday-gifting");
+  const plan = screen.getByRole("tabpanel");
+  expect(within(plan).getByRole("link", { name: /Lineup/ })).toHaveAttribute(
+    "href",
+    "#lineup/cmp-holiday-gifting",
+  );
+  fireEvent.mouseDown(screen.getByRole("tab", { name: /Make/ }));
+  expect(location.hash).toBe("#campaign/cmp-holiday-gifting/make");
+  go("#campaign/cmp-holiday-gifting/make");
+  expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Make");
+  expect(screen.getByText("Creators and deliverables")).toBeInTheDocument();
+  go("#lineup/cmp-holiday-gifting");
+  expect(
+    screen.getByRole("heading", { level: 1, name: /Lineup: Holiday gifting/ }),
+  ).toBeInTheDocument();
+  go("#goal/cmp-spring-serum");
+  expect(screen.getByRole("heading", { level: 1, name: /Goal: Spring serum/ })).toBeInTheDocument();
+});
