@@ -264,6 +264,17 @@ test("draft: a double-click on Send records one entry", () => {
   expect(screen.getAllByText(/Sent fix request to Rio Castillo/)).toHaveLength(1);
 });
 
+test("draft: what's recorded as sent is the edited text, not the agent's draft", async () => {
+  const { renderHook } = await import("@testing-library/react");
+  const { StoreProvider, useStore } = await import("@/domain/store");
+  const { messageDrafts } = await import("@/agent/drafts");
+  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
+  const draft = messageDrafts["fix:d-rio-1"];
+  act(() => result.current.send({ ...draft, subject: "Edited", body: "Edited body" }));
+  expect(result.current.sent[draft.id]).toMatchObject({ subject: "Edited", body: "Edited body" });
+  expect(result.current.activity[0]).toMatchObject({ actor: "Maya", effect: "external" });
+});
+
 test("undo rule and the #log alias", async () => {
   const { isUndoable } = await import("@/domain/types");
   const { parse } = await import("@/router");

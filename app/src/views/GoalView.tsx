@@ -1,5 +1,6 @@
 import { CheckCircle2, FileText, MessageSquareText } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { goalDrafts, messageDrafts } from "@/agent/drafts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -183,7 +184,10 @@ export function GoalView({ id }: { id: string }) {
               <Button
                 onClick={() => {
                   if (clientEmail) setDrafting(true);
-                  else if (proposal) resolve(proposal, "open");
+                  else if (proposal) {
+                    resolve(proposal, "open");
+                    toast("Goal marked ready. No client email draft yet for this campaign.");
+                  }
                 }}
               >
                 Confirm and draft client email

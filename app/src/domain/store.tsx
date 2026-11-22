@@ -19,8 +19,8 @@ interface Store {
   /** Keyed by proposal id, so resolving twice is a no-op (framing §6). */
   resolved: Record<string, Resolution>;
   resolve: (p: Proposal, optionId: string) => void;
-  /** Draft ids already sent. Sending twice is a no-op. */
-  sent: Record<string, true>;
+  /** What actually went out, keyed by draft id (the reviewed text, not the agent's). Sending twice is a no-op. */
+  sent: Record<string, MessageDraft>;
   /**
    * Send a reviewed draft: one permanent entry from Maya's team. If the draft
    * answers a proposal, that proposal resolves as `optionId` in the same step.
@@ -34,7 +34,7 @@ const Ctx = createContext<Store | null>(null);
 /** In-memory demo state. Resolutions reset on reload, by design. */
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [resolved, setResolved] = useState<Record<string, Resolution>>({});
-  const [sent, setSent] = useState<Record<string, true>>({});
+  const [sent, setSent] = useState<Record<string, MessageDraft>>({});
   // Mirrors `sent` synchronously, so a double-click within one render still sends once.
   const sentNow = useRef(new Set<string>());
   const [activity, setActivity] = useState(fx.activity);
@@ -68,7 +68,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       send: (draft, answers) => {
         if (sentNow.current.has(draft.id)) return; // idempotent
         sentNow.current.add(draft.id);
-        setSent((s) => ({ ...s, [draft.id]: true }));
+        setSent((s) => ({ ...s, [draft.id]: draft }));
         if (answers && !resolved[answers.proposal.id]) {
           const { proposal, optionId } = answers;
           const label = proposal.options.find((o) => o.id === optionId)?.label ?? optionId;
