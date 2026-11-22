@@ -268,6 +268,18 @@ describe("deriveProposals", () => {
     expect(requests[1].assumption).toMatch(/mostly US from the TikTok profile/);
   });
 
+  test("information request: the email names the client when accounts are known", async () => {
+    const { accounts } = await import("@/domain/fixtures");
+    const body = (w: typeof world & { accounts?: typeof accounts }) =>
+      deriveProposals(w)
+        .find((p) => p.id === "info:cmp-holiday-gifting:cr-ana")
+        ?.options.find((o) => o.id === "draft-email")?.draft?.body;
+    expect(body({ ...world, accounts })).toMatch(
+      /the Brightside Beverages Holiday gifting campaign/,
+    );
+    expect(body(world)).toMatch(/proposing Ana for the Holiday gifting campaign\./);
+  });
+
   test("draft review: not raised without a drafted fix request behind it", () => {
     const noFix = deliverables.map((d) =>
       d.id === "d-rio-1" ? { ...d, id: "d-rio-undrafted" } : d,
