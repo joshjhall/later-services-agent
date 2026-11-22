@@ -184,6 +184,17 @@ test("activity: spending from the reserve is recorded as permanent", () => {
   expect(spend).toHaveTextContent("Permanent: Spent");
 });
 
+test("activity: a decision that stays inside the tool can be undone", async () => {
+  renderApp();
+  const card = screen.getByText(/post from reserve/).closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Not now" }));
+  go("#activity");
+  const decision = entry(/Chose "Not now"/);
+  expect(within(decision).getByText("Maya")).toBeInTheDocument();
+  fireEvent.click(within(decision).getByRole("button", { name: /Undo/ }));
+  expect(await screen.findByText("Undo is simulated in the prototype.")).toBeInTheDocument();
+});
+
 test("today: the handled count is the agent's own work, not people's decisions", () => {
   renderApp();
   const handled = /The agent handled 2 things on its own today/;
