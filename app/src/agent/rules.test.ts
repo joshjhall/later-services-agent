@@ -300,6 +300,20 @@ describe("deriveProposals", () => {
     expect(draft?.body).toMatch(/Go-live stays Nov 15\./);
   });
 
+  test("draft review: still offers a fix request when the campaign is missing", () => {
+    const orphan = campaigns.filter((c) => c.id !== "cmp-sparkling-launch");
+    const submitted = deliverables.map((d) =>
+      d.id === "d-mei-1" ? { ...d, stage: "submitted" as const } : d,
+    );
+    const review = deriveProposals({ ...world, campaigns: orphan, deliverables: submitted }).find(
+      (p) => p.id === "review:d-mei-1",
+    );
+    expect(review?.options[0].draft).toMatchObject({
+      campaignId: "cmp-sparkling-launch",
+      target: "Mei Tanaka · IG Reel + Story ×2",
+    });
+  });
+
   test("draft review: a hand-written fix request wins over the generated one", async () => {
     const { messageDrafts } = await import("./drafts");
     const review = deriveProposals(world).find((p) => p.id === "review:d-rio-1");

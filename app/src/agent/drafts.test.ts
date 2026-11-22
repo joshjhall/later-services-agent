@@ -101,6 +101,15 @@ describe("fix request draft", () => {
     // Read as a calendar date: the first of the month never slips to the previous day.
     expect(d.body).toMatch(/Go-live stays Dec 1\./);
   });
+
+  test("a go-live with a time still reads as its calendar date", () => {
+    const d = fixRequestDraft({
+      deliverable: { id: "d-time", kind: "Reel", goLive: "2026-12-01T23:30:00-08:00" },
+      creator: { name: "Mei Tanaka" },
+      campaign,
+    });
+    expect(d.body).toMatch(/Go-live stays Dec 1\./);
+  });
 });
 
 test("every message draft and seeded activity entry names a real campaign, so the rail scopes by id", () => {

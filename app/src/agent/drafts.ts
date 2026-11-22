@@ -293,9 +293,9 @@ export const messageDrafts: Record<string, MessageDraft> = {
   },
 };
 
-/** "Nov 25" from "2026-11-25", read as a calendar date so no time zone shifts it. */
+/** "Nov 25" from "2026-11-25" (or a full ISO datetime), read as a calendar date so no time zone shifts it. */
 const shortDate = (iso: string) =>
-  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", {
+  new Date(`${iso.slice(0, 10)}T12:00:00Z`).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     timeZone: "UTC",
