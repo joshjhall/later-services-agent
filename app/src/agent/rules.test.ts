@@ -1,4 +1,5 @@
 import { campaigns, creators, deliverables, partnerships } from "@/domain/fixtures";
+import type { Effect } from "@/domain/types";
 import { AGENT_POLICY, capEvidence, deriveProposals } from "./rules";
 
 const world = { campaigns, creators, partnerships, deliverables };
@@ -139,5 +140,42 @@ describe("deriveProposals", () => {
       .filter((p) => p.kind === "info-request")
       .map((p) => p.id);
     expect(ids).toEqual(["info:cmp-holiday-gifting:cr-ana"]);
+  });
+});
+
+/**
+ * What each option touches, by proposal kind. Effect decides undo in the Activity
+ * record, so a change here (e.g. a boost turning `internal`) must be deliberate.
+ */
+const EFFECTS: Record<string, Effect> = {
+  "quiet-creator:call": "external",
+  "quiet-creator:extend": "external",
+  "quiet-creator:swap": "external",
+  "review-draft:send-fix": "external",
+  "review-draft:corrections": "external",
+  "review-draft:approve": "external",
+  "boost-post:boost": "spend",
+  "boost-post:smaller": "spend",
+  "boost-post:skip": "internal",
+  "state-goal:open": "internal",
+  "approve-lineup:open": "internal",
+  "below-forecast:plan": "internal",
+  "below-forecast:note": "internal",
+  "info-request:draft-email": "external",
+  "info-request:confirmed": "internal",
+};
+
+describe("option effects", () => {
+  const options = deriveProposals(world).flatMap((p) =>
+    p.options.map((o) => ({ key: `${p.kind}:${o.id}`, effect: o.effect })),
+  );
+
+  test.each(options)("$key is $effect", ({ key, effect }) => {
+    expect(EFFECTS[key]).toBe(effect);
+  });
+
+  test("every option in the table is still offered", () => {
+    const offered = new Set(options.map((o) => o.key));
+    expect(Object.keys(EFFECTS).filter((k) => !offered.has(k))).toEqual([]);
   });
 });
