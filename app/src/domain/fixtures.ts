@@ -274,8 +274,8 @@ export const activity: ActivityEntry[] = [
     id: "act-2",
     at: "2026-11-18",
     actor: "agent",
-    action: "Verified live post: link, code, #ad disclosure",
-    target: "Mei Tanaka · Sparkling Citrus",
+    action: "Logged draft receipt; started brief-compliance check",
+    target: "Rio Castillo · Sparkling Citrus",
     effect: "internal",
   },
   {
@@ -297,19 +297,20 @@ export const activity: ActivityEntry[] = [
   },
   {
     id: "act-5",
-    at: "2026-11-17",
+    at: "2026-11-15",
     actor: "agent",
-    action: "Logged draft receipt; started brief-compliance check",
-    target: "Rio Castillo · Sparkling Citrus",
+    // Mei's post is live, not yet verified; verification follows the 72h check.
+    action: "Started live-post check: link, code, #ad disclosure",
+    target: "Mei Tanaka · Sparkling Citrus",
     effect: "internal",
   },
   {
     id: "act-6",
-    at: "2026-11-16",
+    at: "2026-11-09",
     actor: "Maya",
-    // An internal gate: nothing reaches the client until Maya presents it, so it can be undone.
-    action: "Approved lineup · internal gate",
-    target: "Trail season",
-    effect: "internal",
+    // The approval reached Mei, so it is permanent; a correction would be a new entry.
+    action: "Approved Mei's draft",
+    target: "Mei Tanaka · Sparkling Citrus",
+    effect: "external",
   },
 ];

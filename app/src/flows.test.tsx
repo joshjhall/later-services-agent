@@ -128,11 +128,27 @@ test("activity: one record shows system, agent, and named people as explicit act
   expect(within(entry(/Draft reminder sent to Ana/)).getByText("system")).toBeInTheDocument();
   expect(within(entry(/Pulled 72h metrics/)).getByText("agent")).toBeInTheDocument();
   expect(within(entry(/Called Ana/)).getByText("Jordan")).toBeInTheDocument();
-  expect(within(entry(/Approved lineup/)).getByText("Maya")).toBeInTheDocument();
-  // Approving a lineup is an internal gate, the same whether seeded or done live.
-  expect(
-    within(entry(/Approved lineup/)).getByRole("button", { name: /Undo/ }),
-  ).toBeInTheDocument();
+  const approval = entry(/Approved Mei's draft/);
+  expect(within(approval).getByText("Maya")).toBeInTheDocument();
+  // The approval reached the creator, so it is permanent.
+  expect(within(approval).queryByRole("button", { name: /Undo/ })).toBeNull();
+});
+
+test("activity: the seeded record agrees with the campaign data it describes", async () => {
+  const fx = await import("@/domain/fixtures");
+  const names = [...fx.creators, ...fx.campaigns].map((x) => x.name);
+  for (const e of fx.activity) {
+    // Each target names a real creator or campaign, and nothing is dated in the future.
+    expect(names.some((n) => e.target.includes(n.split(" ")[0]))).toBe(true);
+    expect(e.at <= fx.DEMO_TODAY).toBe(true);
+  }
+  // Ana is quiet: no one has reached her since her last contact.
+  const ana = fx.deliverables.find((d) => d.id === "d-ana-1");
+  const anaContact = fx.activity.filter(
+    (e) => e.target.startsWith("Ana") && /draft moved|replied|confirmed/i.test(e.action),
+  );
+  expect(ana?.stage).toBe("drafting");
+  expect(anaContact).toEqual([]);
 });
 
 test("activity: internal actions can be undone; anything sent is permanent", () => {
