@@ -70,6 +70,20 @@ test("docking moves the conversation into the rail, in place of the widgets", ()
   expect(docked.lastElementChild?.contains(box)).toBe(true);
 });
 
+test("an unsent draft survives Dock and Expand", () => {
+  renderApp();
+  const chat = ask();
+  fireEvent.change(within(chat).getByRole("textbox", { name: "Message" }), {
+    target: { value: "half-typed" },
+  });
+  fireEvent.click(within(chat).getByRole("button", { name: /Dock/ }));
+  expect(within(rail()).getByRole("textbox", { name: "Message" })).toHaveValue("half-typed");
+  fireEvent.click(within(rail()).getByRole("button", { name: "Expand" }));
+  expect(within(fullScreen() as HTMLElement).getByRole("textbox", { name: "Message" })).toHaveValue(
+    "half-typed",
+  );
+});
+
 test("a docked conversation survives navigation and follows the page", () => {
   renderApp();
   fireEvent.click(within(ask("Why is Ana late?")).getByRole("button", { name: /Dock/ }));

@@ -1,12 +1,12 @@
 import { Maximize2Icon, PanelRightIcon, SendIcon, XIcon } from "lucide-react";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef } from "react";
 import { WidgetCard } from "@/components/rail/widgets";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { InputGroup, InputGroupAddon, InputGroupTextarea } from "@/components/ui/input-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import type { Message } from "./chat";
+import { type Message, useConversation } from "./chat";
 
 export type { Message } from "./chat";
 export { exchange } from "./chat";
@@ -25,7 +25,8 @@ function Thread({
   /** Rail width: tighter padding, no centered column. */
   compact?: boolean;
 }) {
-  const [draft, setDraft] = useState("");
+  // The draft lives with the conversation, so text typed in one frame is still there after Dock or Expand.
+  const { draft, setDraft } = useConversation();
   // Keep the latest reply in view once the thread is taller than its frame.
   const end = useRef<HTMLDivElement>(null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on each new message

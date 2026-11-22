@@ -28,6 +28,9 @@ interface ConversationState {
   chat: Chat | null;
   /** Docked in the rail beside the work, rather than full screen. */
   docked: boolean;
+  /** The unsent message, kept here so it survives Dock and Expand. */
+  draft: string;
+  setDraft: (draft: string) => void;
   /** Start a new conversation, full screen, replacing any current one. */
   start: (subject: Subject, question?: string) => void;
   /** Ask a follow-up about `route`: where it started when full screen, the page you're on when docked. */
@@ -47,14 +50,18 @@ const ConversationContext = createContext<ConversationState | null>(null);
 export function ConversationProvider({ children }: { children: ReactNode }) {
   const [chat, setChat] = useState<Chat | null>(null);
   const [docked, setDocked] = useState(false);
+  const [draft, setDraft] = useState("");
 
   const value = useMemo<ConversationState>(
     () => ({
       chat,
       docked,
+      draft,
+      setDraft,
       start: (subject, question) => {
         setChat({ ...subject, messages: question ? exchange(question, subject.route) : [] });
         setDocked(false);
+        setDraft("");
       },
       send: (text, route) =>
         setChat((c) => c && { ...c, messages: [...c.messages, ...exchange(text, route)] }),
@@ -66,9 +73,10 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       close: () => {
         setChat(null);
         setDocked(false);
+        setDraft("");
       },
     }),
-    [chat, docked],
+    [chat, docked, draft],
   );
 
   return <ConversationContext.Provider value={value}>{children}</ConversationContext.Provider>;
