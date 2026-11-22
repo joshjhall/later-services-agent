@@ -3,7 +3,7 @@
  * (flows §2) and the proposed lineup (flows §4). Deterministic stand-ins for
  * what an LLM would produce from the brief and the roster.
  */
-import type { Campaign, Creator, Objective } from "@/domain/types";
+import type { Campaign, Creator, Deliverable, Objective } from "@/domain/types";
 
 export interface GoalDraft {
   campaignId: string;
@@ -292,6 +292,51 @@ export const messageDrafts: Record<string, MessageDraft> = {
     ].join("\n"),
   },
 };
+
+/** "Nov 25" from "2026-11-25", read as a calendar date so no time zone shifts it. */
+const shortDate = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
+/**
+ * The fix request for a submitted draft that misses the on-screen disclosure
+ * check. A hand-written draft in `messageDrafts` (keyed `fix:<deliverable id>`)
+ * wins; otherwise one is built from the deliverable, so every review can send.
+ */
+export function fixRequestDraft({
+  deliverable: d,
+  creator: c,
+  campaign,
+}: {
+  deliverable: Pick<Deliverable, "id" | "kind" | "goLive">;
+  creator: Pick<Creator, "name">;
+  campaign: Pick<Campaign, "id" | "name">;
+}): MessageDraft {
+  const written = messageDrafts[`fix:${d.id}`];
+  if (written) return written;
+  const first = c.name.split(" ")[0];
+  return {
+    id: `fix:${d.id}`,
+    kind: "fix request",
+    to: c.name,
+    target: `${c.name} · ${campaign.name}`,
+    campaignId: campaign.id,
+    subject: `One fix before we approve your ${d.kind}`,
+    body: [
+      `Hi ${first},`,
+      "",
+      `Thanks for the draft. One change before we can approve it: the #ad disclosure needs to be on screen in the first 3 seconds, not only in the caption. Everything else meets the brief.`,
+      "",
+      `Could you send the updated version soon? Go-live stays ${shortDate(d.goLive)}.`,
+      "",
+      "Thanks,",
+      "Maya",
+    ].join("\n"),
+  };
+}
 
 /** The market a profile's audience line leads with, e.g. "US" from "US, 18–29, 68% women". */
 export const audienceMarket = (creator: Pick<Creator, "audience">): string =>

@@ -11,10 +11,10 @@ import type { Account, Campaign, Creator, Deliverable, Effect, Partnership } fro
 import {
   audienceMarket,
   lineupDrafts as defaultLineups,
+  fixRequestDraft,
   infoRequestDraft,
   type LineupDraft,
   type MessageDraft,
-  messageDrafts,
 } from "./drafts";
 
 export const AGENT_POLICY = {
@@ -214,9 +214,13 @@ export function deriveProposals(
       });
     }
 
-    // Only offer review once a fix request is drafted; otherwise "Send fix request" would log a send that never happened.
-    const fixDraft = messageDrafts[`fix:${d.id}`];
-    if (d.stage === "submitted" && fixDraft) {
+    if (d.stage === "submitted") {
+      const cmp = w.campaigns.find((x) => x.id === p.campaignId);
+      const fixDraft = fixRequestDraft({
+        deliverable: d,
+        creator: c,
+        campaign: cmp ?? { id: p.campaignId, name: d.kind },
+      });
       out.push({
         id: `review:${d.id}`,
         kind: "review-draft",

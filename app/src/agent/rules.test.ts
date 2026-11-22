@@ -280,14 +280,30 @@ describe("deriveProposals", () => {
     expect(body(world)).toMatch(/proposing Ana for the Holiday gifting campaign\./);
   });
 
-  test("draft review: not raised without a drafted fix request behind it", () => {
-    const noFix = deliverables.map((d) =>
-      d.id === "d-rio-1" ? { ...d, id: "d-rio-undrafted" } : d,
+  test("draft review: any submitted draft gets a review with a fix request to send", () => {
+    // Mei's live Reel, moved back to submitted: no hand-written fix request exists for it.
+    const submitted = deliverables.map((d) =>
+      d.id === "d-mei-1" ? { ...d, stage: "submitted" as const } : d,
     );
-    // Positive control: the same deliverable with its fix draft is reviewed.
-    expect(deriveProposals(world).map((p) => p.id)).toContain("review:d-rio-1");
-    const ids = deriveProposals({ ...world, deliverables: noFix }).map((p) => p.id);
-    expect(ids.some((id) => id.startsWith("review:"))).toBe(false);
+    const review = deriveProposals({ ...world, deliverables: submitted }).find(
+      (p) => p.id === "review:d-mei-1",
+    );
+    expect(review?.options.map((o) => o.id)).toEqual(["send-fix", "corrections", "approve"]);
+    const draft = review?.options[0].draft;
+    expect(draft).toMatchObject({
+      id: "fix:d-mei-1",
+      to: "Mei Tanaka",
+      target: "Mei Tanaka · Sparkling Citrus launch",
+      campaignId: review?.campaignId,
+    });
+    expect(draft?.body).toMatch(/^Hi Mei,/);
+    expect(draft?.body).toMatch(/Go-live stays Nov 15\./);
+  });
+
+  test("draft review: a hand-written fix request wins over the generated one", async () => {
+    const { messageDrafts } = await import("./drafts");
+    const review = deriveProposals(world).find((p) => p.id === "review:d-rio-1");
+    expect(review?.options[0].draft).toBe(messageDrafts["fix:d-rio-1"]);
   });
 });
 
