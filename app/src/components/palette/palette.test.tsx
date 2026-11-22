@@ -175,9 +175,16 @@ test("a blank message isn't sent, and Enter sends without Shift", () => {
   expect(sent()).toBe(0);
 
   fireEvent.change(message, { target: { value: "Why is Ana late?" } });
-  fireEvent.keyDown(message, { key: "Enter", shiftKey: true });
+  // Shift+Enter and the Enter that commits an IME word add a line, not a message.
+  expect(fireEvent.keyDown(message, { key: "Enter", shiftKey: true })).toBe(true);
+  expect(fireEvent.keyDown(message, { key: "Enter", keyCode: 229 })).toBe(true);
   expect(sent()).toBe(0);
-  fireEvent.keyDown(message, { key: "Enter" });
+
+  const scroll = vi.spyOn(Element.prototype, "scrollIntoView");
+  // A plain Enter sends, cancels the newline, and brings the reply into view.
+  expect(fireEvent.keyDown(message, { key: "Enter" })).toBe(false);
   expect(sent()).toBe(1);
   expect(message).toHaveValue("");
+  expect(scroll).toHaveBeenCalled();
+  scroll.mockRestore();
 });

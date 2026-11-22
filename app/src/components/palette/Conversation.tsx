@@ -84,7 +84,9 @@ export function Conversation({
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
+                // keyCode 229 covers the IME commit Enter, which Safari fires after composition ends.
+                const composing = e.nativeEvent.isComposing || e.keyCode === 229;
+                if (e.key !== "Enter" || e.shiftKey || composing) return;
                 e.preventDefault(); // send instead of adding a newline
                 send();
               }}
