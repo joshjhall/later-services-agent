@@ -25,6 +25,9 @@ export const AGENT_POLICY = {
   maxDailySpend: 1000,
 } as const;
 
+/** AGENT_POLICY's shape with plain numbers, so a test can pass a different policy. */
+export type AgentPolicy = { [K in keyof typeof AGENT_POLICY]: number };
+
 export type Lane = "auto" | "propose" | "human";
 export type Severity = "critical" | "warning" | "info";
 
@@ -73,31 +76,34 @@ const day = 86_400_000;
 export const daysBetween = (a: string, b: string) =>
   Math.round((Date.parse(b) - Date.parse(a)) / day);
 
-const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
+const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 
 /** "a", "a and b", "a, b, and c" (Oxford comma). */
 const list = (xs: string[]) =>
   xs.length < 3 ? xs.join(" and ") : `${xs.slice(0, -1).join(", ")}, and ${xs.at(-1)}`;
 
 /**
- * The "Agent cap" evidence row for a spend proposal: the caps, then which options fit under them.
- * Display only: the cap does not yet change an option's lane. No options reads as above the cap.
+ * The "Agent cap" evidence row for a boost: the daily cap, then which amounts fit under it.
+ * Each amount is compared as if spent in one day, and the row says so: the fixtures carry no
+ * boost duration, so a daily rate would be invented. The per-test cap is left out because a
+ * boost is not a test. Display only: the cap does not yet change an option's lane.
+ * No amounts reads as above the cap.
  */
 export function capEvidence(
-  options: number[],
-  policy: { maxTestSpend: number; maxDailySpend: number } = AGENT_POLICY,
+  amounts: number[],
+  policy: Pick<AgentPolicy, "maxDailySpend"> = AGENT_POLICY,
 ): Evidence {
-  const { maxTestSpend, maxDailySpend } = policy;
-  const within = options.filter((n) => n <= maxDailySpend);
+  const { maxDailySpend } = policy;
+  const within = amounts.filter((n) => n <= maxDailySpend);
   const verdict =
-    options.length === 0 || within.length === 0
+    amounts.length === 0 || within.length === 0
       ? "above it, so it needs you"
-      : within.length === options.length
+      : within.length === amounts.length
         ? "within it"
         : `${list(within.map(usd))} ${within.length === 1 ? "is" : "are"} within it; the rest needs you`;
   return {
     label: "Agent cap",
-    value: `${usd(maxTestSpend)} per test, ${usd(maxDailySpend)}/day · ${verdict}`,
+    value: `${usd(maxDailySpend)}/day, if spent in one day · ${verdict}`,
     tone: "neutral",
   };
 }
@@ -113,6 +119,7 @@ export function deriveProposals(
   w: World,
   today = DEMO_TODAY,
   lineups: Record<string, LineupDraft> = defaultLineups,
+  policy: AgentPolicy = AGENT_POLICY,
 ): Proposal[] {
   const creator = (id: string) => w.creators.find((c) => c.id === id);
   const partnership = (id: string) => w.partnerships.find((p) => p.id === id);
@@ -129,9 +136,9 @@ export function deriveProposals(
     // Hard moment: creator quiet, draft late or close, go-live near.
     if (
       d.stage === "drafting" &&
-      quietFor >= AGENT_POLICY.quietAfterDays &&
-      d.remindersSent >= AGENT_POLICY.autoReminders &&
-      toGoLive <= AGENT_POLICY.escalateWithinDays
+      quietFor >= policy.quietAfterDays &&
+      d.remindersSent >= policy.autoReminders &&
+      toGoLive <= policy.escalateWithinDays
     ) {
       const backup = w.partnerships.find(
         (b) => b.campaignId === p.campaignId && b.status === "backup",
@@ -226,7 +233,11 @@ export function deriveProposals(
     }
 
     if (d.stage === "live" && p.whitelisting) {
-      const spend = 8000;
+      // One list drives the buttons and the cap row, so a re-price updates both.
+      const boosts = [
+        { id: "boost", amount: 8000, primary: true },
+        { id: "smaller", amount: 4000 },
+      ];
       out.push({
         id: `boost:${d.id}`,
         kind: "boost-post",
@@ -237,18 +248,26 @@ export function deriveProposals(
         evidence: [
           { label: "Engagement vs. median", value: "2.3×", tone: "good" },
           { label: "Whitelisting", value: `Yes, ${p.usageRightsDays} days`, tone: "good" },
-          { label: "Proposed spend", value: `${usd(spend)} of $36,000 reserve`, tone: "neutral" },
-          capEvidence([spend, spend / 2]),
+          {
+            label: "Proposed spend",
+            value: `${usd(boosts[0].amount)} of $36,000 reserve`,
+            tone: "neutral",
+          },
+          capEvidence(
+            boosts.map((b) => b.amount),
+            policy,
+          ),
         ],
         options: [
-          {
-            id: "boost",
-            label: `Boost ${usd(spend)}`,
-            primary: true,
-            lane: "propose",
-            effect: "spend",
-          },
-          { id: "smaller", label: `Boost ${usd(spend / 2)}`, lane: "propose", effect: "spend" },
+          ...boosts.map(
+            (b): Option => ({
+              id: b.id,
+              label: `Boost ${usd(b.amount)}`,
+              primary: b.primary,
+              lane: "propose",
+              effect: "spend",
+            }),
+          ),
           { id: "skip", label: "Not now", lane: "human", effect: "internal" },
         ],
         confidence: "medium",
@@ -305,7 +324,7 @@ export function deriveProposals(
     );
     for (const k of cmp.kpis) {
       const expected = k.target * elapsed;
-      if (elapsed > 0.25 && k.actual < expected * AGENT_POLICY.belowForecastRatio) {
+      if (elapsed > 0.25 && k.actual < expected * policy.belowForecastRatio) {
         out.push({
           id: `forecast:${cmp.id}:${k.metric}`,
           kind: "below-forecast",

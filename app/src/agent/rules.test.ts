@@ -36,35 +36,65 @@ describe("deriveProposals", () => {
     ).toBe(false);
   });
 
-  test("boost card shows the agent's spending cap from AGENT_POLICY", () => {
+  test("boost card shows the agent's daily cap, stating the one-day assumption", () => {
     const boost = proposals.find((p) => p.kind === "boost-post");
     expect(boost?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
-      "$200 per test, $1,000/day · above it, so it needs you",
+      "$1,000/day, if spent in one day · above it, so it needs you",
     );
     // Display only: the cap does not move either boost option out of the CM's hands.
     expect(boost?.options.map((o) => o.lane)).toEqual(["propose", "propose", "human"]);
     expect(boost?.options.map((o) => o.label)).toEqual(["Boost $8,000", "Boost $4,000", "Not now"]);
   });
 
+  test("boost options stay with the CM even when the cap covers them (cap not yet enforced)", () => {
+    const boost = deriveProposals(world, undefined, undefined, {
+      ...AGENT_POLICY,
+      maxDailySpend: 10_000,
+    }).find((p) => p.kind === "boost-post");
+    expect(boost?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
+      "$10,000/day, if spent in one day · within it",
+    );
+    expect(boost?.options.map((o) => o.lane)).toEqual(["propose", "propose", "human"]);
+  });
+
+  test("the cap row and the boost buttons name the same amounts", () => {
+    const boost = deriveProposals(world, undefined, undefined, {
+      ...AGENT_POLICY,
+      maxDailySpend: 5_000,
+    }).find((p) => p.kind === "boost-post");
+    const cap = boost?.evidence.find((e) => e.label === "Agent cap")?.value ?? "";
+    const smaller = boost?.options.find((o) => o.id === "smaller")?.label.replace("Boost ", "");
+    expect(cap).toBe("$5,000/day, if spent in one day · $4,000 is within it; the rest needs you");
+    expect(cap).toContain(`${smaller} is within it`);
+  });
+
   test("cap evidence: above, partly within, at, within, and no options, in plain English", () => {
-    const policy = (maxDailySpend: number) => ({ ...AGENT_POLICY, maxDailySpend });
+    const policy = (maxDailySpend: number) => ({ maxDailySpend });
     expect(capEvidence([8000, 4000], policy(1000)).value).toBe(
-      "$200 per test, $1,000/day · above it, so it needs you",
+      "$1,000/day, if spent in one day · above it, so it needs you",
     );
     expect(capEvidence([8000, 4000], policy(5000)).value).toBe(
-      "$200 per test, $5,000/day · $4,000 is within it; the rest needs you",
+      "$5,000/day, if spent in one day · $4,000 is within it; the rest needs you",
     );
-    expect(capEvidence([8000], policy(8000)).value).toBe("$200 per test, $8,000/day · within it");
+    expect(capEvidence([8000], policy(8000)).value).toBe(
+      "$8,000/day, if spent in one day · within it",
+    );
     expect(capEvidence([8000, 4000], policy(10000)).value).toBe(
-      "$200 per test, $10,000/day · within it",
+      "$10,000/day, if spent in one day · within it",
     );
     expect(capEvidence([8000, 3000, 2000], policy(4000)).value).toBe(
-      "$200 per test, $4,000/day · $3,000 and $2,000 are within it; the rest needs you",
+      "$4,000/day, if spent in one day · $3,000 and $2,000 are within it; the rest needs you",
     );
     expect(capEvidence([8000, 3000, 2000, 1000], policy(4000)).value).toMatch(
       /· \$3,000, \$2,000, and \$1,000 are within it; the rest needs you$/,
     );
     expect(capEvidence([], policy(10000)).value).toMatch(/above it, so it needs you$/);
+  });
+
+  test("cap evidence rounds odd amounts to whole dollars", () => {
+    expect(capEvidence([8001, 4000.5], { maxDailySpend: 5000 }).value).toBe(
+      "$5,000/day, if spent in one day · $4,001 is within it; the rest needs you",
+    );
   });
 
   test("covers the three demo moments: goal, lineup, hard moment", () => {
