@@ -496,14 +496,15 @@ Full table: framing §5. Each action starts on the right and moves left as it pr
 <li>Claude Code</li>
 <li>Wispr Flow, for dictation</li>
 <li>Kagi, for search</li>
-<li>this repo's tooling, including my own containers tooling</li>
+<li>joshjhall/containers: my devcontainer tooling</li>
+<li>joshjhall/librarian: my agent skills and orchestration</li>
 </ul></div>
 <div class="card"><b>Where AI helped</b>
 <ul class="muted mt-2 tight">
 <li>organizing my thinking</li>
 <li>a first pass at visual polish</li>
 <li>the deck, the docs, and summaries of the research and my reasoning</li>
-<li>building the prototype</li>
+<li>building the prototype, from a filed backlog worked in parallel</li>
 </ul></div>
 <div class="card"><b>What stayed mine</b>
 <ul class="muted mt-2 tight">
@@ -516,8 +517,10 @@ Full table: framing §5. Each action starts on the right and moves left as it pr
 <div class="muted mt-8 text-sm">Severely time-boxed. A starting point, not a final idea.</div>
 
 <!--
-- Tools: Claude Code for the prototype, the deck, and the docs. Wispr Flow for dictation; most of my feedback was spoken, not typed. Kagi as a search engine. Plus the tooling in this repo, including the devcontainer tooling I build and maintain. Not all of these are AI tools; this is everything I used.
+- Tools: Claude Code for the prototype, the deck, and the docs. Wispr Flow for dictation; most of my feedback was spoken, not typed. Kagi as a search engine. Two tools I build and maintain: joshjhall/containers, the devcontainer this repo runs in, and joshjhall/librarian, the agent skills and orchestration behind Claude Code here. Not all of these are AI tools; this is everything I used.
 - Where AI helped: organizing my thinking (my thoughts don't come out in order; this deck is the evidence), a reasonable first pass at visual polish without spending time on it, building the deck, organizing the docs, summarizing the research and my reasoning about it, and building the prototype.
+- How librarian was used: after the deck was drafted, I reviewed the prototype against it and filed the gaps as 14 issues with dependencies. An orchestrator worked them in parallel, one agent per issue, each on its own branch with an adversarial review loop before merge, and it filed its own follow-up issues for what those reviews found: about 45 issues and 47 merged pull requests in all. Then I reviewed the result against the deck again and filed the one remaining gap (the spending cap was only displayed, not enforced). It's the same idea as Later's agentic factory: agents do the work; a person sets the plan, checks the output, and tunes it.
+- Scale, if asked: about 4,000 lines of prototype code, 3,000 lines of tests, and 248 passing tests.
 - What stayed mine: the ideas, the framing, and the decisions. I haven't seen it synthesize anything novel here.
 - Failures: none, because I know what these tools can and can't do and used them for that.
 - Severely time-boxed. This isn't complete, and it isn't close to a final idea on any of it.

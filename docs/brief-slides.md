@@ -34,7 +34,7 @@ Grouped by the core slide each one supports.
 | A10 | 5 | One widget, any amount of data (0 · 1 · ~10 · 500) | "How does the rail scale?" |
 | A11 | 5 | Test small, then propose | "What could the agent do with money?" |
 | A12 | — | What this is built on (10 Public · 12 Interview · 29 Invented, of 51) | "What did you make up?" |
-| A13 | — | How this was made: tools (Claude Code, Wispr Flow, Kagi, this repo's tooling); where AI helped (organizing, polish, docs and summaries, the prototype); what stayed mine | "How did you use AI?" (the exercise asks for this explicitly) |
+| A13 | — | How this was made: tools (Claude Code, Wispr Flow, Kagi, joshjhall/containers, joshjhall/librarian); where AI helped (organizing, polish, docs and summaries, the prototype from a filed backlog worked in parallel); what stayed mine | "How did you use AI?" (the exercise asks for this explicitly) |
 
 ## Still open
 
