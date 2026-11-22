@@ -1,6 +1,6 @@
 import { Building2, Inbox, ScrollText, Users } from "lucide-react";
-import type { ReactNode } from "react";
 import { FindOrAskPalette } from "@/components/palette/FindOrAskPalette";
+import { useRail } from "@/components/rail/Rail";
 import {
   Sidebar,
   SidebarContent,
@@ -50,14 +50,10 @@ function View({ route }: { route: Route }) {
   }
 }
 
-/** Widgets for the right rail, chosen by context (#11). `null` hides the rail. */
-function railFor(_route: Route): ReactNode {
-  return null;
-}
-
 export function AppShell() {
   const route = useRoute();
   useFindOrAskShortcut();
+  const rail = useRail(route);
   const { world, proposals, resolved } = useStore();
   const open = proposals.filter((p) => !resolved[p.id]);
   const openFor = (accountId: string) =>
@@ -131,7 +127,7 @@ export function AppShell() {
         </Sidebar>
         <SidebarInset>
           <TopBar route={route} />
-          <ShellLayout rail={railFor(route)}>
+          <ShellLayout rail={rail}>
             <View route={route} />
           </ShellLayout>
         </SidebarInset>

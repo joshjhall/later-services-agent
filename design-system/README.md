@@ -26,7 +26,8 @@ Rules for agents:
 
 - [Approve a plan](03-pattern/approve-a-plan.md): design-time review of a drafted goal, criteria or lineup. One gate, named.
 - [Decide an exception](03-pattern/decide-an-exception.md): run-time escalation. Exceptions first, one primary, same label everywhere.
-- [Pattern template](03-pattern/_template.md). Planned: workflow contracts (declared inputs, collected in any order, producing a declared output; partial entries show their gaps; equivalent inputs give equivalent results; repeats are no-ops; stale writes surface as conflicts; see `docs/discovery/framing.md` §6), decision network (what each output makes available or recommended next), decision queue, campaign widget, conflict card, widget contract (space, data volume, state, accepted data sources and types, and what makes a good widget; the command palette is a specialized widget that also declares what each feature can be found or done by), command palette, widget rail. See `docs/principles.md` §6–8 and `docs/information-architecture.md`.
+- [Widget rail](03-pattern/widget-rail.md): 2–4 widgets selected from a fixed library by one rule; each declares the data it accepts and its empty state.
+- [Pattern template](03-pattern/_template.md). Planned: workflow contracts (declared inputs, collected in any order, producing a declared output; partial entries show their gaps; equivalent inputs give equivalent results; repeats are no-ops; stale writes surface as conflicts; see `docs/discovery/framing.md` §6), decision network (what each output makes available or recommended next), decision queue, campaign widget, conflict card, command palette (a specialized widget that also declares what each feature can be found or done by). See `docs/principles.md` §6–8 and `docs/information-architecture.md`.
 
 ## 04 Components
 

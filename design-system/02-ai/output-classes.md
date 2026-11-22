@@ -1,6 +1,6 @@
 # Classes of agent output
 
-**Status:** In prototype: actions (Activity), proposals (`ProposalCard`), drafts (`DraftSheet`), and information requests (`ProposalCard`, kind `info-request`). Summaries in context are partial · **Related:** [autonomy lanes](autonomy-lanes.md), [proposal card](proposal-card.md), [evidence and confidence](evidence-and-confidence.md)
+**Status:** In prototype: actions (Activity), proposals (`ProposalCard`), drafts (`DraftSheet`), information requests (`ProposalCard`, kind `info-request`), and summaries in context (the rail's Summary widget, [widget rail](../03-pattern/widget-rail.md)) · **Related:** [autonomy lanes](autonomy-lanes.md), [proposal card](proposal-card.md), [evidence and confidence](evidence-and-confidence.md)
 
 Every agent's work reaches people as one of a few classes. Each class looks and behaves the same whichever agent produced it, so people learn the classes once instead of learning each agent. Some classes reorganize data that already exists (summaries); others contribute something new (drafts, proposals).
 
