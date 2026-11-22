@@ -136,7 +136,7 @@ test("activity: internal actions can be undone; anything sent is permanent", () 
   ).toBeInTheDocument();
   const reminder = entry(/Draft reminder sent to Ana/);
   expect(within(reminder).queryByRole("button", { name: /Undo/ })).toBeNull();
-  expect(reminder).toHaveTextContent("Permanent: Sent");
+  expect(reminder).toHaveTextContent("Permanent");
 });
 
 test("activity: a decision that sends is recorded under Maya with no undo", () => {
@@ -171,7 +171,7 @@ test("activity: the outcome of a call is recorded as permanent", () => {
   const outcome = entry(/Chose "Extend 2 days"/);
   expect(within(outcome).getByText("Maya")).toBeInTheDocument();
   expect(within(outcome).queryByRole("button", { name: /Undo/ })).toBeNull();
-  expect(outcome).toHaveTextContent("Permanent: Sent");
+  expect(outcome).toHaveTextContent("Permanent");
 });
 
 test("activity: spending from the reserve is recorded as permanent", () => {
@@ -182,6 +182,15 @@ test("activity: spending from the reserve is recorded as permanent", () => {
   const spend = entry(/Chose "Boost \$8,000"/);
   expect(within(spend).queryByRole("button", { name: /Undo/ })).toBeNull();
   expect(spend).toHaveTextContent("Permanent: Spent");
+});
+
+test("today: the handled count is the agent's own work, not people's decisions", () => {
+  renderApp();
+  const handled = /The agent handled 2 things on its own today/;
+  expect(screen.getByText(handled)).toBeInTheDocument();
+  const card = screen.getByText(/post from reserve/).closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Not now" }));
+  expect(screen.getByText(handled)).toBeInTheDocument();
 });
 
 test("store: an option it can't match is recorded as permanent, never undoable", async () => {

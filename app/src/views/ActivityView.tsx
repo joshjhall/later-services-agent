@@ -7,8 +7,11 @@ import { useStore } from "@/domain/store";
 import { type ActivityEntry, isUndoable } from "@/domain/types";
 import { PageHeader } from "./PageHeader";
 
-/** How a permanent entry is marked: it left the system, so a correction is a new action. */
-const permanentLabel = (e: ActivityEntry) => (e.effect === "spend" ? "Spent" : "Sent");
+/**
+ * How a permanent entry is marked: it left the system (a message, a call, an approval
+ * the creator or client acted on), so a correction is a new action. Money says so.
+ */
+const permanentLabel = (e: ActivityEntry) => (e.effect === "spend" ? "Spent" : "Permanent");
 
 /** One record, any actor (principles §2): the history the whole pod reads. */
 export function ActivityView() {
@@ -45,7 +48,7 @@ export function ActivityView() {
               ) : (
                 <span className="inline-flex items-center gap-1 px-3 text-xs text-muted-foreground">
                   <Lock className="size-3" aria-hidden />
-                  <span className="sr-only">Permanent: </span>
+                  {e.effect === "spend" && <span className="sr-only">Permanent: </span>}
                   {permanentLabel(e)}
                 </span>
               )}
