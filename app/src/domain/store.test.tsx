@@ -184,6 +184,7 @@ test("store: the cap is per campaign, so two boosts in one campaign never jointl
     (p) => p.kind === "boost-post",
   );
   if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  expect(boost.options.find((o) => o.primary)?.amount).toBe(8_000);
   const twin = { ...boost, id: `${boost.id}:twin` };
   const elsewhere = { ...boost, id: `${boost.id}:other`, campaignId: "elsewhere" };
   const { resolved, entries } = autoRun([boost, twin, elsewhere], policy);
@@ -205,4 +206,24 @@ test("store: an auto spend with no amount fails closed and waits for a person", 
     options: boost.options.map(({ amount: _, ...o }) => o),
   };
   expect(autoRun([unpriced], policy)).toEqual({ resolved: {}, entries: [] });
+});
+
+test("store: spend that lands exactly on the cap runs; anything external never runs unasked", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 8_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const half = {
+    ...boost,
+    options: boost.options.map((o) => (o.primary ? { ...o, amount: 4_000 } : o)),
+  };
+  const pair = [half, { ...half, id: `${half.id}:twin` }];
+  // $4,000 + $4,000 = $8,000, exactly the cap: both run.
+  expect(Object.keys(autoRun(pair, policy).resolved)).toHaveLength(2);
+  const external = {
+    ...boost,
+    options: boost.options.map((o) => (o.primary ? { ...o, effect: "external" as const } : o)),
+  };
+  expect(autoRun([external], policy)).toEqual({ resolved: {}, entries: [] });
 });
