@@ -55,7 +55,7 @@ test("the top bar breadcrumb follows the route", async () => {
   expect(crumb.getByText("Lineup")).toHaveAttribute("aria-current", "page");
 });
 
-test("Find or ask opens from the button, ⌘K, and /, but not / while typing", async () => {
+test("Find or ask opens from the button, ⌘K, Ctrl+K, and /, but not / while typing", async () => {
   renderApp();
   const dialog = () => screen.queryByRole("dialog", { name: "Find or ask" });
   const close = () => fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
@@ -65,24 +65,34 @@ test("Find or ask opens from the button, ⌘K, and /, but not / while typing", a
   close();
   expect(dialog()).toBeNull();
 
-  fireEvent.keyDown(document.body, { key: "k", metaKey: true });
-  expect(dialog()).toBeInTheDocument();
-  close();
+  // fireEvent returns false when the handler called preventDefault().
+  for (const init of [{ key: "k", metaKey: true }, { key: "k", ctrlKey: true }, { key: "/" }]) {
+    expect(fireEvent.keyDown(document.body, init)).toBe(false);
+    expect(dialog()).toBeInTheDocument();
+    close();
+  }
 
-  fireEvent.keyDown(document.body, { key: "/" });
-  expect(dialog()).toBeInTheDocument();
-  close();
-
-  const input = document.createElement("input");
-  document.body.append(input);
-  fireEvent.keyDown(input, { key: "/" });
+  expect(fireEvent.keyDown(document.body, { key: "/", ctrlKey: true })).toBe(true);
   expect(dialog()).toBeNull();
-  input.remove();
+
+  for (const tag of ["input", "textarea"]) {
+    const field = document.createElement(tag);
+    document.body.append(field);
+    expect(fireEvent.keyDown(field, { key: "/" })).toBe(true);
+    expect(dialog()).toBeNull();
+    field.remove();
+  }
 });
 
-test("every destination stays reachable", () => {
+test("every destination stays reachable from the sidebar", () => {
   renderApp();
-  for (const name of ["Today", "Brightside Beverages", "Roster", "Agent log"]) {
-    expect(screen.getAllByRole("link", { name: new RegExp(name) }).length).toBeGreaterThan(0);
+  const links = {
+    Today: "#today",
+    "Brightside Beverages": "#account/acc-brightside",
+    Roster: "#roster",
+    "Agent log": "#log",
+  };
+  for (const [name, target] of Object.entries(links)) {
+    expect(screen.getByRole("link", { name })).toHaveAttribute("href", target);
   }
 });

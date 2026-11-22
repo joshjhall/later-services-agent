@@ -36,3 +36,13 @@ test("roster, log, and unknown ids", () => {
   expect(labels({ view: "campaign", id: "nope" })).toEqual(["Portfolio", "Not found"]);
   expect(labels({ view: "account", id: "nope" })).toEqual(["Portfolio", "Not found"]);
 });
+
+test("goal ends the trail, and broken campaign links fall back to Not found", () => {
+  const trail = crumbs({ view: "goal", id: "cmp-holiday-gifting" }, world);
+  expect(trail.at(-1)).toEqual({ label: "Goal" });
+  expect(labels({ view: "lineup", id: "nope" })).toEqual(["Portfolio", "Not found"]);
+  const orphan = { accounts: [], campaigns };
+  expect(crumbs({ view: "campaign", id: "cmp-holiday-gifting" }, orphan).at(-1)?.label).toBe(
+    "Not found",
+  );
+});

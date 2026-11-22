@@ -23,6 +23,8 @@ const isTyping = (t: EventTarget | null) =>
 export function useFindOrAskShortcut() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Autofill fires keydown without a key; IME composition must pass through.
+      if (!e.key || e.isComposing) return;
       const commandK = e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey);
       const slash = e.key === "/" && !e.metaKey && !e.ctrlKey && !isTyping(e.target);
       if (!commandK && !slash) return;

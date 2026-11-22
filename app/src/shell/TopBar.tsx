@@ -24,7 +24,7 @@ export function TopBar({ route }: { route: Route }) {
         <Breadcrumb className="min-w-0">
           <BreadcrumbList className="flex-nowrap">
             {trail.map((c, i) => (
-              <Fragment key={c.label}>
+              <Fragment key={c.to ? href(c.to) : "current"}>
                 {i > 0 && <BreadcrumbSeparator />}
                 <BreadcrumbItem className="min-w-0">
                   {c.to ? (
