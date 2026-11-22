@@ -15,6 +15,9 @@ function Progress({
         className,
       )}
       {...props}
+      // Local edit (#45): upstream shadcn drops `value` here, so Radix never
+      // sets aria-valuenow or aria-valuetext. Keep this on any re-add.
+      value={value}
     >
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
