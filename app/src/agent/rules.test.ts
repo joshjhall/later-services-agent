@@ -65,4 +65,26 @@ describe("deriveProposals", () => {
       deriveProposals({ ...world, creators: verified }).some((p) => p.kind === "info-request"),
     ).toBe(false);
   });
+
+  test("information request: only core lineup members known to the roster, at the lineup stage", async () => {
+    const { lineupDrafts } = await import("./drafts");
+    const base = lineupDrafts["cmp-holiday-gifting"];
+    const withAna = (role: "core" | "backup", handle = "@anamakesthings") => ({
+      "cmp-holiday-gifting": {
+        ...base,
+        candidates: base.candidates.map((c) =>
+          c.handle === "@anamakesthings" ? { ...c, role, handle } : c,
+        ),
+      },
+    });
+    const count = (w: typeof world, l: typeof lineupDrafts) =>
+      deriveProposals(w, undefined, l).filter((p) => p.kind === "info-request").length;
+    expect(count(world, withAna("core"))).toBe(1);
+    expect(count(world, withAna("backup"))).toBe(0);
+    expect(count(world, withAna("core", "@not-on-roster"))).toBe(0);
+    const pastLineup = campaigns.map((c) =>
+      c.id === "cmp-holiday-gifting" ? { ...c, stage: "production" as const } : c,
+    );
+    expect(count({ ...world, campaigns: pastLineup }, withAna("core"))).toBe(0);
+  });
 });

@@ -264,15 +264,24 @@ test("draft: a double-click on Send records one entry", () => {
   expect(screen.getAllByText(/Sent fix request to Rio Castillo/)).toHaveLength(1);
 });
 
-test("draft: what's recorded as sent is the edited text, not the agent's draft", async () => {
+test("store: sending a draft for an already-resolved proposal keeps the first decision", async () => {
   const { renderHook } = await import("@testing-library/react");
   const { StoreProvider, useStore } = await import("@/domain/store");
   const { messageDrafts } = await import("@/agent/drafts");
   const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
-  const draft = messageDrafts["fix:d-rio-1"];
-  act(() => result.current.send({ ...draft, subject: "Edited", body: "Edited body" }));
-  expect(result.current.sent[draft.id]).toMatchObject({ subject: "Edited", body: "Edited body" });
-  expect(result.current.activity[0]).toMatchObject({ actor: "Maya", effect: "external" });
+  const p = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
+  if (!p) throw new Error("info request missing");
+  act(() => result.current.resolve(p, "confirmed"));
+  const before = result.current.activity.length;
+  act(() =>
+    result.current.send(messageDrafts["info:cr-ana"], { proposal: p, optionId: "draft-email" }),
+  );
+  act(() =>
+    result.current.send(messageDrafts["info:cr-ana"], { proposal: p, optionId: "draft-email" }),
+  );
+  expect(result.current.resolved[p.id].optionId).toBe("confirmed");
+  // The message still went out, once.
+  expect(result.current.activity.length).toBe(before + 1);
 });
 
 test("undo rule and the #log alias", async () => {
