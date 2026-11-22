@@ -34,7 +34,11 @@ const renderApp = () =>
     </ThemeProvider>,
   );
 
-const card = (title: RegExp) => screen.getByText(title).closest("[data-severity]") as HTMLElement;
+const card = (title: RegExp): HTMLElement => {
+  const found = screen.getByText(title).closest<HTMLElement>("[data-severity]");
+  if (!found) throw new Error(`No proposal card holds ${title}`);
+  return found;
+};
 
 const entries = (text: RegExp) =>
   screen.getAllByTestId("activity-entry").filter((el) => text.test(el.textContent ?? ""));
