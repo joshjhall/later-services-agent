@@ -1,5 +1,5 @@
 import { accounts, campaigns } from "@/domain/fixtures";
-import { crumbs } from "@/router";
+import { crumbs, href, parse } from "@/router";
 
 const world = { accounts, campaigns };
 const labels = (r: Parameters<typeof crumbs>[0]) => crumbs(r, world).map((c) => c.label);
@@ -45,4 +45,29 @@ test("goal ends the trail, and broken campaign links fall back to Not found", ()
   expect(crumbs({ view: "campaign", id: "cmp-holiday-gifting" }, orphan).at(-1)?.label).toBe(
     "Not found",
   );
+});
+
+test("a campaign tab round-trips through the hash; plain and unknown tabs mean no tab", () => {
+  expect(parse("#campaign/cmp-trail-season/run")).toEqual({
+    view: "campaign",
+    id: "cmp-trail-season",
+    tab: "run",
+  });
+  expect(href({ view: "campaign", id: "cmp-trail-season", tab: "run" })).toBe(
+    "#campaign/cmp-trail-season/run",
+  );
+  expect(parse("#campaign/cmp-trail-season")).toEqual({ view: "campaign", id: "cmp-trail-season" });
+  expect(parse("#campaign/cmp-trail-season/bogus")).toEqual({
+    view: "campaign",
+    id: "cmp-trail-season",
+  });
+  expect(href({ view: "campaign", id: "cmp-trail-season" })).toBe("#campaign/cmp-trail-season");
+});
+
+test("goal and lineup deep links are unchanged", () => {
+  expect(parse("#goal/cmp-spring-serum")).toEqual({ view: "goal", id: "cmp-spring-serum" });
+  expect(parse("#lineup/cmp-holiday-gifting")).toEqual({
+    view: "lineup",
+    id: "cmp-holiday-gifting",
+  });
 });

@@ -2,28 +2,39 @@ import { useEffect, useState } from "react";
 
 /**
  * Minimal hash routes, so any view can be deep-linked during the demo.
- *   #today · #account/<id> · #campaign/<id> · #goal/<id> · #lineup/<id> · #roster · #activity
+ *   #today · #account/<id> · #campaign/<id>[/plan|make|run] · #goal/<id> · #lineup/<id> · #roster · #activity
  *   (#log is kept as an alias for #activity so older links still land.)
  */
 export type Route =
   | { view: "today" }
   | { view: "account"; id: string }
-  | { view: "campaign"; id: string }
+  | { view: "campaign"; id: string; tab?: CampaignTab }
   | { view: "goal"; id: string }
   | { view: "lineup"; id: string }
   | { view: "roster" }
   | { view: "activity" };
 
+/** The campaign screen's tabs (information-architecture.md §4). No tab means the current phase. */
+export const CAMPAIGN_TABS = ["plan", "make", "run"] as const;
+export type CampaignTab = (typeof CAMPAIGN_TABS)[number];
+const isTab = (t: string | undefined): t is CampaignTab =>
+  (CAMPAIGN_TABS as readonly string[]).includes(t ?? "");
+
 export function parse(hash: string): Route {
-  const [view, id] = hash.replace(/^#\/?/, "").split("/");
+  const [view, id, tab] = hash.replace(/^#\/?/, "").split("/");
   if (view === "account" && id) return { view, id };
-  if ((view === "campaign" || view === "goal" || view === "lineup") && id) return { view, id };
+  if (view === "campaign" && id) return isTab(tab) ? { view, id, tab } : { view, id };
+  if ((view === "goal" || view === "lineup") && id) return { view, id };
   if (view === "roster" || view === "activity") return { view };
   if (view === "log") return { view: "activity" };
   return { view: "today" };
 }
 
-export const href = (r: Route) => `#${"id" in r ? `${r.view}/${r.id}` : r.view}`;
+export function href(r: Route): string {
+  if (!("id" in r)) return `#${r.view}`;
+  const tab = r.view === "campaign" && r.tab ? `/${r.tab}` : "";
+  return `#${r.view}/${r.id}${tab}`;
+}
 
 export function useRoute(): Route {
   const [route, setRoute] = useState(() => parse(location.hash));

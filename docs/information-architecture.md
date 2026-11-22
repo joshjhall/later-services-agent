@@ -90,9 +90,9 @@ The campaign's state picks the default tab: Plan until the lineup is approved, M
 | IA | Prototype today | Gap |
 | --- | --- | --- |
 | Top nav with Find or ask | Left sidebar, no palette | Add the top bar, breadcrumb and ⌘K |
-| Portfolio grouped by need | `#today` (ranked queue) | Group by need, not only by rank |
+| Portfolio grouped by need | `#today`, grouped by `needOf` in `app/src/agent/needs.ts`; ranked within each group | Do a thing has no task source yet beyond below-forecast |
 | Account | `#account/<id>` | — |
-| Campaign: Plan and Make | `#goal`, `#lineup`, `#campaign/<id>` | Unify under one campaign screen with tabs |
-| Campaign: Run (Measure, Amplify) | Below-forecast card only | Stub tab |
+| Campaign: Plan and Make | `#campaign/<id>/plan` and `/make`; Plan links to `#goal` and `#lineup` | Goal and lineup open as their own screens, not embedded |
+| Campaign: Run (Measure, Amplify) | `#campaign/<id>/run`: KPI pacing, reserve, and boost and below-forecast cards | Per-asset results and comparable campaigns |
 | Asset | Within campaign rows | — (cut) |
 | Rail | None | 2–3 widgets on the campaign and lineup screens |

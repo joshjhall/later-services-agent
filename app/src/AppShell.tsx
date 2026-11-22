@@ -36,7 +36,7 @@ function View({ route }: { route: Route }) {
     case "account":
       return <AccountView id={route.id} />;
     case "campaign":
-      return <CampaignView id={route.id} />;
+      return <CampaignView id={route.id} tab={route.tab} />;
     case "goal":
       return <GoalView id={route.id} />;
     case "lineup":
