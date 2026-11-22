@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { AGENT_POLICY, deriveProposals } from "@/agent/rules";
 import * as fx from "@/domain/fixtures";
 import { StoreProvider } from "@/domain/store";
@@ -98,4 +98,11 @@ test("a recommended boost within the cap arrives done by the agent", () => {
   boostAt(8_000);
   expect(screen.queryByRole("button", { name: /Boost/ })).toBeNull();
   expect(screen.getByText(/Boost \$8,000 · done by the agent · logged/)).toBeInTheDocument();
+});
+
+test("a card the CM resolves is never attributed to the agent", () => {
+  boostAt(AGENT_POLICY.maxDailySpend);
+  fireEvent.click(screen.getByRole("button", { name: "Not now" }));
+  expect(screen.getByText(/Not now · logged/)).toBeInTheDocument();
+  expect(screen.queryByText(/done by the agent/)).toBeNull();
 });

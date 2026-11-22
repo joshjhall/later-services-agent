@@ -250,3 +250,23 @@ test("store: an internal auto option runs unasked and never counts toward the sp
     effect: "internal",
   });
 });
+
+test("store: a boost skipped for the cap does not block a smaller one that still fits", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const priced = (id: string, amount: number) => ({
+    ...boost,
+    id,
+    options: boost.options.map((o) => (o.primary ? { ...o, amount } : o)),
+  });
+  // In list order: $8,000 runs, the next $8,000 would reach $16,000 and waits, and
+  // $2,000 then lands exactly on the $10,000 cap and runs. Earlier proposals spend first.
+  const { resolved } = autoRun(
+    [priced("big", 8_000), priced("big2", 8_000), priced("small", 2_000)],
+    policy,
+  );
+  expect(Object.keys(resolved).toSorted()).toEqual(["big", "small"]);
+});
