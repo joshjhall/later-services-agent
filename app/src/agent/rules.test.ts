@@ -79,6 +79,13 @@ describe("deriveProposals", () => {
     expect(withinCap(4001, { maxDailySpend: 4000.5 })).toBe(true);
   });
 
+  test("withinCap fails closed on a malformed amount or cap", () => {
+    expect(withinCap(4000, { maxDailySpend: Number.POSITIVE_INFINITY })).toBe(false);
+    expect(withinCap(4000, { maxDailySpend: Number.NaN })).toBe(false);
+    expect(withinCap(Number.NaN, { maxDailySpend: 5000 })).toBe(false);
+    expect(withinCap(-1, { maxDailySpend: 5000 })).toBe(false);
+  });
+
   test("the cap row, the proposed spend, the boost buttons, and their lanes share one list of amounts", () => {
     const boost = proposals.find((p) => p.kind === "boost-post");
     const boosts = (boost?.options ?? []).filter((o) => o.effect === "spend");

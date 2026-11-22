@@ -100,11 +100,16 @@ const list = (xs: string[]) =>
 /**
  * True when the agent may spend this amount on its own: at or under the daily cap, compared in
  * whole dollars, as displayed, so the "Agent cap" row and the option lanes agree at the boundary.
+ * A non-finite or negative amount or cap fails closed: it needs a person.
  */
 export const withinCap = (
   amount: number,
   policy: Pick<AgentPolicy, "maxDailySpend"> = AGENT_POLICY,
-) => Math.round(amount) <= Math.round(policy.maxDailySpend);
+) =>
+  Number.isFinite(amount) &&
+  Number.isFinite(policy.maxDailySpend) &&
+  amount >= 0 &&
+  Math.round(amount) <= Math.round(policy.maxDailySpend);
 
 /**
  * The "Agent cap" evidence row for a boost: the daily cap, then which amounts fit under it.
