@@ -138,10 +138,14 @@ test("activity: one record shows system, agent, and named people as explicit act
 
 test("activity: the seeded record agrees with the campaign data it describes", async () => {
   const fx = await import("@/domain/fixtures");
-  // A creator is named in full; a campaign by its name or its short form ("Sparkling Citrus").
+  // A creator is named in full; a campaign by its name, or that name less its last
+  // word ("Sparkling Citrus" for "Sparkling Citrus launch"). Never a bare first word.
+  const shortForm = (name: string) => name.split(" ").slice(0, -1).join(" ");
   const names = (part: string) => [
     ...fx.creators.filter((c) => c.name === part),
-    ...fx.campaigns.filter((c) => c.name === part || c.name.startsWith(`${part} `)),
+    ...fx.campaigns.filter(
+      (c) => c.name === part || (part.includes(" ") && shortForm(c.name) === part),
+    ),
   ];
   for (const e of fx.activity) {
     // Each part of a target names exactly one creator or campaign, and nothing is dated in the future.
