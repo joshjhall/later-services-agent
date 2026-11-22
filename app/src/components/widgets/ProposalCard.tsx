@@ -1,6 +1,7 @@
 import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { draftFor } from "@/agent/drafts";
+import { proposalTab } from "@/agent/needs";
 import type { Proposal } from "@/agent/rules";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,7 +73,15 @@ export function ProposalCard({ proposal: p, compact }: { proposal: Proposal; com
           <Badge className={sev.cls}>{sev.label}</Badge>
           <span className="text-xs font-medium text-muted-foreground">{outputClass(p)}</span>
           <span className="text-xs text-muted-foreground">
-            {account?.name} · {campaign?.name}
+            {account?.name} ·{" "}
+            {campaign && (
+              <a
+                href={href({ view: "campaign", id: campaign.id, tab: proposalTab(p) })}
+                className="hover:underline"
+              >
+                {campaign.name}
+              </a>
+            )}
           </span>
           <span className="ml-auto text-xs text-muted-foreground">Confidence: {p.confidence}</span>
         </div>

@@ -1,4 +1,4 @@
-import { groupByNeed, NEED_LABEL, needOf, PROPOSAL_PHASE } from "./needs";
+import { groupByNeed, NEED_LABEL, needOf, PHASE_TAB, PROPOSAL_PHASE, proposalTab } from "./needs";
 import type { Proposal } from "./rules";
 
 type Kind = Proposal["kind"];
@@ -44,4 +44,20 @@ test("each proposal kind lands on the tab of its phase", () => {
     "boost-post": "Run",
     "below-forecast": "Run",
   });
+});
+
+test("proposalTab puts each kind on its phase's tab", () => {
+  const tabs = Object.fromEntries(
+    (Object.keys(PROPOSAL_PHASE) as Kind[]).map((kind) => [kind, proposalTab({ kind })]),
+  );
+  expect(tabs).toEqual({
+    "state-goal": "plan",
+    "approve-lineup": "plan",
+    "info-request": "plan",
+    "quiet-creator": "make",
+    "review-draft": "make",
+    "boost-post": "run",
+    "below-forecast": "run",
+  });
+  expect(new Set(Object.values(PHASE_TAB))).toEqual(new Set(["plan", "make", "run"]));
 });

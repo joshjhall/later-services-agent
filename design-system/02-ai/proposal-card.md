@@ -10,7 +10,7 @@ How the agent asks the CM for a decision. Used in the decision queue, campaign v
 | --- | --- | --- |
 | Severity badge | Yes | Needs you now / Soon / When ready. Ordered by consequence × time. |
 | Output class | Yes | "Proposal" or "Information request", beside the severity badge. See [output classes](output-classes.md). |
-| Context line | Yes | Account · campaign, so the card stands alone outside its page. |
+| Context line | Yes | Account · campaign, so the card stands alone outside its page. The campaign name links to the campaign tab that holds the card (Plan, Make, or Run), so an urgent card from another phase is one click away. |
 | Confidence | Yes | high / medium / low. Words, not a percentage. |
 | Title | Yes | What happened, in plain words: "Ana Reyes is quiet, draft 1 day late." |
 | Summary | Yes | One or two sentences of situation. |

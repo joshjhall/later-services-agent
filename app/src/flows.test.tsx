@@ -456,3 +456,36 @@ test("campaign: Plan explains a missing goal and lineup instead of showing no en
   go("#campaign/cmp-trail-season/plan");
   expect(screen.getByText(/settled before this campaign moved on/)).toBeInTheDocument();
 });
+
+test("campaign: with no KPIs, Run says results come later and Plan says none are set", () => {
+  renderApp();
+  go("#campaign/cmp-holiday-gifting/run");
+  const run = screen.getByRole("tabpanel");
+  expect(within(run).getByText(/No results yet/)).toBeInTheDocument();
+  expect(within(run).queryByRole("progressbar")).toBeNull();
+  go("#campaign/cmp-holiday-gifting/plan");
+  expect(within(screen.getByRole("tabpanel")).getByText(/No KPIs yet/)).toBeInTheDocument();
+});
+
+test("today: each card links to the campaign tab that holds it, even off the default tab", () => {
+  renderApp();
+  const card = (title: RegExp) =>
+    screen.getAllByText(title)[0].closest("[data-severity]") as HTMLElement;
+  const quiet = within(card(/Ana Reyes is quiet/)).getByRole("link", {
+    name: "Sparkling Citrus launch",
+  });
+  expect(quiet).toHaveAttribute("href", "#campaign/cmp-sparkling-launch/make");
+  // Sparkling opens on Make, but its boost card lives on Run, and the link goes there.
+  const boost = within(card(/from reserve/)).getByRole("link", {
+    name: "Sparkling Citrus launch",
+  });
+  expect(boost).toHaveAttribute("href", "#campaign/cmp-sparkling-launch/run");
+  go(boost.getAttribute("href") ?? "");
+  expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Run");
+  // On the campaign page, the same card links to the tab it is already on.
+  const onPage = within(screen.getByRole("tabpanel")).getAllByRole("link", {
+    name: "Sparkling Citrus launch",
+  });
+  expect(onPage.length).toBeGreaterThan(0);
+  for (const a of onPage) expect(a).toHaveAttribute("href", "#campaign/cmp-sparkling-launch/run");
+});

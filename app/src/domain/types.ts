@@ -15,6 +15,10 @@ export interface Kpi {
   unit?: "%" | "$" | "";
 }
 
+/** Share of target reached, 0–100, for a progress bar. A target of 0 has nothing to pace against. */
+export const kpiPct = (k: Pick<Kpi, "target" | "actual">): number =>
+  k.target > 0 ? Math.min(100, (k.actual / k.target) * 100) : 0;
+
 export interface Account {
   id: string;
   name: string;
