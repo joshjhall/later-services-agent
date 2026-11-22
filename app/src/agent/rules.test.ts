@@ -51,6 +51,17 @@ describe("deriveProposals", () => {
     expect(review?.evidence[0].tone).toBe("bad");
   });
 
+  test("draft review follows the decision outcomes: fix request, with changes, approve", () => {
+    const review = proposals.find((p) => p.kind === "review-draft");
+    expect(review?.options.map((o) => o.id)).toEqual(["send-fix", "corrections", "approve"]);
+    expect(review?.options.map((o) => o.label)).toEqual([
+      "Send fix request",
+      "Approve with changes",
+      "Approve",
+    ]);
+    expect(review?.options[0].hint).toBe("Decline unless fixed");
+  });
+
   test("information request: states its assumption and what changes if it's wrong", () => {
     const requests = proposals.filter((p) => p.kind === "info-request");
     expect(requests).toHaveLength(1);

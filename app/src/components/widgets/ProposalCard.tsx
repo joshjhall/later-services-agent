@@ -128,6 +128,7 @@ export function ProposalCard({ proposal: p, compact }: { proposal: Proposal; com
               >
                 {o.label}
               </Button>
+              {o.hint && <span className="text-[10px] text-muted-foreground">{o.hint}</span>}
               <LaneBadge lane={o.lane} className="text-[10px]" />
             </div>
           ))
