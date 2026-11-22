@@ -1,5 +1,6 @@
 import { campaigns, creators, DEMO_TODAY, deliverables, partnerships } from "@/domain/fixtures";
 import type { Effect } from "@/domain/types";
+import { messageDrafts } from "./drafts";
 import {
   AGENT_POLICY,
   type AgentPolicy,
@@ -8,6 +9,8 @@ import {
   daysBetween,
   deriveProposals,
   fmt,
+  type Option,
+  type Proposal,
   withinCap,
 } from "./rules";
 
@@ -486,5 +489,45 @@ describe("fmt", () => {
 
   test("the unit defaults to bare", () => {
     expect(fmt(5000)).toBe(fmt(5000, ""));
+  });
+});
+
+describe("autoOption", () => {
+  const base: Proposal = {
+    id: "p",
+    kind: "boost-post",
+    severity: "info",
+    campaignId: "c",
+    title: "t",
+    summary: "s",
+    evidence: [],
+    confidence: "high",
+    dueInDays: 1,
+    options: [],
+  };
+  const opt = (o: Partial<Option>): Option => ({
+    id: "o",
+    label: "O",
+    lane: "auto",
+    effect: "internal",
+    ...o,
+  });
+
+  test("runs nothing when there is no recommendation", () => {
+    expect(autoOption({ ...base, options: [opt({})] })).toBeUndefined();
+  });
+
+  test("never runs an auto option that is not the recommendation", () => {
+    const options = [opt({ id: "a", lane: "propose", primary: true }), opt({ id: "b" })];
+    expect(autoOption({ ...base, options })).toBeUndefined();
+  });
+
+  test("never sends a drafted message on its own, even in the auto lane", () => {
+    const draft = Object.values(messageDrafts)[0];
+    expect(autoOption({ ...base, options: [opt({ primary: true, draft })] })).toBeUndefined();
+  });
+
+  test("runs the recommendation when it is in the auto lane", () => {
+    expect(autoOption({ ...base, options: [opt({ id: "go", primary: true })] })?.id).toBe("go");
   });
 });

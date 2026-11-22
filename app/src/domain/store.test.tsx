@@ -177,3 +177,32 @@ test("store: a recommended boost within the cap is resolved and logged as the ag
   expect(result.current.activity).toHaveLength(before);
   expect(result.current.resolved[boost.id].optionId).toBe("boost");
 });
+
+test("store: the cap is per campaign, so two boosts in one campaign never jointly exceed it", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const twin = { ...boost, id: `${boost.id}:twin` };
+  const elsewhere = { ...boost, id: `${boost.id}:other`, campaignId: "elsewhere" };
+  const { resolved, entries } = autoRun([boost, twin, elsewhere], policy);
+  // $8,000 runs; a second $8,000 in the same campaign would reach $16,000, so it waits.
+  expect(Object.keys(resolved).toSorted()).toEqual([boost.id, elsewhere.id].toSorted());
+  expect(entries.map((e) => e.campaignId).toSorted()).toEqual(
+    [boost.campaignId, "elsewhere"].toSorted(),
+  );
+});
+
+test("store: an auto spend with no amount fails closed and waits for a person", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const unpriced = {
+    ...boost,
+    options: boost.options.map(({ amount: _, ...o }) => o),
+  };
+  expect(autoRun([unpriced], policy)).toEqual({ resolved: {}, entries: [] });
+});

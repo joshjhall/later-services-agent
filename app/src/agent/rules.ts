@@ -56,6 +56,8 @@ export interface Option {
   lane: Lane;
   /** What choosing this option touches; decides undo in the activity record. Required, so undo is never a silent default. */
   effect: Effect;
+  /** What a spend option commits (USD). The agent's own spend is checked against the cap with it. */
+  amount?: number;
   /**
    * The message this option sends. An option with a draft opens it for review
    * instead of resolving in place, and resolves only when it is sent.
@@ -324,6 +326,7 @@ export function deriveProposals(
               // Enforced, not just shown: within the cap the agent may boost on its own.
               lane: withinCap(b.amount, policy) ? "auto" : "propose",
               effect: "spend",
+              amount: b.amount,
             }),
           ),
           { id: "skip", label: "Not now", lane: "human", effect: "internal" },

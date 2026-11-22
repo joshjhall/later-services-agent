@@ -6,6 +6,7 @@ import {
   autoOption,
   deriveProposals,
   type Proposal,
+  withinCap,
 } from "@/agent/rules";
 import * as fx from "./fixtures";
 import type { ActivityEntry, Actor } from "./types";
@@ -24,13 +25,25 @@ interface Resolution {
 /**
  * What the agent has already done on its own: every proposal whose recommendation is in
  * the auto lane (see `autoOption`), resolved and logged under "agent" before anyone looks.
+ * The daily cap is per campaign, so spend is totalled per campaign: once the next amount
+ * would take the total over the cap, the proposal stays open for a person. A spend with no
+ * amount fails closed the same way.
  */
-export function autoRun(proposals: Proposal[]) {
+export function autoRun(
+  proposals: Proposal[],
+  policy: Pick<AgentPolicy, "maxDailySpend"> = AGENT_POLICY,
+) {
   const resolved: Record<string, Resolution> = {};
   const entries: ActivityEntry[] = [];
+  const spent: Record<string, number> = {};
   for (const p of proposals) {
     const o = autoOption(p);
     if (!o) continue;
+    if (o.effect === "spend") {
+      const total = (spent[p.campaignId] ?? 0) + (o.amount ?? Number.NaN);
+      if (!withinCap(total, policy)) continue;
+      spent[p.campaignId] = total;
+    }
     resolved[p.id] = { optionId: o.id, label: o.label, at: fx.DEMO_TODAY, by: "agent" };
     entries.push({
       id: `act-auto-${p.id}`,
@@ -88,7 +101,7 @@ export function StoreProvider({
 }) {
   // Derived once per mount: the demo world does not change while it runs.
   const [proposals] = useState(() => deriveProposals(fx, fx.DEMO_TODAY, undefined, policy));
-  const [auto] = useState(() => autoRun(proposals));
+  const [auto] = useState(() => autoRun(proposals, policy));
   const [resolved, setResolved] = useState<Record<string, Resolution>>(auto.resolved);
   const [sent, setSent] = useState<Record<string, MessageDraft>>({});
   // Mirrors `sent` synchronously, so a double-click within one render still sends once.
