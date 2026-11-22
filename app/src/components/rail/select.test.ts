@@ -1,7 +1,7 @@
 import { campaigns } from "@/domain/fixtures";
 import type { Route } from "@/router";
 import { scopeOf } from "./scope";
-import { MAX_WIDGETS, MIN_WIDGETS, type RailFacts, selectRail } from "./select";
+import { clamp, MAX_WIDGETS, MIN_WIDGETS, type RailFacts, selectRail } from "./select";
 
 const facts = (over: Partial<RailFacts> = {}): RailFacts => ({
   campaigns: 1,
@@ -78,4 +78,16 @@ test("scope follows the route", () => {
     "cmp-holiday-gifting",
   ]);
   expect(scopeOf({ view: "roster" }, campaigns)).toEqual([]);
+});
+
+test("clamp hides a lone widget and keeps only the first four", () => {
+  expect(clamp([])).toEqual([]);
+  expect(clamp(["summary"])).toEqual([]);
+  expect(clamp(["summary", "activity"])).toEqual(["summary", "activity"]);
+  expect(clamp(["summary", "compare", "next-message", "activity", "summary"])).toEqual([
+    "summary",
+    "compare",
+    "next-message",
+    "activity",
+  ]);
 });

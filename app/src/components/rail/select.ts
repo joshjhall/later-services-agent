@@ -15,6 +15,14 @@ export const MIN_WIDGETS = 2;
 export const MAX_WIDGETS = 4;
 
 /**
+ * Keeps any selection inside the 2–4 contract, so a rule edited live can't overfill
+ * the rail or leave a lone widget: too few hides the rail, too many keeps the first four.
+ */
+export function clamp(picks: WidgetId[]): WidgetId[] {
+  return picks.length >= MIN_WIDGETS ? picks.slice(0, MAX_WIDGETS) : [];
+}
+
+/**
  * The one place the rail's widgets are chosen (principles §8: selected, never generated).
  * Change a rule here to change the rail everywhere.
  *
@@ -44,5 +52,5 @@ export function selectRail(route: Route, facts: RailFacts): WidgetId[] {
       return [];
   }
 
-  return picks.length >= MIN_WIDGETS ? picks.slice(0, MAX_WIDGETS) : [];
+  return clamp(picks);
 }
