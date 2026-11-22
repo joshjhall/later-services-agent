@@ -1,8 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
 import { type MessageDraft, messageDrafts } from "@/agent/drafts";
-import type { Proposal } from "@/agent/rules";
+import { AGENT_POLICY, deriveProposals, type Proposal } from "@/agent/rules";
 import * as fx from "@/domain/fixtures";
-import { StoreProvider, useStore } from "@/domain/store";
+import { autoRun, StoreProvider, useStore } from "@/domain/store";
 import { isUndoable } from "@/domain/types";
 
 // The rail scopes activity by `campaignId`; an entry without it falls back to
@@ -150,4 +150,123 @@ test("store: an option it can't match is recorded as permanent, never undoable",
   act(() => result.current.resolve(p, "no-such-option"));
   expect(result.current.activity[0]).toMatchObject({ actor: "Maya", effect: "external" });
   expect(isUndoable(result.current.activity[0])).toBe(false);
+});
+
+test("store: at the default cap the agent runs nothing on its own", () => {
+  expect(autoRun(deriveProposals(fx))).toEqual({ resolved: {}, entries: [] });
+});
+
+test("store: a recommended boost within the cap is resolved and logged as the agent's spend", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 8_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const { result } = renderHook(() => useStore(), {
+    wrapper: ({ children }) => <StoreProvider policy={policy}>{children}</StoreProvider>,
+  });
+  expect(result.current.resolved[boost.id]).toMatchObject({ optionId: "boost", by: "agent" });
+  expect(entry(result, `act-auto-${boost.id}`)).toMatchObject({
+    actor: "agent",
+    effect: "spend",
+    campaignId: boost.campaignId,
+  });
+  // Already decided: a later click records nothing new.
+  const before = result.current.activity.length;
+  act(() => result.current.resolve(boost, "smaller"));
+  expect(result.current.activity).toHaveLength(before);
+  expect(result.current.resolved[boost.id].optionId).toBe("boost");
+});
+
+test("store: the cap is per campaign, so two boosts in one campaign never jointly exceed it", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  expect(boost.options.find((o) => o.primary)?.amount).toBe(8_000);
+  const twin = { ...boost, id: `${boost.id}:twin` };
+  const elsewhere = { ...boost, id: `${boost.id}:other`, campaignId: "elsewhere" };
+  const { resolved, entries } = autoRun([boost, twin, elsewhere], policy);
+  // $8,000 runs; a second $8,000 in the same campaign would reach $16,000, so it waits.
+  expect(Object.keys(resolved).toSorted()).toEqual([boost.id, elsewhere.id].toSorted());
+  expect(entries.map((e) => e.campaignId).toSorted()).toEqual(
+    [boost.campaignId, "elsewhere"].toSorted(),
+  );
+});
+
+test("store: an auto spend with no amount fails closed and waits for a person", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const unpriced = {
+    ...boost,
+    options: boost.options.map(({ amount: _, ...o }) => o),
+  };
+  expect(autoRun([unpriced], policy)).toEqual({ resolved: {}, entries: [] });
+});
+
+test("store: spend that lands exactly on the cap runs; anything external never runs unasked", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 8_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const half = {
+    ...boost,
+    options: boost.options.map((o) => (o.primary ? { ...o, amount: 4_000 } : o)),
+  };
+  const pair = [half, { ...half, id: `${half.id}:twin` }];
+  // $4,000 + $4,000 = $8,000, exactly the cap: both run.
+  expect(Object.keys(autoRun(pair, policy).resolved)).toHaveLength(2);
+  const external = {
+    ...boost,
+    options: boost.options.map((o) => (o.primary ? { ...o, effect: "external" as const } : o)),
+  };
+  expect(autoRun([external], policy)).toEqual({ resolved: {}, entries: [] });
+});
+
+test("store: an internal auto option runs unasked and never counts toward the spending cap", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 8_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const internal = {
+    ...boost,
+    id: `${boost.id}:internal`,
+    options: boost.options.map(({ amount: _, ...o }) =>
+      o.primary ? { ...o, effect: "internal" as const } : o,
+    ),
+  };
+  // The internal change goes first; the $8,000 boost after it must still fit the cap.
+  const { resolved, entries } = autoRun([internal, boost], policy);
+  expect(resolved[internal.id]).toMatchObject({ by: "agent" });
+  expect(resolved[boost.id]).toMatchObject({ by: "agent" });
+  expect(entries.find((e) => e.id === `act-auto-${internal.id}`)).toMatchObject({
+    actor: "agent",
+    effect: "internal",
+  });
+});
+
+test("store: a boost skipped for the cap does not block a smaller one that still fits", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const priced = (id: string, amount: number) => ({
+    ...boost,
+    id,
+    options: boost.options.map((o) => (o.primary ? { ...o, amount } : o)),
+  });
+  // In list order: $8,000 runs, the next $8,000 would reach $16,000 and waits, and
+  // $2,000 then lands exactly on the $10,000 cap and runs. Earlier proposals spend first.
+  const { resolved } = autoRun(
+    [priced("big", 8_000), priced("big2", 8_000), priced("small", 2_000)],
+    policy,
+  );
+  expect(Object.keys(resolved).toSorted()).toEqual(["big", "small"]);
 });

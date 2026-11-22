@@ -124,7 +124,8 @@ export function ProposalCard({ proposal: p, compact }: { proposal: Proposal; com
       <CardFooter className="flex flex-wrap items-center gap-2">
         {done ? (
           <span className="inline-flex items-center gap-1.5 text-sm text-success">
-            <CheckCircle2 className="size-4" aria-hidden /> {done.label} · logged
+            <CheckCircle2 className="size-4" aria-hidden /> {done.label}
+            {done.by === "agent" && " · done by the agent"} · logged
           </span>
         ) : (
           p.options.map((o) => (
@@ -137,7 +138,12 @@ export function ProposalCard({ proposal: p, compact }: { proposal: Proposal; com
                 {o.label}
               </Button>
               {o.hint && <span className="text-[10px] text-muted-foreground">{o.hint}</span>}
-              <LaneBadge lane={o.lane} className="text-[10px]" />
+              {/* Still open, so the agent didn't run it: within its cap, but not its pick. */}
+              <LaneBadge
+                lane={o.lane}
+                label={o.lane === "auto" ? "Pre-approved" : undefined}
+                className="text-[10px]"
+              />
             </div>
           ))
         )}

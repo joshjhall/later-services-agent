@@ -56,6 +56,8 @@ export interface Option {
   lane: Lane;
   /** What choosing this option touches; decides undo in the activity record. Required, so undo is never a silent default. */
   effect: Effect;
+  /** What a spend option commits (USD). The agent's own spend is checked against the cap with it. */
+  amount?: number;
   /**
    * The message this option sends. An option with a draft opens it for review
    * instead of resolving in place, and resolves only when it is sent.
@@ -86,6 +88,17 @@ export interface Proposal {
   assumption?: string;
   ifWrong?: string;
 }
+
+/**
+ * The option the agent carries out on its own, if any: its recommendation (the primary
+ * option) when that is in the auto lane and sends nothing for review. An auto-lane option
+ * that is not the recommendation is never run unasked: the agent does not spend an amount
+ * it did not propose. It stays on the card, pre-approved, for the CM to choose.
+ */
+export const autoOption = (p: Proposal): Option | undefined => {
+  const pick = p.options.find((o) => o.primary);
+  return pick?.lane === "auto" && !pick.draft ? pick : undefined;
+};
 
 const day = 86_400_000;
 export const daysBetween = (a: string, b: string) =>
@@ -313,6 +326,7 @@ export function deriveProposals(
               // Enforced, not just shown: within the cap the agent may boost on its own.
               lane: withinCap(b.amount, policy) ? "auto" : "propose",
               effect: "spend",
+              amount: b.amount,
             }),
           ),
           { id: "skip", label: "Not now", lane: "human", effect: "internal" },

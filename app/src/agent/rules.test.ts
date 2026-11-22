@@ -1,12 +1,16 @@
 import { campaigns, creators, DEMO_TODAY, deliverables, partnerships } from "@/domain/fixtures";
 import type { Effect } from "@/domain/types";
+import { messageDrafts } from "./drafts";
 import {
   AGENT_POLICY,
   type AgentPolicy,
+  autoOption,
   capEvidence,
   daysBetween,
   deriveProposals,
   fmt,
+  type Option,
+  type Proposal,
   withinCap,
 } from "./rules";
 
@@ -74,6 +78,22 @@ describe("deriveProposals", () => {
     expect(boostAt(10_000)?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
       "$10,000/day, if spent in one day · within it",
     );
+  });
+
+  test("the agent runs a boost on its own only when its recommendation fits the cap", () => {
+    const boostAt = (maxDailySpend: number) =>
+      deriveProposals(world, undefined, undefined, { ...AGENT_POLICY, maxDailySpend }).find(
+        (p) => p.kind === "boost-post",
+      );
+    const auto = (cap: number) => {
+      const p = boostAt(cap);
+      if (!p) throw new Error("fixtures should yield a boost-post proposal");
+      return autoOption(p)?.id;
+    };
+    expect(auto(AGENT_POLICY.maxDailySpend)).toBeUndefined();
+    // Only the smaller, non-recommended amount fits: never spent unasked.
+    expect(auto(5_000)).toBeUndefined();
+    expect(auto(8_000)).toBe("boost");
   });
 
   test("withinCap rounds only toward caution: amount up, cap down", () => {
@@ -469,5 +489,45 @@ describe("fmt", () => {
 
   test("the unit defaults to bare", () => {
     expect(fmt(5000)).toBe(fmt(5000, ""));
+  });
+});
+
+describe("autoOption", () => {
+  const base: Proposal = {
+    id: "p",
+    kind: "boost-post",
+    severity: "info",
+    campaignId: "c",
+    title: "t",
+    summary: "s",
+    evidence: [],
+    confidence: "high",
+    dueInDays: 1,
+    options: [],
+  };
+  const opt = (o: Partial<Option>): Option => ({
+    id: "o",
+    label: "O",
+    lane: "auto",
+    effect: "internal",
+    ...o,
+  });
+
+  test("runs nothing when there is no recommendation", () => {
+    expect(autoOption({ ...base, options: [opt({})] })).toBeUndefined();
+  });
+
+  test("never runs an auto option that is not the recommendation", () => {
+    const options = [opt({ id: "a", lane: "propose", primary: true }), opt({ id: "b" })];
+    expect(autoOption({ ...base, options })).toBeUndefined();
+  });
+
+  test("never sends a drafted message on its own, even in the auto lane", () => {
+    const draft = Object.values(messageDrafts)[0];
+    expect(autoOption({ ...base, options: [opt({ primary: true, draft })] })).toBeUndefined();
+  });
+
+  test("runs the recommendation when it is in the auto lane", () => {
+    expect(autoOption({ ...base, options: [opt({ id: "go", primary: true })] })?.id).toBe("go");
   });
 });
