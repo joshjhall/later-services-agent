@@ -2,7 +2,8 @@
 """Render the discovery docs into one reviewable page: docs/overview.html.
 
 Sources (the markdown stays the source of truth):
-  discovery/framing.md, flows.md, assumptions.md, discovery/research.md
+  discovery/framing.md, principles.md, information-architecture.md, discovery/{personas,story-map,key-paths}.md,
+  flows.md, assumptions.md, discovery/research.md
 Theme: docs/palette.css, generated from app/src/theme/seed.ts by `just theme`,
 so the page and the prototype share one Material 3 palette.
 
@@ -18,6 +19,11 @@ from pathlib import Path
 DOCS = Path(__file__).resolve().parent
 SECTIONS = [
     ("framing", "Framing", "The problem, tested assumptions, and the autonomy split", DOCS / "discovery/framing.md"),
+    ("principles", "Principles", "How the agent fits into a product people already use", DOCS / "principles.md"),
+    ("ia", "Information architecture", "Layout, core objects, and the path from portfolio to asset", DOCS / "information-architecture.md"),
+    ("personas", "Personas", "Who the screens are for, and who they affect", DOCS / "discovery/personas.md"),
+    ("story-map", "Story map", "The whole job, sliced into prototype and releases", DOCS / "discovery/story-map.md"),
+    ("key-paths", "Key paths", "The paths the prototype screens must support", DOCS / "discovery/key-paths.md"),
     ("flows", "Flows", "How information moves between brand, creators, agent and CM", DOCS / "flows.md"),
     ("assumptions", "Assumptions", "What is public, what is invented, what is a design call", DOCS / "assumptions.md"),
     ("research", "Research", "Sources behind every claim", DOCS / "discovery/research.md"),
@@ -77,6 +83,10 @@ def to_html(md: str, slug: str) -> tuple[str, list[tuple[str, str]]]:
 
     out = re.sub(r'href="(?:\.\./|discovery/)?framing\.md"', 'href="#framing"', out)
     out = re.sub(r'href="(?:\.\./)?flows\.md"', 'href="#flows"', out)
+    out = re.sub(r'href="(?:\.\./)?principles\.md"', 'href="#principles"', out)
+    out = re.sub(r'href="(?:\.\./)?information-architecture\.md"', 'href="#ia"', out)
+    for page in ("personas", "story-map", "key-paths"):
+        out = re.sub(rf'href="(?:discovery/)?{page}\.md"', f'href="#{page}"', out)
     out = re.sub(r'href="(?:discovery/)?research\.md"', 'href="#research"', out)
     for mark, (cls, label) in LANE.items():
         out = out.replace(mark, f'<span class="lane {cls}" title="{label}" aria-label="{label}"></span>')

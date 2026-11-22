@@ -2,6 +2,8 @@
 
 How information moves through the system. Diagrams are Mermaid, so they render on GitHub and in VS Code with `bierner.markdown-mermaid`. The reasoning behind them is in [discovery/framing.md](discovery/framing.md).
 
+The flows split along Later's own **design time / run time** line (*Interview*: the planned conductor agent first designs a campaign, then executes it). Flows 2–4 are **design time**: the agent drafts a plan and the CM approves it before anything is spent or sent. Flows 5–7 are **run time**: the plan meets reality and the agent escalates exceptions. Flows 8–9 cover both.
+
 Legend used in the swimlane notes: 🤖 the agent acts alone (logged, undoable) · 🤝 the agent proposes and the CM approves · 🧑 the human only.
 
 ## 1. The system at a glance: two sides meeting at the partnership
@@ -32,7 +34,7 @@ The loops matter more than the line. **Performance feeds the roster** (the roste
 ```mermaid
 flowchart TD
   A[Client request: brief, call notes, prior campaigns] --> B[🤖 Agent extracts: product, audience, markets, timing, budget]
-  B --> C[🤝 Agent proposes objective type: awareness / consideration / conversion]
+  B --> C[🤝 Agent proposes objective type: awareness / consideration / conversion or affiliate]
   C --> D[🤝 Agent drafts KPI framework: primary KPI, targets, benchmarks, measurement method]
   D --> E{CM reviews}
   E -->|edit| D
@@ -40,7 +42,7 @@ flowchart TD
   F --> G[🧑 CM confirms with client]
   G --> D
   E -->|confirm| H[🧑 Targets agreed with client]
-  H --> I[Campaign plan: tiers, creator count, deliverables, workback, reserve]
+  H --> I[Campaign plan, the conductor's bill of materials:<br/>tiers, creator count, deliverables,<br/>product shipped or not, workback, reserve]
   I --> J[[Matching]]
 ```
 
@@ -48,7 +50,7 @@ flowchart TD
 | --- | --- | --- |
 | Awareness | Reach, impressions, video views, CPM | Platform-reported; reach is estimated |
 | Consideration | Engagement rate, saves, shares, CTR, CPE, sentiment | Engagement rate varies hugely by tier |
-| Conversion | Attributed revenue, codes, affiliate sales, CPA, ROAS | Codes leak and undercount the halo effect; agree the method up front |
+| Conversion / affiliate | Attributed revenue, codes, affiliate sales and commission (Later Creator), CPA, ROAS | Codes leak and undercount the halo effect; agree the method up front |
 | (Reported, contested) | EMV | Later uses the Ayzenberg index; many clients distrust it |
 
 ## 3. Supply side: creator intake, vetting, and the roster
@@ -88,7 +90,7 @@ Most new-creator intake belongs to Creator Ops, not Services. For a CM, the supp
 
 ```mermaid
 flowchart TD
-  P[Campaign plan + KPI targets] --> Q[🤝 Agent drafts match criteria: audience, vertical, tier mix, content style, rate band]
+  P[Campaign plan + KPI targets] --> Q[🤝 Agent drafts match criteria: audience, vertical, tier mix,<br/>content style and polish, brand suitability, rate band]
   Q --> Q1{CM approves criteria}
   Q1 -->|edit| Q
   Q1 -->|approve| R[🤖 Search roster first, then the wider index]
@@ -118,8 +120,9 @@ stateDiagram-v2
   Quiet --> Escalated: slack below threshold
   Escalated --> Drafting: CM call resolves
   Escalated --> Replaced: swap to backup
-  DraftSubmitted --> AgentCheck: brief compliance with evidence
-  AgentCheck --> CMReview
+  DraftSubmitted --> AgentCheck: existing draft checker runs against brief
+  AgentCheck --> Revisions: clear miss, CM sends fix request
+  AgentCheck --> CMReview: passes or judgment needed
   CMReview --> Revisions: needs work
   Revisions --> DraftSubmitted
   CMReview --> BrandReview: approved internally
@@ -131,6 +134,20 @@ stateDiagram-v2
   Paid --> [*]
   Replaced --> [*]
 ```
+
+**Decision points on this diagram.** Each state change is a decision point. Every object in the process (campaign, partnership, deliverable, payment) needs a diagram like this one, and each decision point needs the same four answers:
+
+| Decision point | Who acts | On what | Possible outcomes | What it changes next |
+| --- | --- | --- | --- | --- |
+| Draft overdue | System, then CM | The creator and the deadline | Nudge again · escalate · extend · swap | Slack before go-live; whether the backup is used |
+| Draft checked | System | The draft against the brief | Pass · fix request · needs a person | Whether the CM sees it at all |
+| CM review | CM | The draft | Approve · approve with changes · decline unless · decline | Brand review, or another revision round |
+| Brand review | Client | The draft | Approve · feedback | Go-live date |
+| Post live | System | The live post | Verified · fix request | Payment |
+
+Most decision points have a small, fixed set of outcomes. Some, like building a lineup or splitting a budget, have many, and need a composing interface rather than a set of buttons. (*Design position.* It borrows two ideas from actor-network theory: people and systems are both actors, and a stable process can be treated as a black box, which is what a workflow contract is. ANT itself is backward-looking: it traces how a network came to be. Here the record is that trace, and the forward-looking part, using the reconstructed network to recommend what comes next, is an extension, not the theory.)
+
+Draft review is **exceptions first** (*Interview*: the CPO wants a summary of findings that can go straight to the creator, not a confirmation of every check). The agent shows what failed with evidence and a drafted fix request; the CM edits or sends it. Passing checks collapse to a count. Creative judgment, and anything the checker can't assess, still goes to CM review. Products that aren't shipped skip the product-received fact upstream.
 
 ## 6. Hard moment: a creator goes quiet with a deadline close
 
@@ -182,6 +199,8 @@ flowchart TB
 
 This replaces the original "tranche" idea. Creator fees are mostly committed at contracting, so the levers are the **reserve**, the **next wave**, and **swaps**.
 
+**Micro-experiments (R2+).** Before the main boost, the agent can spend a small capped test budget across audiences or placements, then propose splitting the rest of the reserve across 2–5 buckets with expected outcomes. The CM approves the split, and the same thresholds apply. See [principles §10](principles.md#10-the-agent-can-run-small-experiments).
+
 ## 8. The CM's day: from signals to the decision queue
 
 ```mermaid
@@ -204,9 +223,10 @@ flowchart TB
   W1 & W2 & W3 --> CM((CM))
   CM -.->|accept, edit,<br/>reject + reason| AG
   CM -.->|raise or lower autonomy<br/>per action type| AG
+  AG -.->|repeated corrections become<br/>a proposed policy change| CM
 ```
 
-Rejections with reasons are the agent's training signal, and the record of how autonomy is earned.
+Rejections with reasons are the agent's training signal, and the record of how autonomy is earned. This is the factory's **tune the robot** loop (*Interview*): when the same correction repeats, the agent proposes a policy change for the CM to accept, so one decision fixes the next twenty. Nothing in this loop is visible to the brand.
 
 ## 9. Order-independent updates and conflicts
 
@@ -218,10 +238,10 @@ flowchart LR
     f1[Rate agreed]
     f2[Usage rights scoped]
     f3[Whitelisting: yes or no]
-    f4[Product shipped]
+    f4[Product shipped<br/><i>only if gifted/seeded</i>]
     f5[Disclosure acknowledged]
   end
-  f1 & f2 & f3 & f4 & f5 --> G{Set complete?}
+  f1 & f2 & f3 & f4 & f5 --> G{Set complete<br/>for this variant?}
   G -->|no| W[Show what's missing and who owns it]
   G -->|yes| B[Brief sent; milestone sealed]
   B -.->|change needs explicit reopen| M1
