@@ -160,10 +160,25 @@ test("undo rule and the #log alias", async () => {
   expect(parse("#log")).toEqual({ view: "activity" });
 });
 
-test("every agent option declares its effect, and calls are never undoable", async () => {
-  const { deriveProposals } = await import("@/agent/rules");
-  const fx = await import("@/domain/fixtures");
-  const options = deriveProposals(fx).flatMap((p) => p.options);
-  for (const o of options) expect(["internal", "external", "spend"]).toContain(o.effect);
-  expect(options.find((o) => o.id === "call")?.effect).toBe("external");
+test("activity: the outcome of a call is recorded as permanent", () => {
+  renderApp();
+  const card = screen.getByText(/Ana Reyes is quiet/).closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Call Ana" }));
+  fireEvent.click(
+    within(screen.getByRole("dialog")).getByRole("button", { name: /She'll deliver Friday/ }),
+  );
+  go("#activity");
+  const outcome = entry(/Chose "Extend 2 days"/);
+  expect(within(outcome).getByText("Maya")).toBeInTheDocument();
+  expect(within(outcome).queryByRole("button", { name: /Undo/ })).toBeNull();
+  expect(outcome).toHaveTextContent("Permanent: Sent");
+});
+
+test("store: an option it can't match is recorded as permanent, never undoable", async () => {
+  const { renderHook } = await import("@testing-library/react");
+  const { StoreProvider, useStore } = await import("@/domain/store");
+  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
+  const p = result.current.proposals[0];
+  act(() => result.current.resolve(p, "no-such-option"));
+  expect(result.current.activity[0]).toMatchObject({ actor: "Maya", effect: "external" });
 });
