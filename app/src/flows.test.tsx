@@ -109,3 +109,53 @@ test("open-item copy uses the Oxford comma and plural wording", async () => {
   expect(openItemsLabel(1)).toBe("1 member still needs details");
   expect(openItemsLabel(2)).toBe("2 members still need details");
 });
+
+/** One record, any actor: explicit actors, and undo only for what never left the system. */
+
+const entry = (text: RegExp) =>
+  screen
+    .getAllByTestId("activity-entry")
+    .find((el) => text.test(el.textContent ?? "")) as HTMLElement;
+
+test("activity: one record shows system, agent, and named people as explicit actors", () => {
+  renderApp();
+  go("#activity");
+  expect(screen.getByRole("heading", { level: 1, name: "Activity" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: /Activity/ })).toBeInTheDocument();
+  expect(within(entry(/Draft reminder sent to Ana/)).getByText("system")).toBeInTheDocument();
+  expect(within(entry(/Pulled 72h metrics/)).getByText("agent")).toBeInTheDocument();
+  expect(within(entry(/Called Ana/)).getByText("Jordan")).toBeInTheDocument();
+  expect(within(entry(/Approved lineup/)).getByText("Maya")).toBeInTheDocument();
+});
+
+test("activity: internal actions can be undone; anything sent is permanent", () => {
+  renderApp();
+  go("#activity");
+  expect(
+    within(entry(/Pulled 72h metrics/)).getByRole("button", { name: /Undo/ }),
+  ).toBeInTheDocument();
+  const reminder = entry(/Draft reminder sent to Ana/);
+  expect(within(reminder).queryByRole("button", { name: /Undo/ })).toBeNull();
+  expect(reminder).toHaveTextContent("Permanent: Sent");
+});
+
+test("activity: a decision that sends is recorded under Maya with no undo", () => {
+  renderApp();
+  const card = screen
+    .getByText(/Rio Castillo's draft misses/)
+    .closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Send fix request" }));
+  go("#activity");
+  const decision = entry(/Chose "Send fix request"/);
+  expect(within(decision).getByText("Maya")).toBeInTheDocument();
+  expect(within(decision).queryByRole("button", { name: /Undo/ })).toBeNull();
+});
+
+test("undo rule and the #log alias", async () => {
+  const { isUndoable } = await import("@/domain/types");
+  const { parse } = await import("@/router");
+  expect(isUndoable({ effect: "internal" })).toBe(true);
+  expect(isUndoable({ effect: "external" })).toBe(false);
+  expect(isUndoable({ effect: "spend" })).toBe(false);
+  expect(parse("#log")).toEqual({ view: "activity" });
+});

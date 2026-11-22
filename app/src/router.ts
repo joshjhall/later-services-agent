@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 
 /**
  * Minimal hash routes, so any view can be deep-linked during the demo.
- *   #today · #account/<id> · #campaign/<id> · #goal/<id> · #lineup/<id> · #roster · #log
+ *   #today · #account/<id> · #campaign/<id> · #goal/<id> · #lineup/<id> · #roster · #activity
+ *   (#log is kept as an alias for #activity so older links still land.)
  */
 export type Route =
   | { view: "today" }
@@ -11,13 +12,14 @@ export type Route =
   | { view: "goal"; id: string }
   | { view: "lineup"; id: string }
   | { view: "roster" }
-  | { view: "log" };
+  | { view: "activity" };
 
 export function parse(hash: string): Route {
   const [view, id] = hash.replace(/^#\/?/, "").split("/");
   if (view === "account" && id) return { view, id };
   if ((view === "campaign" || view === "goal" || view === "lineup") && id) return { view, id };
-  if (view === "roster" || view === "log") return { view };
+  if (view === "roster" || view === "activity") return { view };
+  if (view === "log") return { view: "activity" };
   return { view: "today" };
 }
 

@@ -1,4 +1,4 @@
-import type { Account, AgentLogEntry, Campaign, Creator, Deliverable, Partnership } from "./types";
+import type { Account, ActivityEntry, Campaign, Creator, Deliverable, Partnership } from "./types";
 
 /** The demo's "today". Every date below is relative to it. */
 export const DEMO_TODAY = "2026-11-18";
@@ -260,33 +260,54 @@ export const deliverables: Deliverable[] = [
   },
 ];
 
-export const agentLog: AgentLogEntry[] = [
+/** The one record (principles §2): newest first, every actor, nothing inferred from text. */
+export const activity: ActivityEntry[] = [
   {
-    id: "log-1",
+    id: "act-1",
     at: "2026-11-18",
-    action: "Sent draft reminder (email + DM)",
+    actor: "system",
+    action: "Draft reminder sent to Ana · from Maya's team",
     target: "Ana Reyes · Sparkling Citrus",
-    undoable: false,
+    effect: "external",
   },
   {
-    id: "log-2",
+    id: "act-2",
     at: "2026-11-18",
+    actor: "agent",
     action: "Verified live post: link, code, #ad disclosure",
     target: "Mei Tanaka · Sparkling Citrus",
-    undoable: false,
+    effect: "internal",
   },
   {
-    id: "log-3",
+    id: "act-3",
     at: "2026-11-18",
+    actor: "agent",
     action: "Pulled 72h metrics; updated pacing",
     target: "Trail season",
-    undoable: true,
+    effect: "internal",
   },
   {
-    id: "log-4",
+    id: "act-4",
     at: "2026-11-17",
+    actor: "Jordan",
+    action: "Called Ana · draft moved to Thursday",
+    target: "Ana Reyes · Sparkling Citrus",
+    effect: "external",
+  },
+  {
+    id: "act-5",
+    at: "2026-11-17",
+    actor: "agent",
     action: "Logged draft receipt; started brief-compliance check",
     target: "Rio Castillo · Sparkling Citrus",
-    undoable: true,
+    effect: "internal",
+  },
+  {
+    id: "act-6",
+    at: "2026-11-16",
+    actor: "Maya",
+    action: "Approved lineup",
+    target: "Trail season",
+    effect: "external",
   },
 ];

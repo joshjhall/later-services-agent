@@ -4,9 +4,9 @@ import { PageHeader } from "./PageHeader";
 
 /** Cross-account decision queue, ranked by consequence × time (flows §8). */
 export function TodayView() {
-  const { proposals, resolved, log } = useStore();
+  const { proposals, resolved, activity } = useStore();
   const open = proposals.filter((p) => !resolved[p.id]);
-  const handled = log.filter((l) => l.at === "2026-11-18").length;
+  const handled = activity.filter((e) => e.actor === "agent" && e.at === "2026-11-18").length;
 
   return (
     <div className="flex flex-col gap-6">

@@ -23,10 +23,10 @@ import { ShellLayout } from "@/shell/ShellLayout";
 import { TopBar } from "@/shell/TopBar";
 import { ThemeControls } from "@/theme/ThemeControls";
 import { AccountView } from "@/views/AccountView";
+import { ActivityView } from "@/views/ActivityView";
 import { CampaignView } from "@/views/CampaignView";
 import { GoalView } from "@/views/GoalView";
 import { LineupView } from "@/views/LineupView";
-import { LogView } from "@/views/LogView";
 import { RosterView } from "@/views/RosterView";
 import { TodayView } from "@/views/TodayView";
 
@@ -42,8 +42,8 @@ function View({ route }: { route: Route }) {
       return <LineupView id={route.id} />;
     case "roster":
       return <RosterView />;
-    case "log":
-      return <LogView />;
+    case "activity":
+      return <ActivityView />;
     default:
       return <TodayView />;
   }
@@ -105,7 +105,7 @@ export function AppShell() {
               </SidebarMenu>
             </SidebarGroup>
             <SidebarGroup>
-              <SidebarGroupLabel>Creators and agent</SidebarGroupLabel>
+              <SidebarGroupLabel>Creators and activity</SidebarGroupLabel>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={route.view === "roster"}>
@@ -115,9 +115,9 @@ export function AppShell() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={route.view === "log"}>
-                    <a href={href({ view: "log" })}>
-                      <ScrollText /> Agent log
+                  <SidebarMenuButton asChild isActive={route.view === "activity"}>
+                    <a href={href({ view: "activity" })}>
+                      <ScrollText /> Activity
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
