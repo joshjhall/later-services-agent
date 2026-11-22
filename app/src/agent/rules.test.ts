@@ -446,6 +446,25 @@ describe("fmt", () => {
     expect(fmt(n, "$")).toBe(out);
   });
 
+  test.each([
+    [999_499, "", "999K"],
+    [999_500, "", "1.0M"],
+    [999_500, "$", "$1.0M"],
+  ])("K/M boundary: fmt(%d, %j) -> %s, never 1000K", (n, unit, out) => {
+    expect(fmt(n, unit as "" | "$")).toBe(out);
+  });
+
+  test.each([
+    [-5000, "", "-5K"],
+    [-2_460_000, "", "-2.5M"],
+    [-450, "", "-450"],
+    [-999_500, "", "-1.0M"],
+    [-0.4, "", "0"],
+    [-85_000, "$", "-$85K"],
+  ])("negative: fmt(%d, %j) -> %s, scaled like positives", (n, unit, out) => {
+    expect(fmt(n, unit as "" | "$")).toBe(out);
+  });
+
   test("the unit defaults to bare", () => {
     expect(fmt(5000)).toBe(fmt(5000, ""));
   });

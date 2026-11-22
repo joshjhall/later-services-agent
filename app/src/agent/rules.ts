@@ -447,11 +447,17 @@ export function deriveProposals(
 
 export function fmt(n: number, unit: "%" | "$" | "" = "") {
   if (unit === "%") return `${n.toFixed(1)}%`;
-  const s =
-    n >= 1e6
-      ? `${(n / 1e6).toFixed(1)}M`
-      : n >= 1e3
-        ? `${Math.round(n / 1e3)}K`
-        : `${Math.round(n)}`;
-  return unit === "$" ? `$${s}` : s;
+  // Scale on the magnitude so negatives get K/M too, and promote to M when the
+  // K value rounds up to 1000 (999_500 is "1.0M", not "1000K").
+  const abs = Math.abs(n);
+  const k = Math.round(abs / 1e3);
+  const body =
+    abs >= 1e6 || k >= 1e3
+      ? `${(abs / 1e6).toFixed(1)}M`
+      : abs >= 1e3
+        ? `${k}K`
+        : `${Math.round(abs)}`;
+  // The sign goes before the unit ("-$5K"), and a value that rounds to zero stays "0".
+  const sign = n < 0 && body !== "0" ? "-" : "";
+  return unit === "$" ? `${sign}$${body}` : `${sign}${body}`;
 }
