@@ -13,19 +13,31 @@ interface Resolution {
   at: string;
 }
 
+/** The proposal a sent draft answers; `action` as in `resolve`. */
+export interface Answers {
+  proposal: Proposal;
+  optionId: string;
+  action?: string;
+}
+
 interface Store {
   world: typeof fx;
   proposals: Proposal[];
   /** Keyed by proposal id, so resolving twice is a no-op (framing §6). */
   resolved: Record<string, Resolution>;
-  resolve: (p: Proposal, optionId: string) => void;
+  /**
+   * Resolve a proposal as `optionId`. `action` names what was decided when it
+   * differs from the option the queue card shows (e.g. "Approved lineup" for
+   * the "Review lineup" option); it becomes the Activity entry and the label.
+   */
+  resolve: (p: Proposal, optionId: string, action?: string) => void;
   /** What actually went out, keyed by draft id (the reviewed text, not the agent's). Sending twice is a no-op. */
   sent: Record<string, MessageDraft>;
   /**
    * Send a reviewed draft: one permanent entry from Maya's team. If the draft
    * answers a proposal, that proposal resolves as `optionId` in the same step.
    */
-  send: (draft: MessageDraft, answers?: { proposal: Proposal; optionId: string }) => void;
+  send: (draft: MessageDraft, answers?: Answers) => void;
   activity: ActivityEntry[];
 }
 
@@ -46,17 +58,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       proposals,
       resolved,
       activity,
-      resolve: (p, optionId) => {
+      resolve: (p, optionId, action) => {
         if (resolved[p.id]) return; // idempotent
         const option = p.options.find((o) => o.id === optionId);
-        const label = option?.label ?? optionId;
+        const label = action ?? option?.label ?? optionId;
         setResolved((r) => ({ ...r, [p.id]: { optionId, label, at: fx.DEMO_TODAY } }));
         setActivity((a) => [
           {
             id: `act-${p.id}`,
             at: fx.DEMO_TODAY,
             actor: CURRENT_USER,
-            action: `Chose "${label}"`,
+            action: action ?? `Chose "${label}"`,
             target: p.title,
             // An unknown option is treated as permanent: undo is opt-in, never a default.
             effect: option?.effect ?? "external",
@@ -70,8 +82,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         sentNow.current.add(draft.id);
         setSent((s) => ({ ...s, [draft.id]: draft }));
         if (answers) {
-          const { proposal, optionId } = answers;
-          const label = proposal.options.find((o) => o.id === optionId)?.label ?? optionId;
+          const { proposal, optionId, action } = answers;
+          const label =
+            action ?? proposal.options.find((o) => o.id === optionId)?.label ?? optionId;
           // Checked inside the updater, so an earlier decision always stands.
           setResolved((r) =>
             r[proposal.id] ? r : { ...r, [proposal.id]: { optionId, label, at: fx.DEMO_TODAY } },

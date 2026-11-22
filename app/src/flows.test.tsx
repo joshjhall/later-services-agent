@@ -249,6 +249,38 @@ test("stating the goal: closing the client email draft leaves the goal unconfirm
   ).toBeInTheDocument();
 });
 
+test("reviewing the lineup: approving records the decision, not the queue card's button", () => {
+  renderApp();
+  const card = screen
+    .getByText(/Approve proposed lineup for/)
+    .closest("[data-severity]") as HTMLElement;
+  // The queue card still navigates with "Review lineup".
+  expect(within(card).getByRole("button", { name: "Review lineup" })).toBeInTheDocument();
+  go("#lineup/cmp-holiday-gifting");
+  fireEvent.click(screen.getByRole("button", { name: /Approve lineup/ }));
+  go("#activity");
+  expect(within(entry(/Approved lineup/)).getByText("Maya")).toBeInTheDocument();
+  expect(screen.queryByText(/Chose "Review lineup"/)).toBeNull();
+  go("");
+  expect(screen.getByText(/Approved lineup · logged/)).toBeInTheDocument();
+});
+
+test("stating the goal: confirming records the decision, not the queue card's button", () => {
+  renderApp();
+  const card = screen
+    .getByText(/Confirm goal and KPIs for/)
+    .closest("[data-severity]") as HTMLElement;
+  expect(within(card).getByRole("button", { name: "Review goal" })).toBeInTheDocument();
+  go("#goal/cmp-spring-serum");
+  fireEvent.click(screen.getByRole("button", { name: "Confirm and draft client email" }));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: /Send/ }));
+  go("#activity");
+  expect(within(entry(/Sent client email to Priya Rao/)).getByText("Maya")).toBeInTheDocument();
+  expect(screen.queryByText(/Chose "Review goal"/)).toBeNull();
+  go("");
+  expect(screen.getByText(/Confirmed goal · logged/)).toBeInTheDocument();
+});
+
 test("draft: a double-click on Send records one entry", () => {
   renderApp();
   const card = screen

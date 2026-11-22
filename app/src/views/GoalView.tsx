@@ -185,7 +185,7 @@ export function GoalView({ id }: { id: string }) {
                 onClick={() => {
                   if (clientEmail) setDrafting(true);
                   else if (proposal) {
-                    resolve(proposal, "open");
+                    resolve(proposal, "open", "Confirmed goal");
                     toast("Goal marked ready. No client email draft yet for this campaign.");
                   }
                 }}
@@ -203,7 +203,7 @@ export function GoalView({ id }: { id: string }) {
       {clientEmail && (
         <DraftSheet
           draft={clientEmail}
-          answers={proposal && { proposal, optionId: "open" }}
+          answers={proposal && { proposal, optionId: "open", action: "Confirmed goal" }}
           open={drafting}
           onOpenChange={setDrafting}
         />
