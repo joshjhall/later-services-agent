@@ -485,7 +485,10 @@ describe("fmt", () => {
   test.each([
     [999_949_999, "", "999.9M"],
     [999_950_000, "", "1.0B"],
+    [1_200_000_000, "", "1.2B"],
     [2_460_000_000, "$", "$2.5B"],
+    // B is the top tier on purpose: a trillion stays in B rather than adding T.
+    [1e12, "", "1000.0B"],
   ])("M/B boundary: fmt(%d, %j) -> %s, never 1000.0M", (n, unit, out) => {
     expect(fmt(n, unit as "" | "$")).toBe(out);
   });
