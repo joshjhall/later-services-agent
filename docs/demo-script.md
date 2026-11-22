@@ -2,6 +2,11 @@
 
 A path through the prototype for the 20-minute walkthrough. Run `just dev` and open <http://localhost:5173>. All data is fictional; the demo date is Nov 18, 2026.
 
+## 0. Framing (30 seconds)
+
+- Later's own words: an **agentic factory** with a polished front desk. Goal and lineup are **design time** (approve a plan). The quiet creator is **run time** (decide an exception). The CM supervises the factory and tunes it.
+- These are informed guesses from three conversations and public material, not research with a Services pod. Say what I'd validate first.
+
 ## 1. Today: what needs me (`#today`)
 
 - Six decisions across three accounts, ranked by consequence × time. The agent handled three things on its own (link to the agent log).
@@ -25,10 +30,18 @@ A path through the prototype for the 20-minute walkthrough. Run `just dev` and o
 - **Call Ana** opens a call brief: what the agent knows, what to ask, what each answer means. Choose an outcome; the card resolves once and the decision is logged.
 - Swap is one click because the backup was approved during the lineup review.
 
+## 4b. Exceptions first (`#today`, Rio's draft card)
+
+- The draft checker already exists at Later. The card leads with the one failed check and a drafted fix request; the six passes collapse to a row. "Send fix request" is the primary action, not "Approve".
+
 ## 5. Trust and audit (`#log`, `#roster`)
 
 - The log shows everything the agent did without asking, and every human decision.
 - The roster's reliability numbers are produced by the agent as it works.
+
+## 6. Tuning the robot (if time)
+
+- Change `AGENT_POLICY.escalateWithinDays` live. A CM's repeated correction would propose exactly this change; today it's one line in the rules layer.
 
 ## Live-change candidates
 
@@ -38,4 +51,5 @@ A path through the prototype for the 20-minute walkthrough. Run `just dev` and o
 | "Escalate sooner / later" | `app/src/agent/rules.ts`: `AGENT_POLICY.escalateWithinDays` | 1 line |
 | "Let the agent send more reminders first" | `AGENT_POLICY.autoReminders` | 1 line |
 | "Add an evidence row" | the `evidence` array in the matching rule in `rules.ts` | ~3 lines |
+| "Add polish as a criterion" | `criteria` in `app/src/agent/drafts.ts` (lineup) | ~5 lines |
 | "Change a creator's history" | `app/src/domain/fixtures.ts` | 1 line |

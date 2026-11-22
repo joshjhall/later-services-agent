@@ -27,6 +27,10 @@ Public research compiled 2026-11-17 to ground [framing.md](framing.md). "Stated"
 - **Bibigo:** about 11 macro and mega creators; 3% TikTok CTR against a 1.3% benchmark. <https://later.com/case-studies/bibigo/>
 - **Premier Protein:** 78 creators; the brand supplied draft feedback and legal disclaimers. <https://later.com/case-studies/premier-protein/>
 
+## Interview process (Later leadership)
+
+Conversations with Later's CPO and CTO during the hiring process, Oct–Nov 2026. They are paraphrased, and only product and strategy content is used; raw notes are kept out of the repo. Claims from them are labelled *Interview* in [../assumptions.md](../assumptions.md), which lists each one. In summary: the agentic factory and front-desk model; the maturity curve from manual to agentic; the conductor agent's design time and run time; cost to serve as the main cost; the existing draft-review checker and the CPO's view of its daily-use UX; workflow variants; action hierarchy as a known gap.
+
 ## Competitors
 
 The pattern: every major platform shipped a named agent in 2025–26, almost all aimed at **discovery, outreach, and reporting**. Mid-campaign execution remains manual.
