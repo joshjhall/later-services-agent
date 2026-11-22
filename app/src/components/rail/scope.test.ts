@@ -57,6 +57,8 @@ test("activityIn scopes by campaign id when names share a prefix", () => {
     { id: "x", target: "Ana Reyes · Sparkling Citrus", campaignId: "a" },
     { id: "y", target: "Ana Reyes · Sparkling Citrus relaunch", campaignId: "b" },
     { id: "z", target: "Sparkling Citrus relaunch" },
+    // An id outside the scope excludes the entry, even though its text names an in-scope campaign.
+    { id: "w", target: "Sparkling Citrus", campaignId: "other" },
   ] as ActivityEntry[];
   // With an id, an entry lands only in its own campaign.
   // Without one, "z" falls back to name matching, which is loose: its target contains both names.
