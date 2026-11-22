@@ -9,6 +9,7 @@ import { FALLBACK, replyTo } from "./responses";
 
 afterEach(() => {
   location.hash = "";
+  vi.restoreAllMocks();
 });
 
 const items = buildItems(world);
@@ -178,6 +179,7 @@ test("a blank message isn't sent, and Enter sends without Shift", () => {
   // Shift+Enter and the Enter that commits an IME word add a line, not a message.
   expect(fireEvent.keyDown(message, { key: "Enter", shiftKey: true })).toBe(true);
   expect(fireEvent.keyDown(message, { key: "Enter", keyCode: 229 })).toBe(true);
+  expect(fireEvent.keyDown(message, { key: "Enter", isComposing: true })).toBe(true);
   expect(sent()).toBe(0);
 
   const scroll = vi.spyOn(Element.prototype, "scrollIntoView");
@@ -186,5 +188,4 @@ test("a blank message isn't sent, and Enter sends without Shift", () => {
   expect(sent()).toBe(1);
   expect(message).toHaveValue("");
   expect(scroll).toHaveBeenCalled();
-  scroll.mockRestore();
 });
