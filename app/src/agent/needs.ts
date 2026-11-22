@@ -32,6 +32,12 @@ export function needOf(p: Pick<Proposal, "kind" | "severity">): Need {
       return "waiting";
     case "below-forecast":
       return "todo";
+    default: {
+      // A kind added live without a rule here still shows on Today, never vanishes.
+      const unmapped: never = p.kind;
+      void unmapped;
+      return "todo";
+    }
   }
 }
 

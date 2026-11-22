@@ -14,6 +14,10 @@ test("needOf sorts every kind into a need", () => {
   expect(needOf(p("below-forecast", "warning"))).toBe("todo");
 });
 
+test("an unmapped kind falls back to Things to do instead of vanishing", () => {
+  expect(needOf({ kind: "new-kind" as Kind, severity: "info" })).toBe("todo");
+});
+
 test("critical severity always needs you now, whatever the kind", () => {
   expect(needOf(p("quiet-creator", "critical"))).toBe("now");
   expect(needOf(p("below-forecast", "critical"))).toBe("now");
