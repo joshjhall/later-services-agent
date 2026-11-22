@@ -98,3 +98,17 @@ test("generated fix request: the card opens the agent's email, and sending recor
   expect(sent).toHaveLength(1);
   expect(sent[0]).toHaveTextContent("Permanent");
 });
+
+test("generated draft: closing without sending records nothing and leaves the card open", () => {
+  renderApp();
+  const ben = card(/Confirm Ben's audience is mostly US/);
+  fireEvent.click(within(ben).getByRole("button", { name: "Draft the email" }));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Not yet" }));
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(within(ben).getByRole("button", { name: "Draft the email" })).toBeInTheDocument();
+  go("#activity");
+  const sent = screen
+    .queryAllByTestId("activity-entry")
+    .filter((el) => /Sent info request to .*Ben Okafor/.test(el.textContent ?? ""));
+  expect(sent).toHaveLength(0);
+});
