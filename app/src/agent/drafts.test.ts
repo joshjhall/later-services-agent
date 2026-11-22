@@ -27,6 +27,8 @@ describe("message drafts", () => {
 
 test("every message draft and seeded activity entry names a real campaign, so the rail scopes by id", () => {
   const ids = new Set(campaigns.map((c) => c.id));
+  expect(Object.keys(messageDrafts).length).toBeGreaterThan(0);
+  expect(activity.length).toBeGreaterThan(0);
   for (const d of Object.values(messageDrafts)) expect(ids, d.id).toContain(d.campaignId);
   for (const e of activity) expect(ids, e.id).toContain(e.campaignId);
 });
