@@ -42,7 +42,7 @@ A path through the prototype for the 20-minute walkthrough. Run `just dev` and o
 ## 6. Tuning the robot (if time)
 
 - Change `AGENT_POLICY.escalateWithinDays` live. A CM's repeated correction would propose exactly this change; today it's one line in the rules layer.
-- Change `AGENT_POLICY.maxDailySpend` live. The boost card's "Agent cap" row is read from it: set it to $5,000 and the card says the $4,000 option is within the cap; raise it above $8,000 and both are. Say it out loud: the cap is shown, not yet enforced. Both options still wait for the CM, and wiring the cap into each option's lane is the next step.
+- Change `AGENT_POLICY.maxDailySpend` live. The boost card's "Agent cap" row is read from it: set it to $5,000 and the card says the $4,000 option is within the cap; raise it to $8,000 or more and both are. The row compares each boost as if spent in one day, and says so, because the demo data has no boost duration. Say it out loud: the cap is shown, not yet enforced. Both options still wait for the CM, and wiring the cap into each option's lane is the next step.
 
 ## Live-change candidates
 
@@ -52,6 +52,8 @@ A path through the prototype for the 20-minute walkthrough. Run `just dev` and o
 | "Escalate sooner / later" | `app/src/agent/rules.ts`: `AGENT_POLICY.escalateWithinDays` | 1 line |
 | "Let the agent send more reminders first" | `AGENT_POLICY.autoReminders` | 1 line |
 | "Show a different spending cap" | `AGENT_POLICY.maxDailySpend` (the boost card's "Agent cap" row follows; display only) | 1 line |
+| "Change the per-test cap" | `AGENT_POLICY.maxTestSpend` is quoted in the brief but not read yet (no test-spend proposal exists); say so and offer `maxDailySpend` instead | 0 lines |
+| "Re-price a boost option" | the `boosts` list in the boost rule in `rules.ts` (the buttons and the cap row both follow) | 1 line |
 | "Add an evidence row" | the `evidence` array in the matching rule in `rules.ts` | ~3 lines |
 | "Add polish as a criterion" | `criteria` in `app/src/agent/drafts.ts` (lineup) | ~5 lines |
 | "Change a creator's history" | `app/src/domain/fixtures.ts` | 1 line |
