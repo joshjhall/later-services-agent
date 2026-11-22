@@ -75,13 +75,35 @@ test("Find or ask opens from the button, ⌘K, Ctrl+K, and /, but not / while ty
   expect(fireEvent.keyDown(document.body, { key: "/", ctrlKey: true })).toBe(true);
   expect(dialog()).toBeNull();
 
-  for (const tag of ["input", "textarea"]) {
-    const field = document.createElement(tag);
+  const editable = document.createElement("div");
+  editable.contentEditable = "true";
+  // jsdom does not implement isContentEditable.
+  Object.defineProperty(editable, "isContentEditable", { value: true });
+  const fields = [
+    ..."input textarea select".split(" ").map((t) => document.createElement(t)),
+    editable,
+  ];
+  for (const field of fields) {
     document.body.append(field);
     expect(fireEvent.keyDown(field, { key: "/" })).toBe(true);
     expect(dialog()).toBeNull();
     field.remove();
   }
+
+  // Autofill keydowns carry no key; IME composition must pass through.
+  const errors: unknown[] = [];
+  const onError = (e: ErrorEvent) => {
+    errors.push(e.error);
+    e.preventDefault();
+  };
+  addEventListener("error", onError);
+  document.body.dispatchEvent(new Event("keydown", { bubbles: true }));
+  removeEventListener("error", onError);
+  expect(errors).toEqual([]);
+  expect(fireEvent.keyDown(document.body, { key: "k", metaKey: true, isComposing: true })).toBe(
+    true,
+  );
+  expect(dialog()).toBeNull();
 });
 
 test("every destination stays reachable from the sidebar", () => {
