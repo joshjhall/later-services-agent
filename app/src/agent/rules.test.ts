@@ -264,14 +264,18 @@ describe("deriveProposals", () => {
     const benDraft = requests[1].options.find((o) => o.id === "draft-email")?.draft;
     expect(benDraft?.id).toBe(requests[1].id);
     expect(benDraft?.target).toBe("Ben Okafor · Holiday gifting");
+    expect(requests[1].title).toBe("Confirm Ben's audience is mostly US");
+    expect(requests[1].assumption).toMatch(/mostly US from the TikTok profile/);
   });
 
   test("draft review: not raised without a drafted fix request behind it", () => {
     const noFix = deliverables.map((d) =>
       d.id === "d-rio-1" ? { ...d, id: "d-rio-undrafted" } : d,
     );
-    const kinds = deriveProposals({ ...world, deliverables: noFix }).map((p) => p.id);
-    expect(kinds).not.toContain("review:d-rio-undrafted");
+    // Positive control: the same deliverable with its fix draft is reviewed.
+    expect(deriveProposals(world).map((p) => p.id)).toContain("review:d-rio-1");
+    const ids = deriveProposals({ ...world, deliverables: noFix }).map((p) => p.id);
+    expect(ids.some((id) => id.startsWith("review:"))).toBe(false);
   });
 });
 

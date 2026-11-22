@@ -55,6 +55,12 @@ describe("info request draft", () => {
     expect(infoRequestDraft({ creator: mei, campaign: holiday }).body).toMatch(/mostly US\/CA\./);
   });
 
+  test("with no client known, names the campaign alone", () => {
+    const d = infoRequestDraft({ creator: ana, campaign: holiday });
+    expect(d.to).toBe("Northstar Talent (Ana Reyes's manager)");
+    expect(d.body).toMatch(/proposing Ana for the Holiday gifting campaign\./);
+  });
+
   test("with no manager, goes to the creator directly", () => {
     const { representedBy: _, ...solo } = ana;
     const d = infoRequestDraft({ creator: solo, campaign: holiday });
