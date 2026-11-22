@@ -442,6 +442,8 @@ describe("fmt", () => {
     [12.345, "12.3%"],
     [0, "0.0%"],
     [2500, "2500.0%"],
+    [-0.04, "0.0%"],
+    [-12.345, "-12.3%"],
   ])("percent: fmt(%d) -> %s, never K/M-scaled", (n, out) => {
     expect(fmt(n, "%")).toBe(out);
   });
@@ -449,7 +451,6 @@ describe("fmt", () => {
   test.each([
     [0, "0"],
     [999.4, "999"],
-    [999.6, "1000"],
     [1000, "1K"],
     [12_499, "12K"],
     [1_000_000, "1.0M"],
@@ -475,11 +476,41 @@ describe("fmt", () => {
   });
 
   test.each([
+    [999.4, "", "999"],
+    [999.5, "", "1K"],
+    [999.6, "", "1K"],
+    [999.6, "$", "$1K"],
+  ])("bare/K boundary: fmt(%d, %j) -> %s, never 1000", (n, unit, out) => {
+    expect(fmt(n, unit as "" | "$")).toBe(out);
+  });
+
+  test.each([
+    [999_949_999, "", "999.9M"],
+    [999_950_000, "", "1.0B"],
+    [1_200_000_000, "", "1.2B"],
+    [2_460_000_000, "$", "$2.5B"],
+  ])("M/B boundary: fmt(%d, %j) -> %s, never 1000.0M", (n, unit, out) => {
+    expect(fmt(n, unit as "" | "$")).toBe(out);
+  });
+
+  test("B is the ceiling: a trillion stays in B rather than adding a T tier", () => {
+    expect(fmt(1e12)).toBe("1000.0B");
+  });
+
+  test.each([NaN, Infinity, -Infinity].flatMap((n) => ["", "$", "%"].map((u) => [n, u])))(
+    "non-finite: fmt(%d, %j) -> the no-value dash",
+    (n, unit) => {
+      expect(fmt(n as number, unit as "" | "$" | "%")).toBe("—");
+    },
+  );
+
+  test.each([
     [-5000, "", "-5K"],
     [-2_460_000, "", "-2.5M"],
     [-450, "", "-450"],
     [-999_500, "", "-1.0M"],
-    [-999.6, "", "-1000"],
+    [-999.6, "", "-1K"],
+    [-999_950_000, "", "-1.0B"],
     [-0.4, "", "0"],
     [-0.4, "$", "$0"],
     [-85_000, "$", "-$85K"],
