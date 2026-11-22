@@ -208,3 +208,109 @@ export const lineupDrafts: Record<string, LineupDraft> = {
     ],
   },
 };
+
+/**
+ * A message the agent drafted for a person to review and send (output class:
+ * draft). Nothing goes out until someone presses Send; then it's permanent.
+ */
+export interface MessageDraft {
+  id: string;
+  kind: "fix request" | "client email" | "info request" | "creator brief";
+  /** Who receives it, as shown in the sheet and the activity record. */
+  to: string;
+  /** What the activity record names as the subject, e.g. "Rio Castillo · Sparkling Citrus". */
+  target: string;
+  subject: string;
+  body: string;
+}
+
+export const messageDrafts: Record<string, MessageDraft> = {
+  "fix:d-rio-1": {
+    id: "fix:d-rio-1",
+    kind: "fix request",
+    to: "Rio Castillo",
+    target: "Rio Castillo · Sparkling Citrus",
+    subject: "One fix before we approve your Reel",
+    body: [
+      "Hi Rio,",
+      "",
+      "Thanks for the draft, it's great and on brief. One change before we can approve it: the #ad disclosure needs to be on screen in the first 3 seconds, not only in the caption. Everything else (product shot, key message, and timing) is good to go.",
+      "",
+      "Could you send the updated cut by Friday? Go-live stays Nov 25.",
+      "",
+      "Thanks,",
+      "Maya",
+    ].join("\n"),
+  },
+  "client:cmp-spring-serum": {
+    id: "client:cmp-spring-serum",
+    kind: "client email",
+    to: "Priya Rao, Lumen Skin",
+    target: "Spring serum",
+    subject: "Spring serum: proposed goal, KPIs, and two questions",
+    body: [
+      "Hi Priya,",
+      "",
+      "Here's the framework we propose for the Spring serum launch, based on your brief and our kickoff call.",
+      "",
+      "Objective: awareness, introducing the serum to people who don't know Lumen yet.",
+      "KPIs: reach 25M, video views 8M, and engagement rate 4.0%.",
+      "",
+      "Two questions before we lock it in:",
+      "1. Is Canada really out? Two shortlisted creators have 30%+ Canadian audiences.",
+      "2. Does awareness need a brand-lift study, or are platform metrics enough for the wrap report?",
+      "",
+      "Happy to walk through it on a call.",
+      "",
+      "Best,",
+      "Maya",
+    ].join("\n"),
+  },
+  "info:cr-ana": {
+    id: "info:cr-ana",
+    kind: "info request",
+    to: "Northstar Talent (Ana Reyes's manager)",
+    target: "Ana Reyes · Holiday gifting",
+    subject: "Quick check on Ana's audience split",
+    body: [
+      "Hi,",
+      "",
+      "We're proposing Ana for Brightside's Holiday gifting campaign, which targets US audiences. Her profile suggests her audience is mostly US. Could you confirm the country split from her latest TikTok analytics?",
+      "",
+      "A screenshot is perfect.",
+      "",
+      "Thanks,",
+      "Maya",
+    ].join("\n"),
+  },
+  // Not wired to a button yet: briefs go out after the client approves the lineup.
+  "brief:cr-ana": {
+    id: "brief:cr-ana",
+    kind: "creator brief",
+    to: "Ana Reyes",
+    target: "Ana Reyes · Spring serum",
+    subject: "Your brief: Lumen Spring serum, 1 TikTok",
+    body: [
+      "Hi Ana,",
+      "",
+      "Three things matter most for this one:",
+      "- Show the serum on camera in the first 3 seconds.",
+      "- Say “glow”, not “radiance”: it lands better with your audience.",
+      "- Put #ad on screen, not only in the caption.",
+      "",
+      "Everything else is yours. Draft due Feb 1, live Feb 8.",
+      "",
+      "Maya",
+    ].join("\n"),
+  },
+};
+
+/** Which draft a proposal option opens, keyed "<proposal id>/<option id>". */
+const DRAFT_OPTIONS: Record<string, string> = {
+  "review:d-rio-1/send-fix": "fix:d-rio-1",
+  "info:cmp-holiday-gifting:cr-ana/draft-email": "info:cr-ana",
+};
+
+/** The draft an option opens instead of resolving in place, if any. */
+export const draftFor = (proposalId: string, optionId: string): MessageDraft | undefined =>
+  messageDrafts[DRAFT_OPTIONS[`${proposalId}/${optionId}`]];

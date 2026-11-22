@@ -1,7 +1,7 @@
 import { CheckCircle2, FileText, MessageSquareText } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { goalDrafts } from "@/agent/drafts";
+import { goalDrafts, messageDrafts } from "@/agent/drafts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { DraftSheet } from "@/components/widgets/DraftSheet";
 import { LaneBadge } from "@/components/widgets/LaneBadge";
 import { useStore } from "@/domain/store";
 import type { Objective } from "@/domain/types";
@@ -42,6 +43,8 @@ export function GoalView({ id }: { id: string }) {
   );
   const proposal = proposals.find((p) => p.id === `goal:${id}`);
   const done = proposal && resolved[proposal.id];
+  const clientEmail = messageDrafts[`client:${id}`];
+  const [drafting, setDrafting] = useState(false);
 
   if (!draft || !campaign) return <PageHeader title="No goal draft for this campaign" />;
 
@@ -180,8 +183,11 @@ export function GoalView({ id }: { id: string }) {
             <>
               <Button
                 onClick={() => {
-                  if (proposal) resolve(proposal, "open");
-                  toast("Goal marked ready. The agent drafted a client email for you to review.");
+                  if (clientEmail) setDrafting(true);
+                  else if (proposal) {
+                    resolve(proposal, "open");
+                    toast("Goal marked ready. No client email draft yet for this campaign.");
+                  }
                 }}
               >
                 Confirm and draft client email
@@ -194,6 +200,14 @@ export function GoalView({ id }: { id: string }) {
           )}
         </CardFooter>
       </Card>
+      {clientEmail && (
+        <DraftSheet
+          draft={clientEmail}
+          answers={proposal && { proposal, optionId: "open" }}
+          open={drafting}
+          onOpenChange={setDrafting}
+        />
+      )}
     </div>
   );
 }

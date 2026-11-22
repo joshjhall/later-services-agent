@@ -1,5 +1,6 @@
 import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { draftFor } from "@/agent/drafts";
 import type { Proposal } from "@/agent/rules";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { useStore } from "@/domain/store";
 import { cn } from "@/lib/utils";
 import { href } from "@/router";
 import { CallPrepSheet } from "./CallPrepSheet";
+import { DraftSheet } from "./DraftSheet";
 import { LaneBadge } from "./LaneBadge";
 
 const SEVERITY = {
@@ -22,6 +24,10 @@ const SEVERITY = {
   warning: { label: "Soon", cls: "bg-warning-container text-on-warning-container" },
   info: { label: "When ready", cls: "bg-info-container text-on-info-container" },
 } as const;
+
+/** Every card names its output class (design-system/02-ai/output-classes.md). */
+const outputClass = (p: Proposal) =>
+  p.kind === "info-request" ? "Information request" : "Proposal";
 
 const TONE = { good: "text-success", bad: "text-destructive", neutral: "text-foreground" } as const;
 
@@ -37,9 +43,15 @@ export function ProposalCard({ proposal: p, compact }: { proposal: Proposal; com
   const account = world.accounts.find((a) => a.id === campaign?.accountId);
   const sev = SEVERITY[p.severity];
   const [calling, setCalling] = useState(false);
+  const [drafting, setDrafting] = useState<string | null>(null);
+  const draft = drafting ? draftFor(p.id, drafting) : undefined;
 
-  // Some options open a working view instead of resolving in place.
+  // Some options open a working view or a draft instead of resolving in place.
   const act = (optionId: string) => {
+    if (draftFor(p.id, optionId)) {
+      setDrafting(optionId);
+      return;
+    }
     if (optionId === "call") {
       setCalling(true);
       return;
@@ -58,6 +70,7 @@ export function ProposalCard({ proposal: p, compact }: { proposal: Proposal; com
       <CardHeader className="gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <Badge className={sev.cls}>{sev.label}</Badge>
+          <span className="text-xs font-medium text-muted-foreground">{outputClass(p)}</span>
           <span className="text-xs text-muted-foreground">
             {account?.name} · {campaign?.name}
           </span>
@@ -66,6 +79,21 @@ export function ProposalCard({ proposal: p, compact }: { proposal: Proposal; com
         <CardTitle className="text-base">{p.title}</CardTitle>
         <CardDescription>{p.summary}</CardDescription>
       </CardHeader>
+
+      {p.assumption && (
+        <CardContent>
+          <dl className="grid gap-y-2 text-sm">
+            <div className="grid gap-0.5 border-b border-border/60 pb-1.5">
+              <dt className="text-muted-foreground">Assumed</dt>
+              <dd className="font-medium">{p.assumption}</dd>
+            </div>
+            <div className="grid gap-0.5 border-b border-border/60 pb-1.5">
+              <dt className="text-muted-foreground">If wrong</dt>
+              <dd className="font-medium">{p.ifWrong}</dd>
+            </div>
+          </dl>
+        </CardContent>
+      )}
 
       {!compact && (
         <CardContent>
@@ -107,6 +135,15 @@ export function ProposalCard({ proposal: p, compact }: { proposal: Proposal; com
       </CardFooter>
       {p.kind === "quiet-creator" && (
         <CallPrepSheet proposal={p} open={calling} onOpenChange={setCalling} />
+      )}
+      {draft && drafting && (
+        <DraftSheet
+          key={draft.id}
+          draft={draft}
+          answers={{ proposal: p, optionId: drafting }}
+          open
+          onOpenChange={(o) => !o && setDrafting(null)}
+        />
       )}
     </Card>
   );

@@ -164,16 +164,124 @@ test("activity: internal actions can be undone; anything sent is permanent", () 
   expect(reminder).toHaveTextContent("Permanent");
 });
 
-test("activity: a decision that sends is recorded under Maya with no undo", () => {
+test("draft: a fix request opens an editable draft, and sending records it once", () => {
   renderApp();
   const card = screen
     .getByText(/Rio Castillo's draft misses/)
     .closest("[data-severity]") as HTMLElement;
   fireEvent.click(within(card).getByRole("button", { name: "Send fix request" }));
+  const sheet = screen.getByRole("dialog");
+  expect(within(sheet).getByText(/Draft: fix request to Rio Castillo/)).toBeInTheDocument();
+  const body = within(sheet).getByLabelText("Message") as HTMLTextAreaElement;
+  fireEvent.change(body, { target: { value: "Hi Rio, one fix: #ad on screen, please." } });
+  expect(body.value).toMatch(/one fix/);
+  fireEvent.click(within(sheet).getByRole("button", { name: /Send/ }));
+  expect(within(card).getByText(/Send fix request · logged/)).toBeInTheDocument();
   go("#activity");
-  const decision = entry(/Chose "Send fix request"/);
-  expect(within(decision).getByText("Maya")).toBeInTheDocument();
-  expect(within(decision).queryByRole("button", { name: /Undo/ })).toBeNull();
+  const sent = entry(/Sent fix request to Rio Castillo · from Maya's team/);
+  expect(within(sent).getByText("Maya")).toBeInTheDocument();
+  expect(within(sent).queryByRole("button", { name: /Undo/ })).toBeNull();
+  expect(sent).toHaveTextContent("Permanent");
+  // One record per send: no separate "Chose" entry for the same decision.
+  expect(screen.queryByText(/Chose "Send fix request"/)).toBeNull();
+});
+
+test("draft: closing without sending records nothing and leaves the card open", () => {
+  renderApp();
+  const card = screen
+    .getByText(/Rio Castillo's draft misses/)
+    .closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Send fix request" }));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Not yet" }));
+  expect(within(card).getByRole("button", { name: "Send fix request" })).toBeInTheDocument();
+  go("#activity");
+  expect(screen.queryByText(/Sent fix request/)).toBeNull();
+});
+
+test("information request: names its class, assumption, and consequence; drafts the email", () => {
+  renderApp();
+  const card = screen
+    .getByText(/Confirm Ana's audience is mostly US/)
+    .closest("[data-severity]") as HTMLElement;
+  expect(within(card).getByText("Information request")).toBeInTheDocument();
+  expect(within(card).getByText("Assumed")).toBeInTheDocument();
+  expect(within(card).getByText(/assumed Ana's audience is mostly US/)).toBeInTheDocument();
+  expect(within(card).getByText(/reach estimate drops/)).toBeInTheDocument();
+  fireEvent.click(within(card).getByRole("button", { name: "Draft the email" }));
+  const sheet = screen.getByRole("dialog");
+  expect(within(sheet).getByText(/Draft: info request to Northstar Talent/)).toBeInTheDocument();
+  fireEvent.click(within(sheet).getByRole("button", { name: /Send/ }));
+  go("#activity");
+  expect(entry(/Sent info request to Northstar Talent/)).toHaveTextContent("Permanent");
+});
+
+test("information request: marking it confirmed stays inside the tool, so it can be undone", () => {
+  renderApp();
+  const card = screen
+    .getByText(/Confirm Ana's audience is mostly US/)
+    .closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Mark confirmed" }));
+  go("#activity");
+  const decision = entry(/Chose "Mark confirmed"/);
+  expect(within(decision).getByRole("button", { name: /Undo/ })).toBeInTheDocument();
+});
+
+test("stating the goal: confirming opens the client email draft, and sending logs it", () => {
+  renderApp();
+  go("#goal/cmp-spring-serum");
+  fireEvent.click(screen.getByRole("button", { name: "Confirm and draft client email" }));
+  const sheet = screen.getByRole("dialog");
+  expect(within(sheet).getByText(/Draft: client email to Priya Rao/)).toBeInTheDocument();
+  fireEvent.click(within(sheet).getByRole("button", { name: /Send/ }));
+  expect(screen.getByText(/Ready for client · logged/)).toBeInTheDocument();
+  go("#activity");
+  expect(entry(/Sent client email to Priya Rao/)).toHaveTextContent("Permanent");
+});
+
+test("stating the goal: closing the client email draft leaves the goal unconfirmed", () => {
+  renderApp();
+  go("#goal/cmp-spring-serum");
+  fireEvent.click(screen.getByRole("button", { name: "Confirm and draft client email" }));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Not yet" }));
+  expect(screen.queryByText(/Ready for client · logged/)).toBeNull();
+  expect(
+    screen.getByRole("button", { name: "Confirm and draft client email" }),
+  ).toBeInTheDocument();
+});
+
+test("draft: a double-click on Send records one entry", () => {
+  renderApp();
+  const card = screen
+    .getByText(/Rio Castillo's draft misses/)
+    .closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Send fix request" }));
+  const send = within(screen.getByRole("dialog")).getByRole("button", { name: /Send/ });
+  act(() => {
+    send.click();
+    send.click();
+  });
+  go("#activity");
+  expect(screen.getAllByText(/Sent fix request to Rio Castillo/)).toHaveLength(1);
+});
+
+test("store: sending a draft for an already-resolved proposal keeps the first decision", async () => {
+  const { renderHook } = await import("@testing-library/react");
+  const { StoreProvider, useStore } = await import("@/domain/store");
+  const { messageDrafts } = await import("@/agent/drafts");
+  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
+  const p = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
+  if (!p) throw new Error("info request missing");
+  act(() => result.current.resolve(p, "confirmed"));
+  const before = result.current.activity.length;
+  act(() =>
+    result.current.send(messageDrafts["info:cr-ana"], { proposal: p, optionId: "draft-email" }),
+  );
+  act(() =>
+    result.current.send(messageDrafts["info:cr-ana"], { proposal: p, optionId: "draft-email" }),
+  );
+  expect(result.current.resolved[p.id].optionId).toBe("confirmed");
+  // The message still went out, once.
+  expect(result.current.activity.length).toBe(before + 1);
 });
 
 test("undo rule and the #log alias", async () => {

@@ -50,4 +50,52 @@ describe("deriveProposals", () => {
     expect(review?.options.find((o) => o.primary)?.id).toBe("send-fix");
     expect(review?.evidence[0].tone).toBe("bad");
   });
+
+  test("information request: states its assumption and what changes if it's wrong", () => {
+    const requests = proposals.filter((p) => p.kind === "info-request");
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({ id: "info:cmp-holiday-gifting:cr-ana" });
+    expect(requests[0].assumption).toMatch(/assumed Ana's audience is mostly US/);
+    expect(requests[0].ifWrong).toMatch(/reach estimate drops/);
+  });
+
+  test("information request: none once the audience split is verified", () => {
+    const verified = creators.map((c) => ({ ...c, audienceSource: "verified" as const }));
+    expect(
+      deriveProposals({ ...world, creators: verified }).some((p) => p.kind === "info-request"),
+    ).toBe(false);
+  });
+
+  test("information request: only core lineup members known to the roster, at the lineup stage", async () => {
+    const { lineupDrafts } = await import("./drafts");
+    const base = lineupDrafts["cmp-holiday-gifting"];
+    const withAna = (role: "core" | "backup", handle = "@anamakesthings") => ({
+      "cmp-holiday-gifting": {
+        ...base,
+        candidates: base.candidates.map((c) =>
+          c.handle === "@anamakesthings" ? { ...c, role, handle } : c,
+        ),
+      },
+    });
+    const count = (w: typeof world, l: typeof lineupDrafts) =>
+      deriveProposals(w, undefined, l).filter((p) => p.kind === "info-request").length;
+    expect(count(world, withAna("core"))).toBe(1);
+    expect(count(world, withAna("backup"))).toBe(0);
+    expect(count(world, withAna("core", "@not-on-roster"))).toBe(0);
+    const pastLineup = campaigns.map((c) =>
+      c.id === "cmp-holiday-gifting" ? { ...c, stage: "production" as const } : c,
+    );
+    expect(count({ ...world, campaigns: pastLineup }, withAna("core"))).toBe(0);
+  });
+
+  test("information request: never raised without a drafted email behind it", () => {
+    // Ben is a core lineup member on the roster; flag him as profile-only too. He has no drafted email.
+    const ben = creators.map((c) =>
+      c.handle === "@benpours" ? { ...c, audienceSource: "profile" as const } : c,
+    );
+    const ids = deriveProposals({ ...world, creators: ben })
+      .filter((p) => p.kind === "info-request")
+      .map((p) => p.id);
+    expect(ids).toEqual(["info:cmp-holiday-gifting:cr-ana"]);
+  });
 });

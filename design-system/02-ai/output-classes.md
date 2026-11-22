@@ -1,6 +1,6 @@
 # Classes of agent output
 
-**Status:** Partly in prototype (actions in the log, proposal cards) · **Related:** [autonomy lanes](autonomy-lanes.md), [proposal card](proposal-card.md), [evidence and confidence](evidence-and-confidence.md)
+**Status:** In prototype: actions (Activity), proposals (`ProposalCard`), drafts (`DraftSheet`), and information requests (`ProposalCard`, kind `info-request`). Summaries in context are partial · **Related:** [autonomy lanes](autonomy-lanes.md), [proposal card](proposal-card.md), [evidence and confidence](evidence-and-confidence.md)
 
 Every agent's work reaches people as one of a few classes. Each class looks and behaves the same whichever agent produced it, so people learn the classes once instead of learning each agent. Some classes reorganize data that already exists (summaries); others contribute something new (drafts, proposals).
 
@@ -13,7 +13,8 @@ Every agent's work reaches people as one of a few classes. Each class looks and 
 
 Rules:
 
-- **Name the class.** The user should always be able to tell which class they're looking at; each has its own treatment.
+- **Name the class.** The user should always be able to tell which class they're looking at; each has its own treatment. In the prototype every card carries a quiet label ("Proposal" or "Information request") beside its severity, and every draft opens in a sheet titled "Draft: <kind> to <recipient>".
+- **Drafts are reviewed before they leave.** Edit in the sheet, then Send. Sending writes one permanent entry from the CM's team; closing the sheet records nothing.
 - **Information requests carry their assumption.** Never just ask; say what was assumed, why, and how the result would change. Example from construction estimating: "No roof pitch on the plans, so I assumed 4/12. If it's a steep 8/12 gable, roofing cost rises."
 - **Actions taken are permanent once they've happened outside the system.** A sent message can't be edited or undone; a correction is a new action.
 - **Not a closed list.** Add a class only when it needs a different treatment from these four; record it here first.
