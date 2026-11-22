@@ -18,7 +18,8 @@ export function TodayView() {
   const handled = activity.filter((e) => e.actor === "agent" && e.at === DEMO_TODAY).length;
   // Resolved cards stay in their group so the "logged" confirmation is visible.
   const groups = groupByNeed(proposals);
-  const onTrack = world.campaigns.filter((c) => !open.some((p) => p.campaignId === c.id));
+  // On track = nothing on screen for it at all, so a campaign never shows twice.
+  const onTrack = world.campaigns.filter((c) => !proposals.some((p) => p.campaignId === c.id));
   let shown = 0;
 
   return (

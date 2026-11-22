@@ -409,3 +409,23 @@ test("campaign: the Run tab shows pacing and only Run proposals", () => {
   expect(within(run).queryByText("Creators and deliverables")).toBeNull();
   expect(within(run).queryByText(/is quiet/)).toBeNull();
 });
+
+test("today: on track counts campaigns with nothing on screen, and expands to them", () => {
+  // Every demo campaign has a proposal on screen, so none is on track.
+  renderApp();
+  const trigger = screen.getByRole("button", { name: "On track · 0 campaigns" });
+  fireEvent.click(trigger);
+  expect(trigger).toHaveAttribute("aria-expanded", "true");
+  const region = screen.getByRole("region", { name: /On track/ });
+  expect(within(region).getByText("Every campaign needs something today.")).toBeInTheDocument();
+  // Resolving a campaign's last card keeps it out of On track: it is still on screen.
+  const card = screen.getByText(/Ana Reyes is quiet/).closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Extend 2 days" }));
+  expect(screen.getByRole("button", { name: "On track · 0 campaigns" })).toBeInTheDocument();
+});
+
+test("campaign: Plan explains a missing goal and lineup instead of showing no entry point", () => {
+  renderApp();
+  go("#campaign/cmp-trail-season/plan");
+  expect(screen.getByText(/approved before this campaign moved on/)).toBeInTheDocument();
+});
