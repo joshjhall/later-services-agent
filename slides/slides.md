@@ -51,7 +51,7 @@ clicks: 1
 - The brief's own words: the campaign manager spends most of their time on coordination (tracking deliverables, chasing creators, checking content, updating brands). Judgment is what's left over.
 - Scale: Later's CTO used a 100-creator campaign as his example. Later Influence tracks each creator through about a dozen stages, from candidate to paid. Every creator owes deliverables, and every one of those can stall.
 - Three phases. Plan: the goal, KPIs, and lineup, where the account manager approves a plan before anything is spent or sent. Make: producing the assets, which is where the chasing is, including the routine nudging that is probably the easiest big win. The hard moment, a creator going quiet, lives here. Run: content is live, money gets spent on amplification, and results are measured against the KPIs.
-- [click] The story map: the whole job, left to right, grouped by phase. Seven activities, with "run my day" (the queue, the log, tuning the agent) across all of them. The highlighted row is what the prototype builds: taking the brief, casting, and producing content, which are the brief's three required moments. Planning, contracting, and reporting are cut because they reuse the same review patterns. R1 below is the smallest version that could run a real campaign. Full map, with R2 and Later rows, in docs/discovery/story-map.md.
+- [click] The story map: the whole job, left to right, grouped by phase. Seven activities, with "run my day" (the queue, Activity, tuning the agent) across all of them. The highlighted row is what the prototype builds: taking the brief, casting, and producing content, which are the brief's three required moments. Planning, contracting, and reporting are cut because they reuse the same review patterns. R1 below is the smallest version that could run a real campaign. Full map, with R2 and Later rows, in docs/discovery/story-map.md.
 - What I heard from Later: a conductor agent with a design time and a run time. For the account manager, run time is two different jobs: making the content is coordination-heavy, and running it is money and measurement. Different decisions, different risks.
 - The agent is a participant in the pod, not a member. It takes on the coordination, and the account manager stays accountable.
 - Be candid: this scenario is really the job being hired for. I haven't interviewed users, reviewed the current product, or looked at comparable industries. So I'm not proposing the quick wins in today's UI, though there are certainly many. Everything here is a hypothesis.
@@ -208,7 +208,7 @@ layout: center
 
 # Prototype
 
-<div class="muted">Goal → lineup → a creator goes quiet → the log</div>
+<div class="muted">Goal → lineup → a creator goes quiet → Activity</div>
 
 ---
 layout: section
