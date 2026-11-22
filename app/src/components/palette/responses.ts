@@ -22,13 +22,8 @@ export const REPLIES: ScriptedReply[] = [
     reply:
       "Ana's draft was due Nov 17 and she hasn't replied since Nov 11, after two reminders. Her go-live is Nov 24, so there are six days left. Ben is the approved backup. In Today I've proposed a last nudge through her manager, with a swap to Ben if she doesn't answer by tomorrow.",
   },
-  {
-    match: /\b(risks?|this week|attention)\b/i,
-    reply:
-      "Three things need you this week: Ana's overdue draft on Sparkling Citrus, Rio's draft that misses the disclosure check, and the Spring serum goal waiting for client sign-off. Everything else is on track.",
-  },
-  // The compare entries come after the ones that name their subject, so
-  // "How does Ana compare with Ben?" gets Ana wherever it's asked.
+  // Entries that name their subject come first, so "How does Ana compare with Ben?"
+  // gets Ana wherever it's asked. The broad risk summary comes last.
   {
     // Ambiguous ask: the agent picks a dimension, says which, and offers the others (principles.md).
     match: COMPARE,
@@ -41,6 +36,11 @@ export const REPLIES: ScriptedReply[] = [
     match: COMPARE,
     reply:
       "Whose post do you mean? The only live post right now is Mei's Reel on Sparkling Citrus launch. Ask from that campaign and I'll compare it with her last three, or name another creator's post.",
+  },
+  {
+    match: /\b(risks?|this week|attention)\b/i,
+    reply:
+      "Three things need you this week: Ana's overdue draft on Sparkling Citrus, Rio's draft that misses the disclosure check, and the Spring serum goal waiting for client sign-off. Everything else is on track.",
   },
 ];
 

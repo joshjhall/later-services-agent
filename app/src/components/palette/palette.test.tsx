@@ -115,6 +115,8 @@ test("each scripted reply matches whole words, not fragments", () => {
   // A compare question that names its subject gets that subject, wherever it's asked.
   expect(ask("How does Ana compare with Ben?")).toMatch(/Ben is the approved backup/);
   expect(replyTo("How does Ana compare with Ben?", citrus)).toMatch(/Ben is the approved backup/);
+  // A compare question that also mentions the week is still a compare question.
+  expect(replyTo("How does her Reel compare this week?", citrus)).toMatch(/early performance/);
   // Words that only contain a keyword get the fallback.
   // Ana's story needs her name, not just "late".
   for (const q of ["comparable", "analytics", "template", "brisk", "Is the lineup late?"]) {
@@ -274,4 +276,23 @@ test("a conversation started on Sparkling Citrus keeps answering about Mei after
   });
   fireEvent.click(within(chat).getByRole("button", { name: /Send/ }));
   expect(chat).toHaveTextContent(/compared early performance/);
+});
+
+test("a new conversation picks up the page it was started from", () => {
+  const { dialog, rerender } = renderPalette(citrus);
+  fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
+  fireEvent.keyDown(screen.getByRole("dialog", { name: "Conversation" }), { key: "Escape" });
+
+  rerender(
+    <StoreProvider>
+      <FindOrAskPalette route={today} />
+    </StoreProvider>,
+  );
+  act(() => openFindOrAsk());
+  fireEvent.change(screen.getByRole("combobox"), { target: { value: COMPARE_Q } });
+  fireEvent.click(screen.getByRole("option", { name: /Start a conversation/ }));
+
+  const chat = screen.getByRole("dialog", { name: "Conversation" });
+  expect(within(chat).getByText(/^About:/)).toHaveTextContent(/^About: Portfolio$/);
+  expect(chat).toHaveTextContent(/Whose post do you mean/);
 });
