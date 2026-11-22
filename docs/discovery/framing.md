@@ -90,7 +90,7 @@ Later describes each job moving along a maturity curve: **manual → software-su
 
 A first pass, using the pattern the recruiting industry converged on: **automate logistics, the agent proposes judgment calls, and every external voice and every dollar is gated until trust is earned.** Autonomy is set **per action type**, not globally, and can be raised or revoked.
 
-| Work | Agent acts alone (logged, undoable) | Agent proposes, CM approves | Always human |
+| Work | Automatic (logged, undoable) | Needs approval | A person only |
 | --- | --- | --- | --- |
 | Objective → KPIs | Pull benchmarks for category/tier | Draft KPI framework and targets from the brief | Agree targets with the client |
 | Matching | Rediscover past creators; screen for conflicts and brand safety | Lineup with per-criterion evidence; backups | Final lineup; anything taste- or relationship-based |

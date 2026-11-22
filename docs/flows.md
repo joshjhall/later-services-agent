@@ -4,7 +4,7 @@ How information moves through the system. Diagrams are Mermaid, so they render o
 
 The flows split along Later's own **design time / run time** line (*Interview*: the planned conductor agent first designs a campaign, then executes it). Flows 2–4 are **design time**: the agent drafts a plan and the CM approves it before anything is spent or sent. Flows 5–7 are **run time**: the plan meets reality and the agent escalates exceptions. Flows 8–9 cover both.
 
-Legend used in the swimlane notes: 🤖 the agent acts alone (logged, undoable) · 🤝 the agent proposes and the CM approves · 🧑 the human only.
+Legend used in the swimlane notes: 🤖 automatic (logged, undoable) · 🤝 needs approval (the agent proposes, the CM approves) · 🧑 a person only.
 
 ## 1. The system at a glance: two sides meeting at the partnership
 

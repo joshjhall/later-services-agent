@@ -486,9 +486,9 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
     <h1>A campaign manager and an agent, running managed creator campaigns</h1>
     <p>The working frame for the prototype: who does what, where the agent acts on its own, where it asks, and what always stays with a person. Read this before the demo.</p>
     <div class="legend" aria-label="Legend">
-      <span class="pill"><span class="lane auto"></span>Agent acts alone, logged and undoable</span>
-      <span class="pill"><span class="lane propose"></span>Agent proposes, CM approves</span>
-      <span class="pill"><span class="lane human"></span>Human only</span>
+      <span class="pill"><span class="lane auto"></span>Automatic, logged and undoable</span>
+      <span class="pill"><span class="lane propose"></span>Needs approval</span>
+      <span class="pill"><span class="lane human"></span>A person only</span>
     </div>
   </div>
 </header>
@@ -619,15 +619,15 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <li><strong>Competitors' agents all live at the front of the funnel</strong> (discovery, outreach, shortlists). The middle of the campaign — deliverable tracking, brief compliance with evidence, live-post QA, feedback consolidation — is still manual everywhere. That is exactly what the exercise asks about, and it is where Later Services can differentiate.</li>
 </ol>
 <h2 id="framing-5-who-does-what-the-autonomy-split"><span class="hnum">5</span>Who does what: the autonomy split</h2>
-<p>Later describes each job moving along a maturity curve: <strong>manual → software-supported → AI-assisted (the human drives) → agentic (the agent starts; the human curates, governs and applies taste)</strong> (<em>Interview</em>). The three lanes below place each action on that curve. <span class="lane human" title="Human only" aria-label="Human only"></span> is manual or software-supported. <span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> is Later's "agentic": the agent starts the work and the CM curates it. <span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> is the factory end state: the agent acts and the CM observes. Actions move right one at a time as they earn trust, which matches Later's view that agentic pieces can go live before the whole system is done.</p>
+<p>Later describes each job moving along a maturity curve: <strong>manual → software-supported → AI-assisted (the human drives) → agentic (the agent starts; the human curates, governs and applies taste)</strong> (<em>Interview</em>). The three lanes below place each action on that curve. <span class="lane human" title="A person only" aria-label="A person only"></span> is manual or software-supported. <span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> is Later's "agentic": the agent starts the work and the CM curates it. <span class="lane auto" title="Automatic" aria-label="Automatic"></span> is the factory end state: the agent acts and the CM observes. Actions move right one at a time as they earn trust, which matches Later's view that agentic pieces can go live before the whole system is done.</p>
 <p>A first pass, using the pattern the recruiting industry converged on: <strong>automate logistics, the agent proposes judgment calls, and every external voice and every dollar is gated until trust is earned.</strong> Autonomy is set <strong>per action type</strong>, not globally, and can be raised or revoked.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Work</th>
-<th>Agent acts alone (logged, undoable)</th>
-<th>Agent proposes, CM approves</th>
-<th>Always human</th>
+<th>Automatic (logged, undoable)</th>
+<th>Needs approval</th>
+<th>A person only</th>
 </tr>
 </thead>
 <tbody>
@@ -1198,7 +1198,7 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <li><strong>R2</strong>: the agent acts alone on more action types and the pod shares the record.</li>
 <li><strong>Later</strong>: valuable, but depends on R1/R2 data or on other teams.</li>
 </ul>
-<p>Lanes follow the flows legend: <span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> agent acts alone · <span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> agent proposes, Maya approves · <span class="lane human" title="Human only" aria-label="Human only"></span> human only. Each activity is tagged <strong>design time</strong> or <strong>run time</strong> (the conductor agent's two modes, <em>Interview</em>).</p>
+<p>Lanes follow the flows legend: <span class="lane auto" title="Automatic" aria-label="Automatic"></span> automatic · <span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> needs approval (Maya approves) · <span class="lane human" title="A person only" aria-label="A person only"></span> a person only. Each activity is tagged <strong>design time</strong> or <strong>run time</strong> (the conductor agent's two modes, <em>Interview</em>).</p>
 <h2 id="story-map-backbone">Backbone</h2>
 <figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">flowchart LR
   A[1 Take the brief&lt;br/&gt;&lt;i&gt;design time&lt;/i&gt;] --&gt; B[2 Plan the campaign&lt;br/&gt;&lt;i&gt;design time&lt;/i&gt;] --&gt; C[3 Cast creators&lt;br/&gt;&lt;i&gt;design time&lt;/i&gt;] --&gt; D[4 Contract and brief&lt;br/&gt;&lt;i&gt;run time&lt;/i&gt;] --&gt; E[5 Produce content&lt;br/&gt;&lt;i&gt;run time&lt;/i&gt;] --&gt; F[6 Go live and optimize&lt;br/&gt;&lt;i&gt;run time&lt;/i&gt;] --&gt; G[7 Report and renew&lt;br/&gt;&lt;i&gt;run time&lt;/i&gt;]
@@ -1220,42 +1220,42 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tbody>
 <tr>
 <td>See what needs me</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> One ranked queue across accounts, by consequence × time (<code>#today</code>)</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> One ranked queue across accounts, by consequence × time (<code>#today</code>)</td>
 <td>Filter by account; snooze with a reason</td>
 <td>Coordinator view of the same queue, scoped to their work</td>
 <td>Mobile digest for between-call triage</td>
 </tr>
 <tr>
 <td>Understand a card in 10 seconds</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Title says what happened; evidence per criterion; confidence in words</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Title says what happened; evidence per criterion; confidence in words</td>
 <td>"Why now?" shows the policy line that was crossed</td>
 <td>Ask a scoped question ("why him over her?")</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Act on it</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> One primary action, the rest quiet; resolve once, logged</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> One primary action, the rest quiet; resolve once, logged</td>
 <td>Reject with a reason</td>
 <td>Batch-approve similar low-risk cards, skipping stale ones</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Check what the agent did alone</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Agent log with actor and undo (<code>#log</code>)</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Agent log with actor and undo (<code>#log</code>)</td>
 <td>Real undo for reversible actions</td>
 <td>Attribution across people, rules and agent</td>
 <td>Weekly "what the agent did" summary</td>
 </tr>
 <tr>
 <td>Tune the agent</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> (live demo) change <code>AGENT_POLICY</code></td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> (live demo) change <code>AGENT_POLICY</code></td>
 <td>Per-action autonomy setting per account</td>
 <td>Repeated corrections propose a policy change</td>
 <td>Autonomy earned per CM from reversal rate</td>
 </tr>
 <tr>
 <td>See portfolio health</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Account view with campaign widgets in state (<code>#account/&lt;id&gt;</code>)</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Account view with campaign widgets in state (<code>#account/&lt;id&gt;</code>)</td>
 <td>Waiting-on-client vs. waiting-on-us</td>
 <td>—</td>
 <td>Cross-portfolio pacing for leadership</td>
@@ -1276,36 +1276,36 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tbody>
 <tr>
 <td>Read what the client sent</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Agent extracts product, audience, markets, timing, budget; shows what it read</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Agent extracts product, audience, markets, timing, budget; shows what it read</td>
 <td>Upload brief, call notes, prior campaigns</td>
 <td>Pull past campaigns for the account automatically</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Choose the objective</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Agent proposes awareness / consideration / conversion with its reasoning; Maya can change it</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Agent proposes awareness / consideration / conversion with its reasoning; Maya can change it</td>
 <td>Affiliate (Later Creator) as an objective</td>
 <td>—</td>
 <td>Full-funnel plans mixing objectives</td>
 </tr>
 <tr>
 <td>Set KPIs and targets</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Drafted KPIs with the benchmark used and measurement method; targets editable</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Drafted KPIs with the benchmark used and measurement method; targets editable</td>
 <td>Benchmarks from EdgeAI</td>
 <td>—</td>
 <td>Forecast ranges, not points</td>
 </tr>
 <tr>
 <td>Close gaps with the client</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Drafted clarifying questions</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> Maya sends them in her name</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Drafted clarifying questions</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> Maya sends them in her name</td>
 <td>Answers flow back and update the draft</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Agree with the client</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> "Ready for client", not final</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> Record what the client agreed</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> "Ready for client", not final</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> Record what the client agreed</td>
 <td>Seal the milestone; changes need a reopen</td>
 <td>—</td>
 </tr>
@@ -1326,28 +1326,28 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tr>
 <td>Turn goals into a plan</td>
 <td>—</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Plan as the conductor's "bill of materials": tiers, creator count, deliverables, workback, reserve</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Plan as the conductor's "bill of materials": tiers, creator count, deliverables, workback, reserve</td>
 <td>Variant-aware plan (product shipped or not)</td>
 <td>Plan templates learned from past campaigns</td>
 </tr>
 <tr>
 <td>Set match criteria</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Criteria shown on the lineup as already approved</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Approve criteria before the search</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Criteria shown on the lineup as already approved</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Approve criteria before the search</td>
 <td>Brand suitability and polish from Later's existing checks</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Set the workback</td>
 <td>—</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> T-14 brief, T-7 draft, T-3 approval, T-0 live</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> T-14 brief, T-7 draft, T-3 approval, T-0 live</td>
 <td>Legal gate for regulated categories</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Hold a reserve</td>
 <td>—</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> Reserve size and client-approval threshold</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> Reserve size and client-approval threshold</td>
 <td>—</td>
 <td>—</td>
 </tr>
@@ -1367,35 +1367,35 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tbody>
 <tr>
 <td>Find candidates</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Roster first, then the wider index; "On roster / New to us"</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Roster first, then the wider index; "On roster / New to us"</td>
 <td>Rediscover past and shortlisted creators</td>
 <td>—</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Screen them</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Conflicts and brand safety flagged with evidence</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Conflicts and brand safety flagged with evidence</td>
 <td>Rights and availability checks</td>
 <td>Talent-manager routing</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Review the lineup</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Met / partly / not met per criterion; In lineup / Backup / Remove (<code>#lineup/&lt;id&gt;</code>)</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Met / partly / not met per criterion; In lineup / Backup / Remove (<code>#lineup/&lt;id&gt;</code>)</td>
 <td>Ask why; swap from suggestions</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> <em>Theo:</em> add relationship notes the agent can't know</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> <em>Theo:</em> add relationship notes the agent can't know</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Check it adds up</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Fees vs. budget and forecast vs. target, live</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Fees vs. budget and forecast vs. target, live</td>
 <td>Tier mix vs. plan</td>
 <td>—</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Approve internally</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> "Approve lineup"; nothing goes to the client yet</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> "Approve lineup"; nothing goes to the client yet</td>
 <td>—</td>
 <td>—</td>
 <td>—</td>
@@ -1403,7 +1403,7 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tr>
 <td>Present to the client</td>
 <td>—</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Agent drafts the client deck; <span class="lane human" title="Human only" aria-label="Human only"></span> Maya presents</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Agent drafts the client deck; <span class="lane human" title="A person only" aria-label="A person only"></span> Maya presents</td>
 <td>Client approves in a front-desk view</td>
 <td>—</td>
 </tr>
@@ -1424,36 +1424,36 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tr>
 <td>Make offers</td>
 <td>—</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Offers within the approved rate band</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Within-band offers to roster creators</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Offers within the approved rate band</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Within-band offers to roster creators</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Negotiate terms</td>
 <td>—</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> Out-of-band rates, exclusivity, managers (<em>Theo</em>)</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> Out-of-band rates, exclusivity, managers (<em>Theo</em>)</td>
 <td>—</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Collect what's needed to brief</td>
 <td>—</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Milestone checklist in any order: rate, rights, whitelisting, product, disclosure</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Milestone checklist in any order: rate, rights, whitelisting, product, disclosure</td>
 <td>Conflict cards for colliding updates</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Ship product</td>
 <td>—</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Track shipment and receipt (only if gifted or seeded)</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Track shipment and receipt (only if gifted or seeded)</td>
 <td>—</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Send the brief</td>
 <td>—</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Brief from the plan</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Auto-send when the milestone is complete</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Brief from the plan</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Auto-send when the milestone is complete</td>
 <td>—</td>
 </tr>
 </tbody>
@@ -1472,28 +1472,28 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tbody>
 <tr>
 <td>Remind on cadence</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Two reminders sent alone (T-10, T-8), in the log</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Two reminders sent alone (T-10, T-8), in the log</td>
 <td>One reminder per idempotency key</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> Per-creator preference ("calls, not texts")</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> Per-creator preference ("calls, not texts")</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Notice silence</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> <strong>Hard moment:</strong> escalation when slack, history and backup cross the line</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> <strong>Hard moment:</strong> escalation when slack, history and backup cross the line</td>
 <td>—</td>
 <td>Quiet before the deadline, not only after</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Recover</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> Call brief: what the agent knows, what to ask, what each answer means</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Extend, or swap to the pre-approved backup in one click</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Reliability event logged to the roster</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> Call brief: what the agent knows, what to ask, what each answer means</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Extend, or swap to the pre-approved backup in one click</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Reliability event logged to the roster</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Check drafts</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Exceptions first: failed check with evidence, drafted fix request (<code>#today</code>)</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Exceptions first: failed check with evidence, drafted fix request (<code>#today</code>)</td>
 <td>Draft-review checker integrated (<em>Interview</em>: exists today)</td>
 <td>Separate surface for validating the checker's accuracy</td>
 <td>—</td>
@@ -1501,14 +1501,14 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tr>
 <td>Get brand approval</td>
 <td>—</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Consolidated brand feedback</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Polite chasing of brand review, through Maya</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Consolidated brand feedback</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Polite chasing of brand review, through Maya</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Tell the client about slips</td>
 <td>—</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Draft note only if go-live or KPI is affected</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Draft note only if go-live or KPI is affected</td>
 <td>—</td>
 <td>—</td>
 </tr>
@@ -1529,27 +1529,27 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tr>
 <td>Verify the post</td>
 <td>—</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Link, code, tags, disclosure checked</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Fix request if non-compliant</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Link, code, tags, disclosure checked</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Fix request if non-compliant</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Pace against forecast</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Below-forecast card with expected vs. actual</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> 24h / 48h / 72h metric pulls</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Below-forecast card with expected vs. actual</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> 24h / 48h / 72h metric pulls</td>
 <td>—</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Boost what works</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Boost from reserve, only if whitelisting is in contract</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> Client approval above threshold</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Boost from reserve, only if whitelisting is in contract</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> Client approval above threshold</td>
 <td>Rights-extension proposal</td>
 <td>Programmatic boosting within guardrails</td>
 </tr>
 <tr>
 <td>Fix what doesn't</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Plan next-wave changes</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Plan next-wave changes</td>
 <td>Swap or drop creators in the next wave</td>
 <td>—</td>
 <td>—</td>
@@ -1571,27 +1571,27 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tr>
 <td>Status updates</td>
 <td>—</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Agent drafts the weekly status; <span class="lane human" title="Human only" aria-label="Human only"></span> Maya sends</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Agent drafts the weekly status; <span class="lane human" title="A person only" aria-label="A person only"></span> Maya sends</td>
 <td>—</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Wrap report</td>
 <td>—</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Agent assembles data and drafts</td>
-<td><span class="lane human" title="Human only" aria-label="Human only"></span> Narrative stays human</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Agent assembles data and drafts</td>
+<td><span class="lane human" title="A person only" aria-label="A person only"></span> Narrative stays human</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Pay creators</td>
 <td>—</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Chase internal approvals</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> Release on verified delivery</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Chase internal approvals</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> Release on verified delivery</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Learn for next time</td>
-<td><span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> Roster reliability produced by the agent's own work (<code>#roster</code>)</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Roster reliability produced by the agent's own work (<code>#roster</code>)</td>
 <td>Performance feeds the roster</td>
 <td>—</td>
 <td>Plan templates and benchmarks from history</td>
@@ -1600,7 +1600,7 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <td>Renew</td>
 <td>—</td>
 <td>—</td>
-<td><span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> SBR draft</td>
+<td><span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> SBR draft</td>
 <td>Next-objective suggestion</td>
 </tr>
 </tbody>
@@ -2135,7 +2135,7 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 </section>
 <section id="flows" class="doc"><header class="doc-head"><p class="kicker">Flows</p><p class="doc-title">How information moves between brand, creators, agent and CM</p><p class="src">Source: <code>docs/flows.md</code></p></header><p class="lede">How information moves through the system. Diagrams are Mermaid, so they render on GitHub and in VS Code with <code>bierner.markdown-mermaid</code>. The reasoning behind them is in <a href="#framing">discovery/framing.md</a>.</p>
 <p>The flows split along Later's own <strong>design time / run time</strong> line (<em>Interview</em>: the planned conductor agent first designs a campaign, then executes it). Flows 2–4 are <strong>design time</strong>: the agent drafts a plan and the CM approves it before anything is spent or sent. Flows 5–7 are <strong>run time</strong>: the plan meets reality and the agent escalates exceptions. Flows 8–9 cover both.</p>
-<p>Legend used in the swimlane notes: <span class="lane auto" title="Agent acts alone" aria-label="Agent acts alone"></span> the agent acts alone (logged, undoable) · <span class="lane propose" title="Agent proposes, CM approves" aria-label="Agent proposes, CM approves"></span> the agent proposes and the CM approves · <span class="lane human" title="Human only" aria-label="Human only"></span> the human only.</p>
+<p>Legend used in the swimlane notes: <span class="lane auto" title="Automatic" aria-label="Automatic"></span> automatic (logged, undoable) · <span class="lane propose" title="Needs approval" aria-label="Needs approval"></span> needs approval (the agent proposes, the CM approves) · <span class="lane human" title="A person only" aria-label="A person only"></span> a person only.</p>
 <h2 id="flows-1-the-system-at-a-glance-two-sides-meeting-at-the-partnership"><span class="hnum">1</span>The system at a glance: two sides meeting at the partnership</h2>
 <figure class="diagram"><div class="diagram-scroll"><pre class="mermaid">flowchart TB
   subgraph Demand[&quot;Demand side: the brand&quot;]
