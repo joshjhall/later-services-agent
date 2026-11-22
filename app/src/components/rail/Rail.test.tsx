@@ -160,3 +160,30 @@ test("compare: a campaign with no comparables shows its industry benchmark", () 
   expect(within(compare).getByText("No comparable campaigns yet.")).toBeInTheDocument();
   expect(within(compare).getByText(/Category benchmark: Engagement rate 4.1%/)).toBeInTheDocument();
 });
+
+test("compare: all-zero values render without NaN, and a tie ranks this one after the peer", () => {
+  const { container, unmount } = render(
+    <CompareView
+      name="This"
+      comparison={{ ...comparison([peer("A", 0), peer("B", 0)]), value: 0 }}
+    />,
+  );
+  expect(container.textContent).not.toMatch(/NaN/);
+  unmount();
+  render(<CompareView name="This" comparison={comparison([peer("A", 1), peer("B", 0.5)])} />);
+  // Sort is stable: peers come first, so a tie with A puts this one second.
+  expect(screen.getByText("CTR: 2 of 3 similar campaigns")).toBeInTheDocument();
+});
+
+test.each([[["cmp-sparkling-launch", "cmp-trail-season"]], [["nope"]]])(
+  "compare asks for one campaign when scope is %o",
+  (scope) => {
+    const { Widget } = WIDGETS.compare;
+    render(
+      <StoreProvider>
+        <Widget scope={scope} />
+      </StoreProvider>,
+    );
+    expect(screen.getByText("Open a campaign to compare it.")).toBeInTheDocument();
+  },
+);
