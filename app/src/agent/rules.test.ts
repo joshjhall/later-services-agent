@@ -1,6 +1,6 @@
-import { campaigns, creators, deliverables, partnerships } from "@/domain/fixtures";
+import { campaigns, creators, DEMO_TODAY, deliverables, partnerships } from "@/domain/fixtures";
 import type { Effect } from "@/domain/types";
-import { AGENT_POLICY, type AgentPolicy, capEvidence, deriveProposals } from "./rules";
+import { AGENT_POLICY, type AgentPolicy, capEvidence, daysBetween, deriveProposals } from "./rules";
 
 const world = { campaigns, creators, partnerships, deliverables };
 
@@ -148,6 +148,22 @@ describe("deriveProposals", () => {
       }).filter((p) => p.kind === "below-forecast").length;
     // Raising the ratio flags KPIs the default does not.
     expect(forecasts(100)).toBeGreaterThan(forecasts(AGENT_POLICY.belowForecastRatio));
+  });
+
+  test("the quiet-creator thresholds are inclusive at their boundaries", () => {
+    // Pins `>=` on quietAfterDays and `<=` on escalateWithinDays: the tunables a presenter edits live.
+    const ana = deliverables.find((d) => d.id === "d-ana-1");
+    if (!ana) throw new Error("fixture d-ana-1 missing");
+    const quietFor = daysBetween(ana.lastCreatorContact, DEMO_TODAY);
+    const toGoLive = daysBetween(DEMO_TODAY, ana.goLive);
+    const fires = (overrides: Partial<AgentPolicy>) =>
+      deriveProposals(world, undefined, undefined, { ...AGENT_POLICY, ...overrides }).some(
+        (p) => p.id === "quiet:d-ana-1",
+      );
+    expect(fires({ quietAfterDays: quietFor })).toBe(true);
+    expect(fires({ quietAfterDays: quietFor + 1 })).toBe(false);
+    expect(fires({ escalateWithinDays: toGoLive })).toBe(true);
+    expect(fires({ escalateWithinDays: toGoLive - 1 })).toBe(false);
   });
 
   test("cap evidence rounds odd amounts to whole dollars", () => {
