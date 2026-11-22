@@ -133,6 +133,20 @@ test("closing the docked conversation gives the rail back to its widgets", () =>
   expect(within(ask()).getByRole("textbox", { name: "Message" })).toHaveValue("");
 });
 
+test("starting a new conversation while one is docked replaces it, full screen", () => {
+  renderApp();
+  fireEvent.click(within(ask("Why is Ana late?")).getByRole("button", { name: /Dock/ }));
+  fireEvent.change(within(rail()).getByRole("textbox", { name: "Message" }), {
+    target: { value: "half-typed" },
+  });
+
+  const chat = ask();
+  expect(chat).not.toHaveTextContent(/Ben is the approved backup/);
+  expect(within(chat).getByRole("textbox", { name: "Message" })).toHaveValue("");
+  const behind = screen.getByRole("complementary", { name: "Context rail", hidden: true });
+  expect(within(behind).queryByRole("region", { hidden: true })).toBeNull();
+});
+
 test("an answer can be a widget from the rail library, full screen and docked", () => {
   renderApp();
   const chat = ask(SIMILAR_Q);
