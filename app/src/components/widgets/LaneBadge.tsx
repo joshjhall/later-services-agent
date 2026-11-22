@@ -3,11 +3,11 @@ import type { Lane } from "@/agent/rules";
 import { cn } from "@/lib/utils";
 
 const LANES = {
-  auto: { icon: Bot, label: "Agent acts", cls: "bg-success-container text-on-success-container" },
-  propose: { icon: Handshake, label: "Agent proposes", cls: "bg-accent text-accent-foreground" },
+  auto: { icon: Bot, label: "Automatic", cls: "bg-success-container text-on-success-container" },
+  propose: { icon: Handshake, label: "Needs approval", cls: "bg-accent text-accent-foreground" },
   human: {
     icon: User,
-    label: "You decide",
+    label: "A person only",
     cls: "bg-secondary text-secondary-foreground ring-1 ring-inset ring-border",
   },
 } as const;
