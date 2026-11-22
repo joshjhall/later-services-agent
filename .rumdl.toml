@@ -12,6 +12,7 @@ exclude = [
   ".vscode/**",
   ".devcontainer/**",
   "reference/**",
+  "slides/slides.md", # Slidev dialect: HTML, per-slide H1s
 ]
 
 disable = [

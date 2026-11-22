@@ -40,6 +40,26 @@ theme: install
 docs:
     python3 docs/build_overview.py
 
+# Slidev deck on http://localhost:5173/slides/ via the prototype's proxy (or :3030/slides/)
+[working-directory('slides')]
+slides:
+    pnpm install --frozen-lockfile
+    pnpm dev
+
+# Prototype and deck together: http://localhost:5173 and http://localhost:5173/slides/
+present:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    trap 'kill 0' EXIT
+    just slides &
+    just dev
+
+# Build the deck to slides/dist (a single-page app: serve it, don't open the file)
+[working-directory('slides')]
+slides-build:
+    pnpm install --frozen-lockfile
+    pnpm build
+
 # Add shadcn components (e.g. `just ui table checkbox`)
 [working-directory('app')]
 ui +components:

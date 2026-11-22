@@ -9,7 +9,19 @@ export default defineConfig({
     alias: { "@": path.resolve(import.meta.dirname, "./src") },
   },
   // Bind 0.0.0.0 so the published devcontainer port reaches the host.
-  server: { host: "0.0.0.0", port: 5173, strictPort: true },
+  // /slides proxies the Slidev deck (`just slides`, port 3030, base /slides/),
+  // so the prototype and the deck share one published port. Slidev serves its
+  // slide data (content and speaker notes) from /__slidev at the server root,
+  // ignoring --base, so that path is proxied too.
+  server: {
+    host: "0.0.0.0",
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      "/slides": { target: "http://localhost:3030", ws: true },
+      "/__slidev": { target: "http://localhost:3030" },
+    },
+  },
   test: {
     environment: "jsdom",
     globals: true,

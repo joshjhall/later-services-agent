@@ -1,0 +1,90 @@
+/* One palette for the prototype, the docs page and the deck:
+   docs/palette.css is generated from app/src/theme/seed.ts by `just theme`. */
+@import "@fontsource-variable/geist";
+@import "../../docs/palette.css";
+
+:root {
+  --slidev-theme-primary: var(--primary);
+}
+
+.slidev-layout {
+  font-family: "Geist Variable", system-ui, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.slidev-layout h1 {
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.slidev-layout h1 + p { opacity: 1; }
+
+.lede { font-size: 2.1rem; line-height: 1.2; font-weight: 600; letter-spacing: -0.02em; }
+.muted { color: var(--muted-foreground); }
+.kicker { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--primary); font-weight: 600; }
+.foot { position: absolute; left: 3.5rem; right: 3.5rem; bottom: 2rem; font-size: 0.8rem; color: var(--muted-foreground); }
+
+.chip {
+  display: inline-block; padding: 0.15em 0.6em; border-radius: 999px; font-size: 0.8em; font-weight: 600;
+  background: var(--md-surface-container-high); color: var(--md-on-surface-variant);
+}
+.chip.agent { background: var(--md-primary-container); color: var(--md-on-primary-container); }
+.chip.rule { background: var(--info-container); color: var(--on-info-container); }
+.chip.human { background: var(--warning-container); color: var(--on-warning-container); }
+.chip.ok { background: var(--success-container); color: var(--on-success-container); }
+
+.card {
+  border: 1px solid var(--border); border-radius: 0.75rem; background: var(--card); padding: 0.9rem 1.1rem;
+}
+.card.strong { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+
+.slidev-layout table { font-size: 0.85em; }
+.slidev-layout th { color: var(--muted-foreground); font-weight: 600; }
+
+/* Activity log on the trust slide */
+.log { display: flex; flex-direction: column; gap: 0.5rem; }
+.log .entry {
+  display: grid; grid-template-columns: 6.5rem 1fr auto; align-items: center; gap: 1rem;
+  padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 0.6rem; background: var(--card);
+}
+.log .t { font-size: 0.8rem; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.log .what { font-size: 0.95rem; }
+
+/* Step list beside a stepped wireframe */
+.steps > div { padding: 0.45rem 0.7rem; border-left: 3px solid var(--border); color: var(--muted-foreground); transition: all 0.3s; }
+.steps > div.on { border-left-color: var(--primary); color: var(--foreground); font-weight: 600; }
+.steps > div.strong-step { color: var(--foreground); font-weight: 600; }
+
+.tight { margin: 0; padding-left: 1rem; }
+.tight li { margin: 0.15rem 0; }
+
+/* A6: palette step frames */
+.frame { position: relative; height: 9rem; border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden; background: var(--md-surface-container-lowest); }
+.frame.dim::before { content: ""; position: absolute; inset: 0; background: rgb(29 26 35 / 0.4); }
+.fbar { margin: 0.4rem auto 0; width: 60%; text-align: center; border: 1px solid var(--primary); border-radius: 999px; color: var(--primary); padding: 0.1rem; font-size: 0.6rem; }
+.fbody { position: absolute; inset: 1.8rem 0.4rem 1.6rem; background: var(--md-surface-container-high); border-radius: 0.3rem; }
+.fbody.split { display: grid; grid-template-columns: 2fr 1fr; gap: 0.3rem; background: none; }
+.fbody.split > div:first-child { background: var(--md-surface-container-high); border-radius: 0.3rem; }
+.fchat { display: flex; flex-direction: column; gap: 0.2rem; border: 1px solid var(--border); border-radius: 0.3rem; padding: 0.2rem; background: var(--md-surface-container-low); }
+.fchat .m { align-self: flex-end; background: var(--primary); color: var(--primary-foreground); border-radius: 0.2rem; padding: 0 0.3rem; font-size: 0.55rem; }
+.fchat .w { height: 1.2rem; border: 1px solid var(--border); border-radius: 0.2rem; background: var(--card); }
+.fchat .in { margin-top: auto; height: 0.6rem; border: 1px solid var(--primary); border-radius: 0.2rem; }
+.fpal { position: relative; z-index: 1; margin: 0.4rem; padding: 0.3rem; background: var(--popover); border: 1px solid var(--primary); border-radius: 0.4rem; font-size: 0.6rem; }
+.fopt { padding: 0.1rem 0.2rem; color: var(--muted-foreground); }
+.fopt.hi { margin-top: 0.15rem; border-radius: 0.2rem; background: var(--md-primary-container); color: var(--md-on-primary-container); }
+.flabel { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 0.25rem 0.4rem; background: var(--card); border-top: 1px solid var(--border); font-weight: 600; }
+
+/* A10: widget data-volume sketches */
+.vbars, .vdist { display: flex; align-items: flex-end; gap: 0.25rem; height: 3rem; }
+.vbars i, .vdist i { flex: 1; background: var(--md-surface-container-highest); border-radius: 0.15rem 0.15rem 0 0; }
+.vlist { display: flex; flex-direction: column; gap: 0.25rem; height: 3rem; justify-content: center; }
+.vlist i { display: block; height: 0.45rem; background: var(--md-surface-container-highest); border-radius: 0.15rem; }
+.vbars i.now, .vdist i.now, .vlist i.now { background: var(--primary); }
+
+/* A11: test results as buckets */
+.buckets { display: flex; align-items: flex-end; gap: 0.75rem; height: 8rem; padding-bottom: 1.4rem; }
+.buckets > div { position: relative; width: 4.5rem; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+.buckets i { display: block; border-radius: 0.3rem 0.3rem 0 0; background: var(--md-primary-container); }
+.buckets span { position: absolute; bottom: -1.4rem; left: 0; right: 0; text-align: center; font-size: 0.75rem; color: var(--muted-foreground); }

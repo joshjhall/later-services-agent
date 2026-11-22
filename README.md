@@ -21,7 +21,8 @@ Built for the Later VP, UX take-home exercise (`reference/`).
 In the devcontainer, or on a host with Node 26+, pnpm, and `just`:
 
 ```sh
-just dev   # http://localhost:5173
+just dev       # prototype: http://localhost:5173
+just present   # prototype + slide deck at http://localhost:5173/slides/
 ```
 
 `just` lists the other recipes (`test`, `build`, `lint`, `fmt`). The walkthrough path is in [`docs/demo-script.md`](docs/demo-script.md).

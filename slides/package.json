@@ -1,0 +1,16 @@
+{
+  "name": "later-services-brief",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev --remote --port 3030 --base /slides/",
+    "build": "slidev build",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@slidev/cli": "^53.1.0",
+    "@slidev/theme-default": "latest",
+    "vue": "^3.5.0"
+  }
+}

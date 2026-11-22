@@ -25,7 +25,7 @@ Timebox: 2–4 hours. Presented in a 60-minute panel: a 20-minute walkthrough, d
 
 ## Commands
 
-`just` lists recipes. The main ones are `just dev` (<http://localhost:5173>), `just test`, `just build`, `just lint`, `just fmt`, and `just ui <component...>` to add shadcn components.
+`just` lists recipes. The main ones are `just dev` (<http://localhost:5173>), `just present` (prototype plus the Slidev deck at `/slides/`), `just test`, `just build`, `just lint`, `just fmt`, and `just ui <component...>` to add shadcn components.
 
 ## Working agreements
 
