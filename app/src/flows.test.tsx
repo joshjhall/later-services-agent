@@ -469,7 +469,10 @@ test("store: live entry ids stay unique and never reuse the seeded act-N form", 
   expect(new Set(ids).size).toBe(ids.length);
   const seeded = new Set(fx.activity.map((e) => e.id));
   const live = ids.filter((id) => !seeded.has(id));
-  expect(live).toHaveLength(result.current.proposals.length + 1);
+  // One entry per decision and per send, keyed by what it records.
+  expect(live.toSorted()).toEqual(
+    [...result.current.proposals.map((p) => `act-${p.id}`), "act-sent-info:cr-ana"].toSorted(),
+  );
   for (const id of live) expect(id).not.toMatch(/^act-\d+$/);
 });
 
