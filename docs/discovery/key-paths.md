@@ -12,7 +12,7 @@ For each path: the trigger, the steps, what the agent has already done, the one 
 | 4 | A creator goes quiet | run time | Decide an exception | `#today`, top card | Required by the brief; the most frequent high-severity exception |
 | 5 | Tune the agent | both | Tune, don't just correct | `AGENT_POLICY` (live edit) | How autonomy is earned; the factory's "tune the robot" loop |
 | 6 | Review a draft | run time | Decide an exception | `#today`, draft card | The draft checker exists today; exceptions-first is the open UX question |
-| 7 | Audit the agent | both | Agent log | `#log` | Trust is earned by being able to check |
+| 7 | Audit the agent | both | Activity | `#activity` | Trust is earned by being able to check |
 
 ## Path 1: Start the day
 

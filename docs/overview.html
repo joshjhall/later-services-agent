@@ -702,7 +702,7 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <li><strong>Account</strong> (primary view, e.g. a beverage brand): health of all campaigns against their objectives, budget pacing, what's waiting on the client, what's waiting on us.</li>
 <li><strong>Campaign</strong>: the creator × deliverable board by stage, with named risk warnings (Ghosted, Draft overdue, Brand feedback stalled, Rights expiring, Post missing, Below forecast).</li>
 <li><strong>Roster</strong> (secondary view, creator-centric): the bench. Reliability (on-time rate, revisions, responsiveness), audience fit, past performance, conflicts, relationship notes. No platform exposes a reliability score today; the agent produces this data naturally while chasing.</li>
-<li><strong>Agent log</strong>: what the agent did on its own, with undo. This is how trust is earned and audited.</li>
+<li><strong>Activity</strong>: what the agent did on its own, with undo. This is how trust is earned and audited.</li>
 </ul>
 <p><strong>Two review patterns, used everywhere.</strong> <em>Approve a plan</em> (design time: KPI framework, match criteria, lineup) shows the proposal, the criteria it was built against, per-item evidence, and the gate it unlocks. <em>Decide an exception</em> (run time: quiet creator, failed draft check, underperforming post) shows what happened, why it crossed the line, the options with their consequences, and the agent's recommendation. Every card has <strong>one primary action</strong>, a secondary that may be a prerequisite to it, and labels that mean one thing everywhere (<em>Interview</em>: mixed labels and inverted button hierarchy are a known gap in today's product).</p>
 <p><strong>Exceptions first.</strong> Draft review shows what failed, with evidence, and a ready-to-send fix request. Passing checks collapse to a count. Reviewing every check is for validating the checker, which is a separate job and a separate surface.</p>
@@ -1035,14 +1035,14 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tr>
 <th>IA</th>
 <th>Prototype today</th>
-<th>Gap</th>
+<th>Still a gap</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Top nav with Find or ask</td>
-<td>Left sidebar, no palette</td>
-<td>Add the top bar, breadcrumb and ⌘K</td>
+<td>Top bar with breadcrumb and Find or ask (⌘K or <code>/</code>); the palette offers Go to, Do, and "Start a conversation about…"</td>
+<td>The left sidebar stays alongside, so the existing navigation keeps working</td>
 </tr>
 <tr>
 <td>Portfolio grouped by need</td>
@@ -1062,7 +1062,7 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <tr>
 <td>Campaign: Run (Measure, Amplify)</td>
 <td><code>#campaign/&lt;id&gt;/run</code>: KPI pacing, reserve, and boost and below-forecast cards</td>
-<td>Per-asset results and comparable campaigns</td>
+<td>Per-asset results</td>
 </tr>
 <tr>
 <td>Asset</td>
@@ -1071,8 +1071,13 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 </tr>
 <tr>
 <td>Rail</td>
-<td>None</td>
-<td>2–3 widgets on the campaign and lineup screens</td>
+<td>2–4 widgets chosen by a rule (<code>selectRail()</code> in <code>app/src/components/rail/select.ts</code>): summary, compare to similar campaigns, next scheduled message, and recent activity; no rail on goal, roster, or activity</td>
+<td>The rule is hand-written; the creator-history widget for an asset doesn't exist</td>
+</tr>
+<tr>
+<td>Conversation</td>
+<td>Docks in the rail and follows the page; scripted answers in text or the compare widget</td>
+<td>Answers are scripted, not generated</td>
 </tr>
 </tbody>
 </table></div>
@@ -1150,7 +1155,7 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 </ul>
 <p><strong>Trust needs.</strong> Sees <em>why</em> (evidence per criterion), not a score. Sees what the agent did alone, and can undo it. Nothing new reaches a client or spends money without her; as a kind of action proves safe it becomes automatic, so what still reaches her is worth reading. Can change how the agent behaves without filing a ticket.</p>
 <p><strong>Context.</strong> Desktop, many tabs, constant interruptions. Works in five-minute gaps between calls, so every card has to stand alone.</p>
-<p><strong>What the design gives her:</strong> the decision queue, the two review patterns, the call brief, the agent log, per-action autonomy.</p>
+<p><strong>What the design gives her:</strong> the decision queue, the two review patterns, the call brief, the Activity record, per-action autonomy.</p>
 <p><strong>What would change this persona:</strong> if AMs turn out to hand the queue to coordinators entirely, the coordinator becomes primary and the AM view becomes a portfolio summary.</p>
 <h2 id="personas-secondary-jordan-coordinator">Secondary: Jordan, Coordinator</h2>
 <blockquote>
@@ -1241,7 +1246,7 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 </tr>
 <tr>
 <td>Check what the agent did alone</td>
-<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Agent log with actor and undo (<code>#log</code>)</td>
+<td><span class="lane auto" title="Automatic" aria-label="Automatic"></span> Activity with actor and undo (<code>#activity</code>)</td>
 <td>Real undo for reversible actions</td>
 <td>Attribution across people, rules and agent</td>
 <td>Weekly "what the agent did" summary</td>
@@ -1804,8 +1809,8 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <td>7</td>
 <td>Audit the agent</td>
 <td>both</td>
-<td>Agent log</td>
-<td><code>#log</code></td>
+<td>Activity</td>
+<td><code>#activity</code></td>
 <td>Trust is earned by being able to check</td>
 </tr>
 </tbody>
@@ -2377,7 +2382,7 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
     s6[Client&lt;br/&gt;requests]
   end
   s1 &amp; s2 &amp; s3 &amp; s4 &amp; s5 &amp; s6 --&gt; AG[Agent]
-  AG --&gt;|handled alone| LOG[(Agent log,&lt;br/&gt;undoable)]
+  AG --&gt;|handled alone| LOG[(Activity,&lt;br/&gt;undoable)]
   AG --&gt;|needs a decision| QUEUE[Decision queue,&lt;br/&gt;ranked by consequence × time]
   QUEUE --&gt; W1[Today:&lt;br/&gt;cross-account]
   QUEUE --&gt; W2[Account view:&lt;br/&gt;campaign widgets in state]
@@ -2484,6 +2489,8 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <li>In the pod's Activity view, every entry names its actor: <strong>system</strong> (a rule), <strong>agent</strong>, or a person by name. The detailed trace (version, prompt, and inputs) sits behind that. Messages outside the pod always come from the account manager's team. <em>Design decision; revised from person-or-system so the record matches the "one record, any actor" slide.</em></li>
 <li>Agent output reaches people in four named classes: actions taken, drafts and proposals, information requests, and summaries in context. Every card names its class. A draft opens in an editable sheet and goes out only when a person presses Send; the send is one permanent entry from the account manager's team, and closing the sheet records nothing. <em>Design decision; see <code>design-system/02-ai/output-classes.md</code>.</em></li>
 <li>An information request states the assumption the agent made and what changes if it's wrong. The demo's example (Ana's audience assumed mostly US from her profile; her manager at "Northstar Talent" can confirm) is <em>Invented</em>. The agent-drafted creator brief exists as a fixture but isn't wired to a button, because briefs go out after the client approves the lineup, which the prototype doesn't model. <em>Invented; a deliberate cut.</em></li>
+<li>The agent writes an information request for any core lineup member whose audience split is self-reported. It takes the market from the first part of the creator's profile audience line ("US", or "US/CA") and sends the email to the talent manager, or to the creator when there is no manager. <em>Invented.</em></li>
+<li>Every submitted draft that misses a brief check gets a review card with a fix request ready to send. The demo's Rio request is hand-written; for any other deliverable the agent builds a generic one from the creator, the deliverable, and the go-live date. <em>Invented.</em></li>
 <li>Undo follows what an action touched: <strong>internal</strong> (status, pacing, logging) can be undone; <strong>external</strong> (anything sent to a creator or client, including a change agreed on a call) and <strong>spend</strong> are permanent, and a correction is a new entry. <em>Design decision; the effect taxonomy is Invented.</em></li>
 <li>The data model (portfolio › account › campaign › asset, a campaign as slots and candidates) is organized the way I would organize it, not the way Later's data is known to be. It's the assumption I'm least comfortable with. A heuristic review of the current product and a working session with engineering come before any real proposal. <em>Invented; highest-risk assumption.</em></li>
 <li>Most decisions fit four outcomes. Two, three or five are fine in the same pattern; a decision with dozens of possible outcomes needs a different interface. <em>Design decision; to test.</em></li>
@@ -2497,7 +2504,8 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <li>The demo's hard moment is "a creator goes quiet with a deadline close." <em>Design decision.</em></li>
 <li>Find or ask suggestions and conversation answers are scripted: a fixed list of places and actions, and a small table of replies keyed on recognizable questions (<code>app/src/components/palette/</code>). A production build would pass the current object and its data to an agent. <em>Constraint of the timebox.</em></li>
 <li>Creators have no page of their own in the prototype, so choosing a creator in Find or ask goes to the roster. <em>Invented.</em></li>
-<li>The conversation opens full screen; docking it into the rail so it follows you as you navigate (information architecture step 5) is cut for now. <em>Design decision; to build next.</em></li>
+<li>The conversation opens full screen and can dock into the rail (information architecture step 5). Docked, it replaces the rail's widgets on every page and follows you: its context line and answers are about the page you're on. Full screen, it keeps the subject it started from; Expand takes the current page with it. <em>Design decision; to test</em> whether people expect a docked thread to follow them or to stay on its subject.</li>
+<li>One scripted answer ("how does this campaign compare with similar campaigns?" on a campaign, goal, or lineup) replies with the rail's compare widget rather than prose, to show one widget library serving the rail and the conversation. <em>Invented.</em></li>
 <li>Today groups proposals by need with one rule: anything critical, and any goal or lineup awaiting approval, needs you now; drafts to review, boosts, and information requests are ready to move; a quiet creator is waiting on someone; a below-forecast KPI is a thing to do. Campaigns with nothing open are on track and collapse to a count. <em>Invented</em>; the groups come from <a href="information-architecture.md#3-the-portfolio-groups-by-whats-needed-not-by-name">information-architecture.md §3</a>.</li>
 <li>A campaign opens on its phase tab even when an urgent card sits on another tab. The tab carries a count of open cards, and each card's campaign name links straight to the tab holding it. The alternative, opening on the most urgent tab, was rejected because the default tab would then move as the queue changes. <em>Design decision; to test.</em></li>
 <li>The campaign's Plan tab links to the goal and lineup screens rather than embedding them, so each keeps one heading and one approval gate. <em>Design decision; cut for the timebox.</em></li>

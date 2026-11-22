@@ -30,7 +30,7 @@ Activity 0 is the supervisory layer that sits over all the others: the queue, th
 | See what needs me | 🤝 One ranked queue across accounts, by consequence × time (`#today`) | Filter by account; snooze with a reason | Coordinator view of the same queue, scoped to their work | Mobile digest for between-call triage |
 | Understand a card in 10 seconds | 🤝 Title says what happened; evidence per criterion; confidence in words | "Why now?" shows the policy line that was crossed | Ask a scoped question ("why him over her?") | — |
 | Act on it | 🧑 One primary action, the rest quiet; resolve once, logged | Reject with a reason | Batch-approve similar low-risk cards, skipping stale ones | — |
-| Check what the agent did alone | 🤖 Agent log with actor and undo (`#log`) | Real undo for reversible actions | Attribution across people, rules and agent | Weekly "what the agent did" summary |
+| Check what the agent did alone | 🤖 Activity with actor and undo (`#activity`) | Real undo for reversible actions | Attribution across people, rules and agent | Weekly "what the agent did" summary |
 | Tune the agent | 🧑 (live demo) change `AGENT_POLICY` | Per-action autonomy setting per account | Repeated corrections propose a policy change | Autonomy earned per CM from reversal rate |
 | See portfolio health | 🤝 Account view with campaign widgets in state (`#account/<id>`) | Waiting-on-client vs. waiting-on-us | — | Cross-portfolio pacing for leadership |
 

@@ -126,7 +126,7 @@ Most of what a campaign needs can arrive in any order, from several people at on
 - **Account** (primary view, e.g. a beverage brand): health of all campaigns against their objectives, budget pacing, what's waiting on the client, what's waiting on us.
 - **Campaign**: the creator × deliverable board by stage, with named risk warnings (Ghosted, Draft overdue, Brand feedback stalled, Rights expiring, Post missing, Below forecast).
 - **Roster** (secondary view, creator-centric): the bench. Reliability (on-time rate, revisions, responsiveness), audience fit, past performance, conflicts, relationship notes. No platform exposes a reliability score today; the agent produces this data naturally while chasing.
-- **Agent log**: what the agent did on its own, with undo. This is how trust is earned and audited.
+- **Activity**: what the agent did on its own, with undo. This is how trust is earned and audited.
 
 **Two review patterns, used everywhere.** *Approve a plan* (design time: KPI framework, match criteria, lineup) shows the proposal, the criteria it was built against, per-item evidence, and the gate it unlocks. *Decide an exception* (run time: quiet creator, failed draft check, underperforming post) shows what happened, why it crossed the line, the options with their consequences, and the agent's recommendation. Every card has **one primary action**, a secondary that may be a prerequisite to it, and labels that mean one thing everywhere (*Interview*: mixed labels and inverted button hierarchy are a known gap in today's product).
 
