@@ -1,8 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import { fmt } from "@/agent/rules";
 import { campaigns } from "@/domain/fixtures";
 import { StoreProvider } from "@/domain/store";
-import { type Campaign, kpiPct } from "@/domain/types";
+import type { Campaign } from "@/domain/types";
 import { CampaignWidget } from "./CampaignWidget";
 
 // The badge leads with the phase and keeps the stage as secondary text.
@@ -24,20 +23,18 @@ test.each<[Campaign["stage"], string]>([
 });
 
 // Screen readers get each KPI bar's metric, percent, and "actual of target".
+// Literal values, so a regression in kpiPct or fmt can't hide on both sides.
 test("KPI bars expose their value to assistive tech", () => {
-  const campaign = campaigns.find((c) => c.kpis.length > 0);
-  if (!campaign) throw new Error("fixtures need a campaign with KPIs");
   render(
     <StoreProvider>
-      <CampaignWidget campaign={campaign} />
+      <CampaignWidget campaign={campaigns[0]} />
     </StoreProvider>,
   );
-  for (const k of campaign.kpis) {
-    const bar = screen.getByRole("progressbar", { name: k.metric });
-    expect(bar).toHaveAttribute("aria-valuenow", String(kpiPct(k)));
-    expect(bar).toHaveAttribute(
-      "aria-valuetext",
-      `${fmt(k.actual, k.unit)} of ${fmt(k.target, k.unit)}`,
-    );
-  }
+  const impressions = screen.getByRole("progressbar", { name: "Impressions" });
+  expect(impressions).toHaveAttribute("aria-valuenow", "38");
+  expect(impressions).toHaveAttribute("aria-valuetext", "11.4M of 30.0M");
+  // Over target clamps to a full bar but still reads the real numbers.
+  const engagement = screen.getByRole("progressbar", { name: "Engagement rate" });
+  expect(engagement).toHaveAttribute("aria-valuenow", "100");
+  expect(engagement).toHaveAttribute("aria-valuetext", "5.1% of 4.5%");
 });
