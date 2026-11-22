@@ -1,4 +1,4 @@
-import { groupByNeed, NEED_LABEL, needOf, PROPOSAL_PHASE } from "./needs";
+import { groupByNeed, NEED_LABEL, needOf, PHASE_TAB, PROPOSAL_PHASE, proposalTab } from "./needs";
 import type { Proposal } from "./rules";
 
 type Kind = Proposal["kind"];
@@ -44,4 +44,13 @@ test("each proposal kind lands on the tab of its phase", () => {
     "boost-post": "Run",
     "below-forecast": "Run",
   });
+});
+
+test("proposalTab puts each kind on its phase's tab", () => {
+  expect(proposalTab({ kind: "approve-lineup" })).toBe("plan");
+  expect(proposalTab({ kind: "info-request" })).toBe("plan");
+  expect(proposalTab({ kind: "quiet-creator" })).toBe("make");
+  expect(proposalTab({ kind: "boost-post" })).toBe("run");
+  // Every phase has a tab, so no kind can land nowhere.
+  for (const phase of Object.values(PROPOSAL_PHASE)) expect(PHASE_TAB[phase]).toBeDefined();
 });
