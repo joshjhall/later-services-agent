@@ -34,6 +34,8 @@ export interface Option {
   id: string;
   label: string;
   primary?: boolean;
+  /** Short secondary label tying the option to its decision outcome (principles §6), e.g. "Decline unless fixed". */
+  hint?: string;
   lane: Lane;
   /** What choosing this option touches; decides undo in the activity record. Required, so undo is never a silent default. */
   effect: Effect;
@@ -172,17 +174,18 @@ export function deriveProposals(
           {
             id: "send-fix",
             label: "Send fix request",
+            hint: "Decline unless fixed",
             primary: true,
             lane: "propose",
             effect: "external",
           },
           {
             id: "corrections",
-            label: "Approve with corrections",
+            label: "Approve with changes",
             lane: "human",
             effect: "external",
           },
-          { id: "approve", label: "Approve anyway", lane: "human", effect: "external" },
+          { id: "approve", label: "Approve", lane: "human", effect: "external" },
         ],
         confidence: "high",
         dueInDays: Math.max(0, daysBetween(today, d.goLive) - 3),
