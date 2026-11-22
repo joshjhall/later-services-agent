@@ -408,7 +408,16 @@ test("campaign: the Run tab shows pacing and only Run proposals", () => {
   expect(within(run).getAllByRole("progressbar").length).toBeGreaterThan(0);
   expect(within(run).queryByText("Creators and deliverables")).toBeNull();
   expect(within(run).queryByText(/is quiet/)).toBeNull();
-  expect(within(run).getByText(/pacing below forecast|Boost .* from reserve/)).toBeInTheDocument();
+  expect(within(run).getAllByText(/pacing below forecast/).length).toBeGreaterThan(0);
+  expect(screen.getByRole("tab", { name: "Make" })).toBeInTheDocument();
+  // A campaign in Make keeps its boost card on Run, not on the tab it opens on.
+  go("#campaign/cmp-sparkling-launch");
+  expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Make");
+  expect(within(screen.getByRole("tabpanel")).queryByText(/from reserve/)).toBeNull();
+  go("#campaign/cmp-sparkling-launch/run");
+  expect(within(screen.getByRole("tabpanel")).getAllByText(/from reserve/).length).toBeGreaterThan(
+    0,
+  );
   expect(screen.getByRole("tab", { name: /^Run, \d+ open$/ })).toHaveAttribute(
     "aria-selected",
     "true",
