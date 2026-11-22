@@ -87,4 +87,15 @@ describe("deriveProposals", () => {
     );
     expect(count({ ...world, campaigns: pastLineup }, withAna("core"))).toBe(0);
   });
+
+  test("information request: never raised without a drafted email behind it", () => {
+    // Ben is a core lineup member on the roster; flag him as profile-only too. He has no drafted email.
+    const ben = creators.map((c) =>
+      c.handle === "@benpours" ? { ...c, audienceSource: "profile" as const } : c,
+    );
+    const ids = deriveProposals({ ...world, creators: ben })
+      .filter((p) => p.kind === "info-request")
+      .map((p) => p.id);
+    expect(ids).toEqual(["info:cmp-holiday-gifting:cr-ana"]);
+  });
 });

@@ -8,7 +8,7 @@
  */
 import { DEMO_TODAY } from "@/domain/fixtures";
 import type { Campaign, Creator, Deliverable, Effect, Partnership } from "@/domain/types";
-import { lineupDrafts as defaultLineups, type LineupDraft } from "./drafts";
+import { lineupDrafts as defaultLineups, draftFor, type LineupDraft } from "./drafts";
 
 export const AGENT_POLICY = {
   /** Escalate a quiet creator when go-live is this many days away or fewer. */
@@ -296,9 +296,12 @@ export function deriveProposals(
     for (const cand of lineups[cmp.id]?.candidates ?? []) {
       const c = w.creators.find((x) => x.handle === cand.handle);
       if (cand.role !== "core" || c?.audienceSource !== "profile") continue;
+      const id = `info:${cmp.id}:${c.id}`;
+      // Only ask when there's a drafted email to send; otherwise the option would log a send that never happened.
+      if (!draftFor(id, "draft-email")) continue;
       const first = c.name.split(" ")[0];
       out.push({
-        id: `info:${cmp.id}:${c.id}`,
+        id,
         kind: "info-request",
         severity: "info",
         campaignId: cmp.id,
