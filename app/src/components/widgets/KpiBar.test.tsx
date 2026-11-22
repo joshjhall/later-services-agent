@@ -17,4 +17,5 @@ test("a zero target shows an empty bar", () => {
   const bar = screen.getByRole("progressbar", { name: "Saves" });
   expect(bar).toHaveAttribute("aria-valuenow", "0");
   expect(bar).toHaveAttribute("aria-valuetext", "12 of 0");
+  expect(screen.getByText("12 / 0")).toBeInTheDocument();
 });
