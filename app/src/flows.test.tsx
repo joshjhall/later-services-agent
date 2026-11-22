@@ -238,6 +238,32 @@ test("stating the goal: confirming opens the client email draft, and sending log
   expect(entry(/Sent client email to Priya Rao/)).toHaveTextContent("Permanent");
 });
 
+test("stating the goal: closing the client email draft leaves the goal unconfirmed", () => {
+  renderApp();
+  go("#goal/cmp-spring-serum");
+  fireEvent.click(screen.getByRole("button", { name: "Confirm and draft client email" }));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Not yet" }));
+  expect(screen.queryByText(/Ready for client · logged/)).toBeNull();
+  expect(
+    screen.getByRole("button", { name: "Confirm and draft client email" }),
+  ).toBeInTheDocument();
+});
+
+test("draft: a double-click on Send records one entry", () => {
+  renderApp();
+  const card = screen
+    .getByText(/Rio Castillo's draft misses/)
+    .closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Send fix request" }));
+  const send = within(screen.getByRole("dialog")).getByRole("button", { name: /Send/ });
+  act(() => {
+    send.click();
+    send.click();
+  });
+  go("#activity");
+  expect(screen.getAllByText(/Sent fix request to Rio Castillo/)).toHaveLength(1);
+});
+
 test("undo rule and the #log alias", async () => {
   const { isUndoable } = await import("@/domain/types");
   const { parse } = await import("@/router");

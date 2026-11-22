@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, use, useMemo, useState } from "react";
+import { createContext, type ReactNode, use, useMemo, useRef, useState } from "react";
 import type { MessageDraft } from "@/agent/drafts";
 import { deriveProposals, type Proposal } from "@/agent/rules";
 import * as fx from "./fixtures";
@@ -35,6 +35,8 @@ const Ctx = createContext<Store | null>(null);
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [resolved, setResolved] = useState<Record<string, Resolution>>({});
   const [sent, setSent] = useState<Record<string, true>>({});
+  // Mirrors `sent` synchronously, so a double-click within one render still sends once.
+  const sentNow = useRef(new Set<string>());
   const [activity, setActivity] = useState(fx.activity);
   const proposals = useMemo(() => deriveProposals(fx), []);
 
@@ -64,7 +66,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       sent,
       send: (draft, answers) => {
-        if (sent[draft.id]) return; // idempotent
+        if (sentNow.current.has(draft.id)) return; // idempotent
+        sentNow.current.add(draft.id);
         setSent((s) => ({ ...s, [draft.id]: true }));
         if (answers && !resolved[answers.proposal.id]) {
           const { proposal, optionId } = answers;
