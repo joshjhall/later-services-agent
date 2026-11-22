@@ -4,7 +4,6 @@ import { daysBetween, fmt } from "@/agent/rules";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -15,10 +14,11 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignWidget } from "@/components/widgets/CampaignWidget";
+import { KpiBar } from "@/components/widgets/KpiBar";
 import { ProposalCard } from "@/components/widgets/ProposalCard";
 import { DEMO_TODAY } from "@/domain/fixtures";
 import { useStore } from "@/domain/store";
-import { type CampaignPhase, campaignPhase, kpiPct } from "@/domain/types";
+import { type CampaignPhase, campaignPhase } from "@/domain/types";
 import { CAMPAIGN_TABS, type CampaignTab, href } from "@/router";
 import { PageHeader } from "./PageHeader";
 
@@ -164,21 +164,7 @@ export function CampaignView({ id, tab }: { id: string; tab?: CampaignTab }) {
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {c.kpis.length ? (
-                  c.kpis.map((k) => (
-                    <div key={k.metric} className="grid gap-1.5">
-                      <div className="flex justify-between text-sm">
-                        <span>{k.metric}</span>
-                        <span className="tabular-nums text-muted-foreground">
-                          {fmt(k.actual, k.unit)} / {fmt(k.target, k.unit)}
-                        </span>
-                      </div>
-                      <Progress
-                        value={kpiPct(k)}
-                        aria-label={k.metric}
-                        getValueLabel={() => `${fmt(k.actual, k.unit)} of ${fmt(k.target, k.unit)}`}
-                      />
-                    </div>
-                  ))
+                  c.kpis.map((k) => <KpiBar key={k.metric} kpi={k} />)
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     No results yet. Pacing shows here once the first post is live.

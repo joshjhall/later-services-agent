@@ -1,9 +1,9 @@
 import { fmt } from "@/agent/rules";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { KpiBar } from "@/components/widgets/KpiBar";
 import { useStore } from "@/domain/store";
-import { type Campaign, campaignPhase, kpiPct } from "@/domain/types";
+import { type Campaign, campaignPhase } from "@/domain/types";
 import { href } from "@/router";
 
 /** Secondary text after the phase, e.g. "Plan · reviewing lineup". */
@@ -56,19 +56,7 @@ export function CampaignWidget({ campaign: c }: { campaign: Campaign }) {
           </p>
         )}
         {c.kpis.map((k) => (
-          <div key={k.metric} className="grid gap-1.5">
-            <div className="flex justify-between text-sm">
-              <span>{k.metric}</span>
-              <span className="tabular-nums text-muted-foreground">
-                {fmt(k.actual, k.unit)} / {fmt(k.target, k.unit)}
-              </span>
-            </div>
-            <Progress
-              value={kpiPct(k)}
-              aria-label={k.metric}
-              getValueLabel={() => `${fmt(k.actual, k.unit)} of ${fmt(k.target, k.unit)}`}
-            />
-          </div>
+          <KpiBar key={k.metric} kpi={k} />
         ))}
         <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
           <span>
