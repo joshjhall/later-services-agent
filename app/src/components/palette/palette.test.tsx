@@ -3,7 +3,7 @@ import * as world from "@/domain/fixtures";
 import { StoreProvider } from "@/domain/store";
 import { openFindOrAsk } from "@/shell/FindOrAsk";
 import { FindOrAskPalette } from "./FindOrAskPalette";
-import { ACTIVITY_LABEL, buildItems, filterItems, subjectFor } from "./items";
+import { ACTIVITY_LABEL, buildItems, contextLine, filterItems, subjectFor } from "./items";
 import { FALLBACK, replyTo } from "./responses";
 
 const items = buildItems(world);
@@ -40,6 +40,9 @@ test("the conversation is about the current object", () => {
   expect(subjectFor({ view: "lineup", id: "cmp-holiday-gifting" }, world)).toBe(
     "the Holiday gifting lineup",
   );
+  // A stale link doesn't name "Not found" as the subject.
+  expect(subjectFor({ view: "campaign", id: "cmp-gone" }, world)).toBe("your portfolio");
+  expect(contextLine({ view: "campaign", id: "cmp-gone" }, world)).toBe("Portfolio");
 });
 
 test("the compare question names the dimension it chose and offers the others", () => {
@@ -52,8 +55,11 @@ test("the compare question names the dimension it chose and offers the others", 
 test("each scripted reply matches whole words, not fragments", () => {
   expect(replyTo("Why is Ana's draft late?")).toMatch(/Ben is the approved backup/);
   expect(replyTo("What's at risk this week?")).toMatch(/Three things need you/);
-  // "analytics", "template", and "brisk" contain ana, late, and risk.
-  expect(replyTo("Show analytics in a template, brisk")).toBe(FALLBACK);
+  expect(replyTo("Show risks")).toMatch(/Three things need you/);
+  // Words that only contain a keyword get the fallback.
+  for (const q of ["comparable", "analytics", "template", "brisk"]) {
+    expect(replyTo(q)).toBe(FALLBACK);
+  }
 });
 
 function renderPalette() {
@@ -113,6 +119,13 @@ test("choosing a suggestion goes there and closes the palette", () => {
   fireEvent.click(within(dialog).getByRole("option", { name: ACTIVITY_LABEL }));
   expect(location.hash).toBe("#activity");
   expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
+});
+
+test("Nudge Ana opens Today, where her follow-up decision waits", () => {
+  location.hash = "#activity";
+  const dialog = renderPalette();
+  fireEvent.click(within(dialog).getByRole("option", { name: "Nudge Ana" }));
+  expect(location.hash).toBe("#today");
 });
 
 test("a new conversation starts with an empty draft", () => {

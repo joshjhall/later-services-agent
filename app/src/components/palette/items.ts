@@ -120,9 +120,15 @@ export function filterItems(items: PaletteItem[], query: string): PaletteItem[] 
 
 type Places = Pick<World, "accounts" | "campaigns">;
 
+/** Breadcrumb labels for the route; a stale or broken link falls back to the portfolio. */
+function placeLabels(route: Route, world: Places): string[] {
+  const labels = crumbs(route, world).map((c) => c.label);
+  return labels.at(-1) === "Not found" ? labels.slice(0, 1) : labels;
+}
+
 /** The current object, named for "Start a conversation about …". */
 export function subjectFor(route: Route, world: Places): string {
-  const labels = crumbs(route, world).map((c) => c.label);
+  const labels = placeLabels(route, world);
   if (labels.length === 1) return "your portfolio";
   if (route.view === "goal" || route.view === "lineup") {
     return `the ${labels.at(-2)} ${labels.at(-1)?.toLowerCase()}`;
@@ -132,7 +138,5 @@ export function subjectFor(route: Route, world: Places): string {
 
 /** Where the conversation is anchored, shown as its context line. */
 export function contextLine(route: Route, world: Places): string {
-  return crumbs(route, world)
-    .map((c) => c.label)
-    .join(" › ");
+  return placeLabels(route, world).join(" › ");
 }
