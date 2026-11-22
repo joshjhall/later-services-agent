@@ -1,4 +1,4 @@
-import { crumbs, type Route } from "@/router";
+import { crumbs, LABELS, type Route } from "@/router";
 
 /**
  * What Find or ask can suggest while you type (information-architecture.md §1).
@@ -22,8 +22,8 @@ type World = {
   creators: { id: string; name: string; handle: string }[];
 };
 
-/** Label for the one activity record (people and system). */
-export const ACTIVITY_LABEL = "Activity";
+/** Label for the one activity record (people and system), shared with the breadcrumb. */
+export const ACTIVITY_LABEL = LABELS.activity;
 
 /** Scripted actions. Each one either navigates or confirms with a toast. */
 const ACTIONS: PaletteItem[] = [
@@ -123,7 +123,7 @@ type Places = Pick<World, "accounts" | "campaigns">;
 /** Breadcrumb labels for the route; a stale or broken link falls back to the portfolio. */
 function placeLabels(route: Route, world: Places): string[] {
   const labels = crumbs(route, world).map((c) => c.label);
-  return labels.at(-1) === "Not found" ? labels.slice(0, 1) : labels;
+  return labels.at(-1) === LABELS.notFound ? labels.slice(0, 1) : labels;
 }
 
 /** The current object, named for "Start a conversation about …". */

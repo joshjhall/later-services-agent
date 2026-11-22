@@ -1,10 +1,15 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import * as world from "@/domain/fixtures";
 import { StoreProvider } from "@/domain/store";
+import { crumbs, LABELS } from "@/router";
 import { openFindOrAsk } from "@/shell/FindOrAsk";
 import { FindOrAskPalette } from "./FindOrAskPalette";
 import { ACTIVITY_LABEL, buildItems, contextLine, filterItems, subjectFor } from "./items";
 import { FALLBACK, replyTo } from "./responses";
+
+afterEach(() => {
+  location.hash = "";
+});
 
 const items = buildItems(world);
 const labels = (q: string) => filterItems(items, q).map((i) => i.label);
@@ -20,6 +25,13 @@ test("a campaign matches by its account's name as well as its own", () => {
     expect.arrayContaining(["Brightside Beverages", "Sparkling Citrus launch", "Holiday gifting"]),
   );
   expect(labels("brightside")).not.toContain("Trail season");
+});
+
+test("every suggestion leads to a page that exists", () => {
+  for (const item of items.filter((i) => i.route)) {
+    // biome-ignore lint/style/noNonNullAssertion: filtered above
+    expect(crumbs(item.route!, world).at(-1)?.label, item.label).not.toBe(LABELS.notFound);
+  }
 });
 
 test("actions filter as you type, and every word must match", () => {
@@ -114,7 +126,6 @@ test("choosing the conversation opens it full screen with context and a scripted
 });
 
 test("choosing a suggestion goes there and closes the palette", () => {
-  location.hash = "";
   const dialog = renderPalette();
   fireEvent.click(within(dialog).getByRole("option", { name: ACTIVITY_LABEL }));
   expect(location.hash).toBe("#activity");

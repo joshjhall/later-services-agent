@@ -35,6 +35,9 @@ export function useRoute(): Route {
   return route;
 }
 
+/** Page labels shared by the breadcrumb and Find or ask. */
+export const LABELS = { activity: "Activity", notFound: "Not found" } as const;
+
 /** One step in the top bar's breadcrumb. `to` is absent on the current page. */
 export type Crumb = { label: string; to?: Route };
 
@@ -46,10 +49,10 @@ type Places = {
 /** Portfolio › account › campaign › step, derived from the route (information-architecture.md §1). */
 export function crumbs(route: Route, world: Places): Crumb[] {
   const trail: Crumb[] = [{ label: "Portfolio", to: { view: "today" } }];
-  const notFound = () => [...trail, { label: "Not found" }];
+  const notFound = () => [...trail, { label: LABELS.notFound }];
 
   if (route.view === "roster") trail.push({ label: "Roster", to: route });
-  else if (route.view === "activity") trail.push({ label: "Activity", to: route });
+  else if (route.view === "activity") trail.push({ label: LABELS.activity, to: route });
   else if (route.view === "account") {
     const account = world.accounts.find((a) => a.id === route.id);
     if (!account) return notFound();
