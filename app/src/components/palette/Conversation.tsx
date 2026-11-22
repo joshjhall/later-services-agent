@@ -4,14 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { InputGroup, InputGroupAddon, InputGroupTextarea } from "@/components/ui/input-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { Route } from "@/router";
 import { replyTo } from "./responses";
 
 export type Message = { from: "you" | "agent"; text: string };
 
-/** Ask the scripted agent and return the exchange to append. */
-export const exchange = (text: string): Message[] => [
+/** Ask the scripted agent about where the conversation started and return the exchange to append. */
+export const exchange = (text: string, route: Route): Message[] => [
   { from: "you", text },
-  { from: "agent", text: replyTo(text) },
+  { from: "agent", text: replyTo(text, route) },
 ];
 
 /**
