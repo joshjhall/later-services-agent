@@ -442,6 +442,8 @@ describe("fmt", () => {
     [12.345, "12.3%"],
     [0, "0.0%"],
     [2500, "2500.0%"],
+    [-0.04, "0.0%"],
+    [-12.345, "-12.3%"],
   ])("percent: fmt(%d) -> %s, never K/M-scaled", (n, out) => {
     expect(fmt(n, "%")).toBe(out);
   });
@@ -487,10 +489,12 @@ describe("fmt", () => {
     [999_950_000, "", "1.0B"],
     [1_200_000_000, "", "1.2B"],
     [2_460_000_000, "$", "$2.5B"],
-    // B is the top tier on purpose: a trillion stays in B rather than adding T.
-    [1e12, "", "1000.0B"],
   ])("M/B boundary: fmt(%d, %j) -> %s, never 1000.0M", (n, unit, out) => {
     expect(fmt(n, unit as "" | "$")).toBe(out);
+  });
+
+  test("B is the ceiling: a trillion stays in B rather than adding a T tier", () => {
+    expect(fmt(1e12)).toBe("1000.0B");
   });
 
   test.each([NaN, Infinity, -Infinity].flatMap((n) => ["", "$", "%"].map((u) => [n, u])))(
