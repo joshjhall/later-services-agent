@@ -16,6 +16,13 @@ export const onSparklingCitrus = (route: Route) =>
 
 const COMPARE = /\bcompare\b|\blast three\b/i;
 
+/** True when the question names one of these creators and asks to compare. */
+const comparesCreator = (names: string) =>
+  new RegExp(`^(?=.*\\b(${names})\\b)(?=.*(\\bcompare\\b|\\blast three\\b))`, "is");
+
+const MEI_COMPARE =
+  "I compared early performance, since Mei's Reel went live on Nov 15. At day 3 it has 4.1% engagement against an average of 3.2% for her last three Reels at the same point, so it's tracking above her pattern and should land near 1.4M views. I can also compare wording, audience, or expected outcome instead.";
+
 export const REPLIES: ScriptedReply[] = [
   {
     match: /\bana\b/i,
@@ -25,8 +32,13 @@ export const REPLIES: ScriptedReply[] = [
   {
     // A compare question about another creator: only Mei has a live post, so say so
     // rather than answer about her. Drop a name once that creator has a live post.
-    match: /^(?=.*\b(ben|jules|rio|sky)\b)(?=.*(\bcompare\b|\blast three\b))/i,
+    match: comparesCreator("ben|jules|rio|sky"),
     reply: "I only have Mei's Reel live to compare right now.",
+  },
+  {
+    // Naming Mei says whose post it means, so answer from anywhere.
+    match: comparesCreator("mei"),
+    reply: MEI_COMPARE,
   },
   // Entries that name their subject come first, so "How does Ana compare with Ben?"
   // gets Ana wherever it's asked. The broad risk summary comes last.
@@ -34,14 +46,13 @@ export const REPLIES: ScriptedReply[] = [
     // Ambiguous ask: the agent picks a dimension, says which, and offers the others (principles.md).
     match: COMPARE,
     where: onSparklingCitrus,
-    reply:
-      "I compared early performance, since Mei's Reel went live on Nov 15. At day 3 it has 4.1% engagement against an average of 3.2% for her last three Reels at the same point, so it's tracking above her pattern and should land near 1.4M views. I can also compare wording, audience, or expected outcome instead.",
+    reply: MEI_COMPARE,
   },
   {
     // Nobody is in context here, so ask whose post rather than guess.
     match: COMPARE,
     reply:
-      "Whose post do you mean? The only live post right now is Mei's Reel on Sparkling Citrus launch. Ask from that campaign and I'll compare it with her last three, or name another creator's post.",
+      "Whose post do you mean? The only live post right now is Mei's Reel on Sparkling Citrus launch. Ask about Mei's Reel, or ask from that campaign, and I'll compare it with her last three.",
   },
   {
     match: /\b(risks?|this week|attention)\b/i,

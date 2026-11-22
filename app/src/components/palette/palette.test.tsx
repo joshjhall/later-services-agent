@@ -83,11 +83,30 @@ test("elsewhere, the compare question asks whose post it means instead of assumi
 test("a compare question about another creator gets an honest decline, not Mei's numbers", () => {
   const decline = "I only have Mei's Reel live to compare right now.";
   for (const route of [citrus, today]) {
-    expect(replyTo("How does Ben compare with his last three?", route)).toBe(decline);
-    expect(replyTo("Compare Rio's draft", route)).toBe(decline);
+    for (const name of ["Ben", "Jules", "Rio", "Sky"]) {
+      expect(replyTo(`How does ${name} compare with their last three?`, route), name).toBe(decline);
+    }
+    // A Shift+Enter follow-up splits the name and the ask across lines.
+    expect(replyTo("Ben?\nHow does he compare with his last three?", route)).toBe(decline);
+    // The decline wins over the risk summary too.
+    expect(replyTo("Compare Rio this week", route)).toBe(decline);
   }
   // Naming a creator without asking to compare doesn't trigger it.
   expect(replyTo("What's Jules up to?", citrus)).toBe(fallbackFor(citrus));
+});
+
+test("naming Mei says whose post it means, so the comparison answers from anywhere", () => {
+  for (const route of [
+    today,
+    { view: "roster" },
+    { view: "campaign", id: "cmp-spring-serum" },
+  ] as Route[]) {
+    expect(replyTo("How does Mei's Reel compare with her last three?", route)).toMatch(
+      /early performance/,
+    );
+  }
+  // The "whose post?" prompt never points at a post the agent would then decline.
+  expect(replyTo(COMPARE_Q, today)).not.toMatch(/another creator/);
 });
 
 test("only Sparkling Citrus pages count as Mei's campaign", () => {
