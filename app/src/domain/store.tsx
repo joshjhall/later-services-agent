@@ -47,7 +47,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             actor: CURRENT_USER,
             action: `Chose "${label}"`,
             target: p.title,
-            effect: option?.effect ?? "internal",
+            // An unknown option is treated as permanent: undo is opt-in, never a default.
+            effect: option?.effect ?? "external",
           },
           ...a,
         ]);

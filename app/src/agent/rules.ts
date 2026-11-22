@@ -34,8 +34,8 @@ export interface Option {
   label: string;
   primary?: boolean;
   lane: Lane;
-  /** What choosing this option touches; decides undo in the activity record. Default: internal. */
-  effect?: Effect;
+  /** What choosing this option touches; decides undo in the activity record. Required, so undo is never a silent default. */
+  effect: Effect;
 }
 
 export interface Proposal {
@@ -121,7 +121,13 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
             : { label: "Approved backup", value: "None", tone: "bad" },
         ],
         options: [
-          { id: "call", label: `Call ${c.name.split(" ")[0]}`, primary: true, lane: "human" },
+          {
+            id: "call",
+            label: `Call ${c.name.split(" ")[0]}`,
+            primary: true,
+            lane: "human",
+            effect: "external",
+          },
           { id: "extend", label: "Extend 2 days", lane: "propose", effect: "external" },
           ...(backupCreator
             ? [
@@ -190,7 +196,7 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
         options: [
           { id: "boost", label: "Boost $8,000", primary: true, lane: "propose", effect: "spend" },
           { id: "smaller", label: "Boost $4,000", lane: "propose", effect: "spend" },
-          { id: "skip", label: "Not now", lane: "human" },
+          { id: "skip", label: "Not now", lane: "human", effect: "internal" },
         ],
         confidence: "medium",
         dueInDays: 1,
@@ -212,7 +218,9 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
           { label: "Objective", value: "Awareness (proposed)", tone: "neutral" },
           { label: "Primary KPI", value: "Reach 25M, video views 8M", tone: "neutral" },
         ],
-        options: [{ id: "open", label: "Review goal", primary: true, lane: "human" }],
+        options: [
+          { id: "open", label: "Review goal", primary: true, lane: "human", effect: "internal" },
+        ],
         confidence: "medium",
         dueInDays: 5,
       });
@@ -231,7 +239,9 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
           { label: "Conflict", value: "1 creator had a competitor deal 60 days ago", tone: "bad" },
           { label: "Forecast", value: "Reach 14–19M vs. 15M target", tone: "neutral" },
         ],
-        options: [{ id: "open", label: "Review lineup", primary: true, lane: "human" }],
+        options: [
+          { id: "open", label: "Review lineup", primary: true, lane: "human", effect: "internal" },
+        ],
         confidence: "medium",
         dueInDays: 2,
       });
@@ -255,8 +265,14 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
             { label: "Actual", value: fmt(k.actual, k.unit), tone: "bad" },
           ],
           options: [
-            { id: "plan", label: "Plan next-wave changes", primary: true, lane: "propose" },
-            { id: "note", label: "Add to client update", lane: "human" },
+            {
+              id: "plan",
+              label: "Plan next-wave changes",
+              primary: true,
+              lane: "propose",
+              effect: "internal",
+            },
+            { id: "note", label: "Add to client update", lane: "human", effect: "internal" },
           ],
           confidence: "medium",
           dueInDays: 3,

@@ -159,3 +159,11 @@ test("undo rule and the #log alias", async () => {
   expect(isUndoable({ effect: "spend" })).toBe(false);
   expect(parse("#log")).toEqual({ view: "activity" });
 });
+
+test("every agent option declares its effect, and calls are never undoable", async () => {
+  const { deriveProposals } = await import("@/agent/rules");
+  const fx = await import("@/domain/fixtures");
+  const options = deriveProposals(fx).flatMap((p) => p.options);
+  for (const o of options) expect(["internal", "external", "spend"]).toContain(o.effect);
+  expect(options.find((o) => o.id === "call")?.effect).toBe("external");
+});
