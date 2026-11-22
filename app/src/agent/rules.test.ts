@@ -1,6 +1,13 @@
 import { campaigns, creators, DEMO_TODAY, deliverables, partnerships } from "@/domain/fixtures";
 import type { Effect } from "@/domain/types";
-import { AGENT_POLICY, type AgentPolicy, capEvidence, daysBetween, deriveProposals } from "./rules";
+import {
+  AGENT_POLICY,
+  type AgentPolicy,
+  capEvidence,
+  daysBetween,
+  deriveProposals,
+  withinCap,
+} from "./rules";
 
 const world = { campaigns, creators, partnerships, deliverables };
 
@@ -41,23 +48,65 @@ describe("deriveProposals", () => {
     expect(boost?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
       "$1,000/day, if spent in one day · above it, so it needs you",
     );
-    // Display only: the cap does not move either boost option out of the CM's hands.
+    // Both amounts are over the default cap, so both wait for the CM.
     expect(boost?.options.map((o) => o.lane)).toEqual(["propose", "propose", "human"]);
     expect(boost?.options.map((o) => o.label)).toEqual(["Boost $8,000", "Boost $4,000", "Not now"]);
   });
 
-  test("boost options stay with the CM even when the cap covers them (cap not yet enforced)", () => {
-    const boost = deriveProposals(world, undefined, undefined, {
-      ...AGENT_POLICY,
-      maxDailySpend: 10_000,
-    }).find((p) => p.kind === "boost-post");
-    expect(boost?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
+  test("the cap decides each boost option's lane: at or under is automatic, above needs approval", () => {
+    const boostAt = (maxDailySpend: number) =>
+      deriveProposals(world, undefined, undefined, { ...AGENT_POLICY, maxDailySpend }).find(
+        (p) => p.kind === "boost-post",
+      );
+    const lanes = (cap: number) => boostAt(cap)?.options.map((o) => o.lane);
+    expect(lanes(5_000)).toEqual(["propose", "auto", "human"]);
+    expect(boostAt(5_000)?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
+      "$5,000/day, if spent in one day · $4,000 is within it; the rest needs you",
+    );
+    // Exactly at an amount, that amount is automatic.
+    expect(lanes(4_000)).toEqual(["propose", "auto", "human"]);
+    expect(lanes(3_999)).toEqual(["propose", "propose", "human"]);
+    expect(lanes(10_000)).toEqual(["auto", "auto", "human"]);
+    expect(boostAt(10_000)?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
       "$10,000/day, if spent in one day · within it",
     );
-    expect(boost?.options.map((o) => o.lane)).toEqual(["propose", "propose", "human"]);
   });
 
-  test("the cap row, the proposed spend, and the boost buttons share one list of amounts", () => {
+  test("withinCap rounds only toward caution: amount up, cap down", () => {
+    expect(withinCap(4000, { maxDailySpend: 4000 })).toBe(true);
+    expect(withinCap(4000, { maxDailySpend: 4000.9 })).toBe(true);
+    expect(withinCap(4000.4, { maxDailySpend: 4000 })).toBe(false);
+    // Never a fraction of a dollar over a fractional cap.
+    expect(withinCap(4000.6, { maxDailySpend: 4000.5 })).toBe(false);
+    expect(withinCap(0.4, { maxDailySpend: 0 })).toBe(false);
+    expect(withinCap(0, { maxDailySpend: 0 })).toBe(true);
+  });
+
+  test("withinCap fails closed on a malformed amount or cap", () => {
+    expect(withinCap(4000, { maxDailySpend: Number.POSITIVE_INFINITY })).toBe(false);
+    expect(withinCap(4000, { maxDailySpend: Number.NaN })).toBe(false);
+    expect(withinCap(Number.NaN, { maxDailySpend: 5000 })).toBe(false);
+    expect(withinCap(-1, { maxDailySpend: 5000 })).toBe(false);
+    expect(withinCap(1000, { maxDailySpend: -5 })).toBe(false);
+    // Rounds to -0, which would otherwise let a $0 amount through.
+    expect(withinCap(0, { maxDailySpend: -0.3 })).toBe(false);
+  });
+
+  test("cap evidence shows a malformed cap as not set, not as a dollar amount", () => {
+    for (const maxDailySpend of [
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+      Number.NaN,
+      -5,
+      -0.3,
+    ]) {
+      expect(capEvidence([8000, 4000], { maxDailySpend }).value).toBe(
+        "Not set · every amount needs you",
+      );
+    }
+  });
+
+  test("the cap row, the proposed spend, the boost buttons, and their lanes share one list of amounts", () => {
     const boost = proposals.find((p) => p.kind === "boost-post");
     const boosts = (boost?.options ?? []).filter((o) => o.effect === "spend");
     const amount = (label: string) => Number(label.replace(/[^0-9]/g, ""));
@@ -80,6 +129,10 @@ describe("deriveProposals", () => {
       expect(listed(cap(at))).toBe(true);
       expect(cap(below)).not.toContain(`${shown} is within`);
       expect(cap(below)).not.toBe("within it");
+      // The button's lane flips at the same amount, so the row and the lane never disagree.
+      const lane = (p?: typeof boost) => p?.options.find((x) => x.id === o.id)?.lane;
+      expect(lane(at)).toBe("auto");
+      expect(lane(below)).toBe("propose");
     }
     const primary = boosts.find((o) => o.primary);
     expect(primary).toBeDefined();
@@ -172,16 +225,17 @@ describe("deriveProposals", () => {
     );
   });
 
-  test("cap evidence compares in whole dollars, so the row never contradicts itself", () => {
-    // $5,000 shown against a $5,000 cap reads as within it, from either side of the rounding.
+  test("cap evidence rounds only toward caution, as withinCap does", () => {
+    // Cents over a whole-dollar cap need a person.
     expect(capEvidence([5000.4], { maxDailySpend: 5000 }).value).toBe(
-      "$5,000/day, if spent in one day · within it",
+      "$5,000/day, if spent in one day · above it, so it needs you",
     );
+    // A fractional cap is shown, and compared, rounded down.
     expect(capEvidence([5000], { maxDailySpend: 4999.6 }).value).toBe(
-      "$5,000/day, if spent in one day · within it",
+      "$4,999/day, if spent in one day · above it, so it needs you",
     );
-    expect(capEvidence([5001], { maxDailySpend: 5000 }).value).toMatch(
-      /above it, so it needs you$/,
+    expect(capEvidence([4999], { maxDailySpend: 4999.6 }).value).toBe(
+      "$4,999/day, if spent in one day · within it",
     );
   });
 
