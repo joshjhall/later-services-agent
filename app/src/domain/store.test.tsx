@@ -3,6 +3,7 @@ import { type MessageDraft, messageDrafts } from "@/agent/drafts";
 import type { Proposal } from "@/agent/rules";
 import * as fx from "@/domain/fixtures";
 import { StoreProvider, useStore } from "@/domain/store";
+import { isUndoable } from "@/domain/types";
 
 // The rail scopes activity by `campaignId`; an entry without it falls back to
 // loose name matching (#49). These pin where each new entry takes its id from.
@@ -148,4 +149,5 @@ test("store: an option it can't match is recorded as permanent, never undoable",
   const p = result.current.proposals[0];
   act(() => result.current.resolve(p, "no-such-option"));
   expect(result.current.activity[0]).toMatchObject({ actor: "Maya", effect: "external" });
+  expect(isUndoable(result.current.activity[0])).toBe(false);
 });
