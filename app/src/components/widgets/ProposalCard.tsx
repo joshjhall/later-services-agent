@@ -74,12 +74,14 @@ export function ProposalCard({ proposal: p, compact }: { proposal: Proposal; com
           <span className="text-xs font-medium text-muted-foreground">{outputClass(p)}</span>
           <span className="text-xs text-muted-foreground">
             {account?.name} ·{" "}
-            <a
-              href={href({ view: "campaign", id: p.campaignId, tab: proposalTab(p) })}
-              className="hover:underline"
-            >
-              {campaign?.name}
-            </a>
+            {campaign && (
+              <a
+                href={href({ view: "campaign", id: campaign.id, tab: proposalTab(p) })}
+                className="hover:underline"
+              >
+                {campaign.name}
+              </a>
+            )}
           </span>
           <span className="ml-auto text-xs text-muted-foreground">Confidence: {p.confidence}</span>
         </div>

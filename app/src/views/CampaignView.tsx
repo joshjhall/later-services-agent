@@ -18,7 +18,7 @@ import { CampaignWidget } from "@/components/widgets/CampaignWidget";
 import { ProposalCard } from "@/components/widgets/ProposalCard";
 import { DEMO_TODAY } from "@/domain/fixtures";
 import { useStore } from "@/domain/store";
-import { type CampaignPhase, campaignPhase } from "@/domain/types";
+import { type CampaignPhase, campaignPhase, kpiPct } from "@/domain/types";
 import { CAMPAIGN_TABS, type CampaignTab, href } from "@/router";
 import { PageHeader } from "./PageHeader";
 
@@ -172,9 +172,7 @@ export function CampaignView({ id, tab }: { id: string; tab?: CampaignTab }) {
                           {fmt(k.actual, k.unit)} / {fmt(k.target, k.unit)}
                         </span>
                       </div>
-                      <Progress
-                        value={k.target > 0 ? Math.min(100, (k.actual / k.target) * 100) : 0}
-                      />
+                      <Progress value={kpiPct(k)} />
                     </div>
                   ))
                 ) : (

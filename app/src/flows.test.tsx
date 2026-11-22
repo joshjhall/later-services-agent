@@ -482,7 +482,10 @@ test("today: each card links to the campaign tab that holds it, even off the def
   expect(boost).toHaveAttribute("href", "#campaign/cmp-sparkling-launch/run");
   go(boost.getAttribute("href") ?? "");
   expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Run");
-  expect(within(screen.getByRole("tabpanel")).getAllByText(/from reserve/).length).toBeGreaterThan(
-    0,
-  );
+  // On the campaign page, the same card links to the tab it is already on.
+  const onPage = within(screen.getByRole("tabpanel")).getAllByRole("link", {
+    name: "Sparkling Citrus launch",
+  });
+  expect(onPage.length).toBeGreaterThan(0);
+  for (const a of onPage) expect(a).toHaveAttribute("href", "#campaign/cmp-sparkling-launch/run");
 });
