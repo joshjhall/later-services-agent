@@ -222,6 +222,8 @@ export interface MessageDraft {
   target: string;
   subject: string;
   body: string;
+  /** The campaign it is about; the sent entry carries it, so the rail scopes by id. */
+  campaignId: string;
 }
 
 export const messageDrafts: Record<string, MessageDraft> = {
@@ -230,6 +232,7 @@ export const messageDrafts: Record<string, MessageDraft> = {
     kind: "fix request",
     to: "Rio Castillo",
     target: "Rio Castillo · Sparkling Citrus",
+    campaignId: "cmp-sparkling-launch",
     subject: "One fix before we approve your Reel",
     body: [
       "Hi Rio,",
@@ -247,6 +250,7 @@ export const messageDrafts: Record<string, MessageDraft> = {
     kind: "client email",
     to: "Priya Rao, Lumen Skin",
     target: "Spring serum",
+    campaignId: "cmp-spring-serum",
     subject: "Spring serum: proposed goal, KPIs, and two questions",
     body: [
       "Hi Priya,",
@@ -271,6 +275,7 @@ export const messageDrafts: Record<string, MessageDraft> = {
     kind: "info request",
     to: "Northstar Talent (Ana Reyes's manager)",
     target: "Ana Reyes · Holiday gifting",
+    campaignId: "cmp-holiday-gifting",
     subject: "Quick check on Ana's audience split",
     body: [
       "Hi,",
@@ -289,6 +294,7 @@ export const messageDrafts: Record<string, MessageDraft> = {
     kind: "creator brief",
     to: "Ana Reyes",
     target: "Ana Reyes · Spring serum",
+    campaignId: "cmp-spring-serum",
     subject: "Your brief: Lumen Spring serum, 1 TikTok",
     body: [
       "Hi Ana,",

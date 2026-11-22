@@ -47,3 +47,30 @@ test("scopeOf: goal is one campaign; unknown ids are empty, which hides the rail
     selectRail({ view: "campaign", id: "nope" }, { campaigns: unknown.length, scheduled: 0 }),
   ).toEqual([]);
 });
+
+const sharedPrefix = [
+  { id: "a", name: "Sparkling Citrus" },
+  { id: "b", name: "Sparkling Citrus relaunch" },
+];
+
+test("activityIn scopes by campaign id when names share a prefix", () => {
+  const entries = [
+    { id: "x", target: "Ana Reyes · Sparkling Citrus", campaignId: "a" },
+    { id: "y", target: "Ana Reyes · Sparkling Citrus relaunch", campaignId: "b" },
+  ] as ActivityEntry[];
+  expect(activityIn(entries, sharedPrefix, ["a"]).map((e) => e.id)).toEqual(["x"]);
+  expect(activityIn(entries, sharedPrefix, ["b"]).map((e) => e.id)).toEqual(["y"]);
+  // An account scope holding both counts each entry once.
+  expect(activityIn(entries, sharedPrefix, ["a", "b"]).map((e) => e.id)).toEqual(["x", "y"]);
+});
+
+test("activityIn excludes an entry whose id is out of scope, even if its text names an in-scope campaign", () => {
+  const entries = [{ id: "w", target: "Sparkling Citrus", campaignId: "other" }] as ActivityEntry[];
+  expect(activityIn(entries, sharedPrefix, ["a"])).toEqual([]);
+});
+
+test("activityIn falls back to name matching for an entry without an id", () => {
+  const entries = [{ id: "z", target: "Rio Castillo · Trail season" }] as ActivityEntry[];
+  expect(activityIn(entries, campaigns, ["cmp-trail-season"]).map((e) => e.id)).toEqual(["z"]);
+  expect(activityIn(entries, campaigns, ["cmp-sparkling-launch"])).toEqual([]);
+});

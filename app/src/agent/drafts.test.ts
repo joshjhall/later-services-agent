@@ -1,4 +1,4 @@
-import { campaigns, creators, deliverables, partnerships } from "@/domain/fixtures";
+import { activity, campaigns, creators, deliverables, partnerships } from "@/domain/fixtures";
 import { draftFor, messageDrafts } from "./drafts";
 import { deriveProposals } from "./rules";
 
@@ -23,4 +23,12 @@ describe("message drafts", () => {
   test("options that don't send open no draft", () => {
     expect(draftFor("review:d-rio-1", "approve")).toBeUndefined();
   });
+});
+
+test("every message draft and seeded activity entry names a real campaign, so the rail scopes by id", () => {
+  const ids = new Set(campaigns.map((c) => c.id));
+  expect(Object.keys(messageDrafts).length).toBeGreaterThan(0);
+  expect(activity.length).toBeGreaterThan(0);
+  for (const d of Object.values(messageDrafts)) expect(ids, d.id).toContain(d.campaignId);
+  for (const e of activity) expect(ids, e.id).toContain(e.campaignId);
 });

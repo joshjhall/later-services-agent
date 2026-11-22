@@ -37,7 +37,10 @@ export function activityIn(
   scope: string[],
 ): ActivityEntry[] {
   const names = campaigns.filter((c) => scope.includes(c.id)).map((c) => c.name);
-  return entries.filter((e) => names.some((n) => isAbout(e, n)));
+  // Match by id where an entry carries one; text matching is only a fallback.
+  return entries.filter((e) =>
+    e.campaignId ? scope.includes(e.campaignId) : names.some((n) => isAbout(e, n)),
+  );
 }
 
 /** Queued messages in scope that haven't gone out yet, soonest first. */

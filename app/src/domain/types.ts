@@ -121,6 +121,8 @@ export interface ActivityEntry {
   action: string;
   target: string;
   effect: Effect;
+  /** The campaign it is about. When set, the rail scopes by id alone, never by name. */
+  campaignId?: string;
 }
 
 /** What has happened outside the system is permanent; a correction is a new action. */
