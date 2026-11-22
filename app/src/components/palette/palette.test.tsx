@@ -4,7 +4,7 @@ import { StoreProvider } from "@/domain/store";
 import type { Route } from "@/router";
 import { crumbs, LABELS } from "@/router";
 import { openFindOrAsk } from "@/shell/FindOrAsk";
-import { ConversationProvider } from "./chat";
+import { ConversationProvider, useConversation } from "./chat";
 import { FindOrAskPalette } from "./FindOrAskPalette";
 import { ACTIVITY_LABEL, buildItems, contextLine, filterItems, subjectFor } from "./items";
 import { answerTo, fallbackFor, onSparklingCitrus, replyTo } from "./responses";
@@ -166,7 +166,28 @@ test("the fallback only suggests questions that make sense for the context", () 
   for (const route of [today, { view: "roster" }, { view: "activity" }] as Route[]) {
     expect(fallbackFor(route)).not.toMatch(/\bher\b|Mei|last three/);
     expect(fallbackFor(route)).toMatch(/why Ana is late/);
+    expect(fallbackFor(route)).not.toMatch(/similar campaigns/);
   }
+  // Any one campaign can be compared with similar ones; only Sparkling Citrus has Mei's Reel.
+  for (const route of [
+    citrus,
+    { view: "goal", id: "cmp-spring-serum" },
+    { view: "lineup", id: "cmp-holiday-gifting" },
+  ] as Route[]) {
+    expect(fallbackFor(route), JSON.stringify(route)).toMatch(/similar campaigns/);
+  }
+  expect(fallbackFor({ view: "goal", id: "cmp-spring-serum" })).not.toMatch(/Mei/);
+});
+
+/** Uses the conversation hook with no provider above it. */
+function Orphan() {
+  useConversation();
+  return null;
+}
+
+test("the conversation hook needs its provider", () => {
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  expect(() => render(<Orphan />)).toThrow(/ConversationProvider/);
 });
 
 test("each scripted reply matches whole words, not fragments", () => {
