@@ -6,6 +6,7 @@ import {
   capEvidence,
   daysBetween,
   deriveProposals,
+  fmt,
   withinCap,
 } from "./rules";
 
@@ -413,5 +414,39 @@ describe("option effects", () => {
   test("every option in the table is still offered", () => {
     const offered = new Set(options.map((o) => o.key));
     expect(Object.keys(EFFECTS).filter((k) => !offered.has(k))).toEqual([]);
+  });
+});
+
+describe("fmt", () => {
+  test.each([
+    [12.345, "12.3%"],
+    [0, "0.0%"],
+    [2500, "2500.0%"],
+  ])("percent: fmt(%d) -> %s, never K/M-scaled", (n, out) => {
+    expect(fmt(n, "%")).toBe(out);
+  });
+
+  test.each([
+    [0, "0"],
+    [999.4, "999"],
+    [999.6, "1000"],
+    [1000, "1K"],
+    [12_499, "12K"],
+    [1_000_000, "1.0M"],
+    [2_460_000, "2.5M"],
+  ])("bare: fmt(%d) -> %s", (n, out) => {
+    expect(fmt(n)).toBe(out);
+  });
+
+  test.each([
+    [450, "$450"],
+    [85_000, "$85K"],
+    [1_200_000, "$1.2M"],
+  ])("dollar: fmt(%d) -> %s", (n, out) => {
+    expect(fmt(n, "$")).toBe(out);
+  });
+
+  test("the unit defaults to bare", () => {
+    expect(fmt(5000)).toBe(fmt(5000, ""));
   });
 });
