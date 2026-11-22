@@ -55,6 +55,20 @@ test("reviewing the lineup: conflicted creator starts removed; fees update live"
   expect(screen.getByRole("button", { name: /Approve lineup/ })).toBeEnabled();
 });
 
+test("reviewing the lineup: an incomplete candidate shows its gaps and can still join", () => {
+  renderApp();
+  go("#lineup/cmp-holiday-gifting");
+  expect(screen.getByText("Needs: rate and usage rights")).toBeInTheDocument();
+  const hana = within(screen.getByRole("radiogroup", { name: "Role for Hana Sato" }));
+  expect(hana.getByRole("radio", { name: "In lineup" })).toHaveAttribute("aria-checked", "true");
+  expect(screen.getByText("1 member still needs details")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /Approve lineup/ })).toBeEnabled();
+  // Only lineup members count: as a backup, Hana keeps her chip but leaves the tally.
+  fireEvent.click(hana.getByRole("radio", { name: "Backup" }));
+  expect(screen.getByText("Needs: rate and usage rights")).toBeInTheDocument();
+  expect(screen.queryByText("Open items")).not.toBeInTheDocument();
+});
+
 test("hard moment: Call opens the brief, and the outcome resolves the escalation", () => {
   renderApp();
   const card = screen.getByText(/Ana Reyes is quiet/).closest("[data-severity]") as HTMLElement;
@@ -72,6 +86,26 @@ test("lineup totals block approval when creator fees exceed the budget", async (
   const { lineupDrafts } = await import("@/agent/drafts");
   const { candidates } = lineupDrafts["cmp-holiday-gifting"];
   const all = Object.fromEntries(candidates.map((c) => [c.handle, "core" as const]));
-  expect(lineupTotals(candidates, all, 72_000)).toMatchObject({ fees: 58_000, over: false });
+  // Hana's open rate and usage rights are counted but don't block approval.
+  expect(lineupTotals(candidates, all, 72_000)).toMatchObject({
+    fees: 58_000,
+    over: false,
+    open: 1,
+  });
   expect(lineupTotals(candidates, all, 50_000)).toMatchObject({ over: true });
+  expect(lineupTotals(candidates, { ...all, "@hanahosts": "backup" }, 72_000)).toMatchObject({
+    open: 0,
+  });
+  // Every incomplete lineup member counts.
+  const twoOpen = candidates.map((c) =>
+    c.handle === "@riocooks" ? { ...c, missing: ["rate"] } : c,
+  );
+  expect(lineupTotals(twoOpen, all, 72_000)).toMatchObject({ open: 2 });
+});
+
+test("open-item copy uses the Oxford comma and plural wording", async () => {
+  const { needsLabel, openItemsLabel } = await import("@/views/LineupView");
+  expect(needsLabel(["rate", "usage rights", "term"])).toBe("Needs: rate, usage rights, and term");
+  expect(openItemsLabel(1)).toBe("1 member still needs details");
+  expect(openItemsLabel(2)).toBe("2 members still need details");
 });

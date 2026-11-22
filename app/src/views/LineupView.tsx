@@ -27,8 +27,20 @@ export function lineupTotals(
     fees,
     backups: Object.values(picks).filter((p) => p === "backup").length,
     over: fees > feeBudget,
+    /** Lineup members with open details. Shown, never a gate. */
+    open: core.filter((c) => c.missing?.length).length,
   };
 }
+
+// en-US pins the serial comma: "rate, usage rights, and term".
+const listFormat = new Intl.ListFormat("en-US", { type: "conjunction" });
+
+/** Chip copy for a candidate's open details. */
+export const needsLabel = (missing: string[]) => `Needs: ${listFormat.format(missing)}`;
+
+/** Summary copy for how many lineup members still have open details. */
+export const openItemsLabel = (n: number) =>
+  `${n} ${n === 1 ? "member still needs" : "members still need"} details`;
 
 const FIT: Record<Fit, { label: string; cls: string }> = {
   met: { label: "Met", cls: "bg-success-container text-on-success-container" },
@@ -90,6 +102,11 @@ export function LineupView({ id }: { id: string }) {
                     ) : (
                       <Badge variant="outline">New to us</Badge>
                     )}
+                    {c.missing?.length ? (
+                      <Badge className="bg-warning-container text-on-warning-container">
+                        {needsLabel(c.missing)}
+                      </Badge>
+                    ) : null}
                     <span className="ml-auto text-sm tabular-nums text-muted-foreground">
                       {fmt(c.fee, "$")} · reach ~{c.forecastReach}
                     </span>
@@ -171,6 +188,12 @@ export function LineupView({ id }: { id: string }) {
                 {fmt(totals.fees, "$")} / {fmt(draft.budget.creatorFees, "$")}
               </span>
             </div>
+            {totals.open > 0 && (
+              <div className="flex justify-between">
+                <span>Open items</span>
+                <span>{openItemsLabel(totals.open)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span>Amplification reserve</span>
               <span className="tabular-nums">{fmt(draft.budget.reserve, "$")}</span>
