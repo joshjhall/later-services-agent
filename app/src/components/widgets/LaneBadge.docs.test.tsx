@@ -20,7 +20,11 @@ function labelOf(lane: Lane) {
   return container.textContent ?? "";
 }
 
-const pill = (lane: Lane, label: string) => `<span class="lane ${lane}"></span>${label}`;
+// A legend pill holds the label, optionally followed by a ", qualifier"
+// ("Automatic, logged and undoable"), then closes: no bare prefix matches.
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const pill = (lane: Lane, label: string) =>
+  new RegExp(`<span class="lane ${lane}"></span>${escapeRegExp(label)}(, [^<]*)?</span>`);
 
 describe.each(lanes)("the %s lane label", (lane) => {
   test("matches the LANE map in build_overview.py", () => {
@@ -28,13 +32,13 @@ describe.each(lanes)("the %s lane label", (lane) => {
   });
 
   test("matches the legend pill in overview.template.html", () => {
-    expect(read("overview.template.html")).toContain(pill(lane, labelOf(lane)));
+    expect(read("overview.template.html")).toMatch(pill(lane, labelOf(lane)));
   });
 
   test("matches every lane title and the legend pill in overview.html", () => {
     const label = labelOf(lane);
     const html = read("overview.html");
-    expect(html).toContain(pill(lane, label));
+    expect(html).toMatch(pill(lane, label));
     const titles = [...html.matchAll(new RegExp(`class="lane ${lane}" title="([^"]*)"`, "g"))].map(
       (m) => m[1],
     );
