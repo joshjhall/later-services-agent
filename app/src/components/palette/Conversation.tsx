@@ -1,5 +1,5 @@
 import { SendIcon } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { InputGroup, InputGroupAddon, InputGroupTextarea } from "@/components/ui/input-group";
@@ -32,6 +32,12 @@ export function Conversation({
   onSend: (text: string) => void;
 }) {
   const [draft, setDraft] = useState("");
+  // Keep the latest reply in view once the thread is taller than the screen.
+  const end = useRef<HTMLDivElement>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on each new message
+  useEffect(() => {
+    end.current?.scrollIntoView({ block: "end" });
+  }, [messages.length]);
   const send = (e?: FormEvent) => {
     e?.preventDefault();
     const text = draft.trim();
@@ -68,6 +74,7 @@ export function Conversation({
               </li>
             ))}
           </ol>
+          <div ref={end} />
         </ScrollArea>
         <form onSubmit={send} className="mx-auto w-full max-w-2xl px-6 pb-6">
           <InputGroup>
@@ -77,7 +84,9 @@ export function Conversation({
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) send(e);
+                if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
+                e.preventDefault(); // send instead of adding a newline
+                send();
               }}
             />
             <InputGroupAddon align="block-end">

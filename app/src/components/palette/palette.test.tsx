@@ -68,6 +68,8 @@ test("each scripted reply matches whole words, not fragments", () => {
   expect(replyTo("Why is Ana's draft late?")).toMatch(/Ben is the approved backup/);
   expect(replyTo("What's at risk this week?")).toMatch(/Three things need you/);
   expect(replyTo("Show risks")).toMatch(/Three things need you/);
+  // First match wins: a question naming Ana gets her story even if it mentions risk.
+  expect(replyTo("Is Ana at risk this week?")).toMatch(/Ben is the approved backup/);
   // Words that only contain a keyword get the fallback.
   // Ana's story needs her name, not just "late".
   for (const q of ["comparable", "analytics", "template", "brisk", "Is the lineup late?"]) {
@@ -159,4 +161,23 @@ test("⌘K does nothing while a conversation is open", () => {
   act(() => openFindOrAsk());
   expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
   expect(screen.getByRole("dialog", { name: "Conversation" })).toBeInTheDocument();
+});
+
+test("a blank message isn't sent, and Enter sends without Shift", () => {
+  const dialog = renderPalette();
+  fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
+  const chat = screen.getByRole("dialog", { name: "Conversation" });
+  const message = within(chat).getByRole("textbox", { name: "Message" });
+  const sent = () => within(chat).queryAllByText("You").length;
+
+  fireEvent.change(message, { target: { value: "   " } });
+  fireEvent.click(within(chat).getByRole("button", { name: /Send/ }));
+  expect(sent()).toBe(0);
+
+  fireEvent.change(message, { target: { value: "Why is Ana late?" } });
+  fireEvent.keyDown(message, { key: "Enter", shiftKey: true });
+  expect(sent()).toBe(0);
+  fireEvent.keyDown(message, { key: "Enter" });
+  expect(sent()).toBe(1);
+  expect(message).toHaveValue("");
 });
