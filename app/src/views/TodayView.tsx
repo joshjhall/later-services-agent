@@ -31,7 +31,10 @@ export function TodayView() {
       {groups.map((g) => (
         <section key={g.need} aria-labelledby={`need-${g.need}`} className="flex flex-col gap-3">
           <h2 id={`need-${g.need}`} className="text-sm font-semibold">
-            {g.label} <span className="font-normal text-muted-foreground">· {g.items.length}</span>
+            {g.label}{" "}
+            <span className="font-normal text-muted-foreground">
+              · {g.items.filter((p) => !resolved[p.id]).length} open
+            </span>
           </h2>
           <div className="grid items-start gap-4 xl:grid-cols-2">
             {g.items.map((p) => (
@@ -66,7 +69,9 @@ export function TodayView() {
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">Every campaign needs something today.</p>
+              <p className="text-sm text-muted-foreground">
+                None yet: every campaign has a card above.
+              </p>
             )}
           </CollapsibleContent>
         </section>

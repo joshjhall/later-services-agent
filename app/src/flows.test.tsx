@@ -408,19 +408,34 @@ test("campaign: the Run tab shows pacing and only Run proposals", () => {
   expect(within(run).getAllByRole("progressbar").length).toBeGreaterThan(0);
   expect(within(run).queryByText("Creators and deliverables")).toBeNull();
   expect(within(run).queryByText(/is quiet/)).toBeNull();
+  expect(within(run).getByText(/pacing below forecast|Boost .* from reserve/)).toBeInTheDocument();
+  expect(screen.getByRole("tab", { name: /^Run, \d+ open$/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
 });
 
-test("today: on track counts campaigns with nothing on screen, and expands to them", () => {
+test("today: on track is empty while every campaign has a card, and heading counts drop as cards resolve", () => {
   // Every demo campaign has a proposal on screen, so none is on track.
   renderApp();
   const trigger = screen.getByRole("button", { name: "On track · 0 campaigns" });
   fireEvent.click(trigger);
   expect(trigger).toHaveAttribute("aria-expanded", "true");
   const region = screen.getByRole("region", { name: /On track/ });
-  expect(within(region).getByText("Every campaign needs something today.")).toBeInTheDocument();
-  // Resolving a campaign's last card keeps it out of On track: it is still on screen.
+  expect(
+    within(region).getByText("None yet: every campaign has a card above."),
+  ).toBeInTheDocument();
+  const nowCount = () =>
+    Number(
+      screen
+        .getByRole("heading", { level: 2, name: /^Needs you now/ })
+        .textContent?.match(/· (\d+) open/)?.[1],
+    );
+  const before = nowCount();
+  // Resolving a card drops the heading count, but the campaign stays out of On track.
   const card = screen.getByText(/Ana Reyes is quiet/).closest("[data-severity]") as HTMLElement;
   fireEvent.click(within(card).getByRole("button", { name: "Extend 2 days" }));
+  expect(nowCount()).toBe(before - 1);
   expect(screen.getByRole("button", { name: "On track · 0 campaigns" })).toBeInTheDocument();
 });
 

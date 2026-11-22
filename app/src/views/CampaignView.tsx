@@ -65,10 +65,14 @@ export function CampaignView({ id, tab }: { id: string; tab?: CampaignTab }) {
         >
           <TabsList>
             {CAMPAIGN_TABS.map((t) => (
-              <TabsTrigger key={t} value={t}>
+              <TabsTrigger
+                key={t}
+                value={t}
+                aria-label={openIn(t) ? `${TAB_PHASE[t]}, ${openIn(t)} open` : TAB_PHASE[t]}
+              >
                 {TAB_PHASE[t]}
                 {openIn(t) > 0 && (
-                  <Badge variant="secondary" aria-label={`${openIn(t)} open`}>
+                  <Badge variant="secondary" aria-hidden>
                     {openIn(t)}
                   </Badge>
                 )}
