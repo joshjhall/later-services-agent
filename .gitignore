@@ -53,3 +53,6 @@ docs-private/
 
 # Local devcontainer overrides (drumknott mounts: absolute host paths)
 .devcontainer/docker-compose.override.yml
+
+# Local devcontainer config (lists the gitignored compose override)
+.devcontainer/devcontainer.json
