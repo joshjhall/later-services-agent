@@ -84,10 +84,19 @@ describe("deriveProposals", () => {
     expect(withinCap(4000, { maxDailySpend: Number.NaN })).toBe(false);
     expect(withinCap(Number.NaN, { maxDailySpend: 5000 })).toBe(false);
     expect(withinCap(-1, { maxDailySpend: 5000 })).toBe(false);
+    expect(withinCap(1000, { maxDailySpend: -5 })).toBe(false);
+    // Rounds to -0, which would otherwise let a $0 amount through.
+    expect(withinCap(0, { maxDailySpend: -0.3 })).toBe(false);
   });
 
   test("cap evidence shows a malformed cap as not set, not as a dollar amount", () => {
-    for (const maxDailySpend of [Number.POSITIVE_INFINITY, Number.NaN]) {
+    for (const maxDailySpend of [
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+      Number.NaN,
+      -5,
+      -0.3,
+    ]) {
       expect(capEvidence([8000, 4000], { maxDailySpend }).value).toBe(
         "Not set · every amount needs you",
       );

@@ -97,6 +97,9 @@ const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const list = (xs: string[]) =>
   xs.length < 3 ? xs.join(" and ") : `${xs.slice(0, -1).join(", ")}, and ${xs.at(-1)}`;
 
+/** A usable money value: finite and not negative. Anything else fails closed. */
+const isAmount = (n: number) => Number.isFinite(n) && n >= 0;
+
 /**
  * True when the agent may spend this amount on its own: at or under the daily cap, compared in
  * whole dollars, as displayed, so the "Agent cap" row and the option lanes agree at the boundary.
@@ -106,9 +109,8 @@ export const withinCap = (
   amount: number,
   policy: Pick<AgentPolicy, "maxDailySpend"> = AGENT_POLICY,
 ) =>
-  Number.isFinite(amount) &&
-  Number.isFinite(policy.maxDailySpend) &&
-  amount >= 0 &&
+  isAmount(amount) &&
+  isAmount(policy.maxDailySpend) &&
   Math.round(amount) <= Math.round(policy.maxDailySpend);
 
 /**
@@ -134,7 +136,7 @@ export function capEvidence(
   return {
     label: "Agent cap",
     // A malformed cap has no amount to show; withinCap already sends every option to a person.
-    value: Number.isFinite(cap)
+    value: isAmount(policy.maxDailySpend)
       ? `${usd(cap)}/day, if spent in one day · ${verdict}`
       : "Not set · every amount needs you",
     tone: "neutral",
