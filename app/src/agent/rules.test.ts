@@ -157,6 +157,46 @@ describe("deriveProposals", () => {
     expect(withSpent(other, 8000, policy)).toBe(other);
   });
 
+  test("withSpent fails a spend option with no amount closed, and leaves priced ones to the cap", () => {
+    const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+    const boost = deriveProposals(world, undefined, undefined, policy).find(
+      (p) => p.kind === "boost-post",
+    );
+    if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+    const unpriced = {
+      ...boost,
+      options: boost.options.map(({ amount, ...o }) => (o.id === "smaller" ? o : { ...o, amount })),
+    };
+    const lanes = (p: typeof boost) => Object.fromEntries(p.options.map((o) => [o.id, o.lane]));
+    // $1,000 + $8,000 still fits; the option with no amount cannot be checked, so it needs a person.
+    expect(lanes(withSpent(unpriced, 1000, policy))).toEqual({
+      boost: "auto",
+      smaller: "propose",
+      skip: "human",
+    });
+  });
+
+  test("withSpent under a non-finite cap shows it as not set and sends every spend to a person", () => {
+    const boost = deriveProposals(world).find((p) => p.kind === "boost-post");
+    if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+    // Start from auto lanes so the re-laning is visible.
+    const auto = {
+      ...boost,
+      options: boost.options.map((o) =>
+        o.effect === "spend" ? { ...o, lane: "auto" as const } : o,
+      ),
+    };
+    for (const maxDailySpend of [Number.POSITIVE_INFINITY, Number.NaN]) {
+      const p = withSpent(auto, 3000, { maxDailySpend });
+      expect(p.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
+        "Not set · every amount needs you",
+      );
+      expect(p.options.filter((o) => o.effect === "spend").every((o) => o.lane === "propose")).toBe(
+        true,
+      );
+    }
+  });
+
   test("cap evidence shows a malformed cap as not set, not as a dollar amount", () => {
     for (const maxDailySpend of [
       Number.POSITIVE_INFINITY,
