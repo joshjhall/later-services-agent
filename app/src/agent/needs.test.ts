@@ -29,14 +29,13 @@ test("groupByNeed keeps display order, drops empty groups, and keeps rank within
   expect(groupByNeed([])).toEqual([]);
 });
 
-test("every proposal kind has a campaign phase", () => {
-  const kinds: Kind[] = [
-    "quiet-creator",
-    "review-draft",
-    "boost-post",
-    "below-forecast",
-    "approve-lineup",
-    "state-goal",
-  ];
-  for (const k of kinds) expect(["Plan", "Make", "Run"]).toContain(PROPOSAL_PHASE[k]);
+test("each proposal kind lands on the tab of its phase", () => {
+  expect(PROPOSAL_PHASE).toEqual({
+    "state-goal": "Plan",
+    "approve-lineup": "Plan",
+    "quiet-creator": "Make",
+    "review-draft": "Make",
+    "boost-post": "Run",
+    "below-forecast": "Run",
+  });
 });

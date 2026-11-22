@@ -399,3 +399,13 @@ test("campaign: choosing a tab deep-links it, and goal and lineup links still la
   go("#goal/cmp-spring-serum");
   expect(screen.getByRole("heading", { level: 1, name: /Goal: Spring serum/ })).toBeInTheDocument();
 });
+
+test("campaign: the Run tab shows pacing and only Run proposals", () => {
+  renderApp();
+  go("#campaign/cmp-trail-season/run");
+  const run = screen.getByRole("tabpanel");
+  expect(within(run).getByText("Pacing against targets")).toBeInTheDocument();
+  expect(within(run).getAllByRole("progressbar").length).toBeGreaterThan(0);
+  expect(within(run).queryByText("Creators and deliverables")).toBeNull();
+  expect(within(run).queryByText(/is quiet/)).toBeNull();
+});

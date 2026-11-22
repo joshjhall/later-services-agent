@@ -165,7 +165,9 @@ export function CampaignView({ id, tab }: { id: string; tab?: CampaignTab }) {
                           {fmt(k.actual, k.unit)} / {fmt(k.target, k.unit)}
                         </span>
                       </div>
-                      <Progress value={Math.min(100, (k.actual / k.target) * 100)} />
+                      <Progress
+                        value={k.target > 0 ? Math.min(100, (k.actual / k.target) * 100) : 0}
+                      />
                     </div>
                   ))
                 ) : (
