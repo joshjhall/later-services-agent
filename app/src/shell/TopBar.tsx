@@ -43,9 +43,14 @@ export function TopBar({ route }: { route: Route }) {
       <div className="flex w-[min(24rem,40vw)] justify-center">
         <FindOrAskButton />
       </div>
-      <div className="justify-self-end text-right text-sm">
-        <span className="font-medium">Maya</span>
-        <span className="text-muted-foreground"> · Account Manager</span>
+      <div className="grid justify-self-end text-right leading-tight">
+        <span className="text-sm">
+          <span className="font-medium">Maya</span>
+          <span className="text-muted-foreground"> · Account Manager</span>
+        </span>
+        <span className="text-xs text-muted-foreground">
+          Prototype · fictional data · demo date Nov 18, 2026
+        </span>
       </div>
     </header>
   );

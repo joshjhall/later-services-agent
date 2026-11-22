@@ -124,10 +124,7 @@ export function AppShell() {
               </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>
-          <SidebarFooter className="gap-2 px-3 py-3">
-            <span className="text-xs text-muted-foreground">
-              Prototype · fictional data · demo date Nov 18, 2026
-            </span>
+          <SidebarFooter className="px-3 py-3">
             <ThemeControls />
           </SidebarFooter>
         </Sidebar>

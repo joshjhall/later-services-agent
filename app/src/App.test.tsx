@@ -53,6 +53,9 @@ test("the top bar breadcrumb follows the route", async () => {
     "#campaign/cmp-holiday-gifting",
   );
   expect(crumb.getByText("Lineup")).toHaveAttribute("aria-current", "page");
+  // The fictional-data notice lives in the top bar, so collapsing the sidebar never hides it.
+  const topBar = screen.getByRole("button", { name: /Find or ask/ }).closest("header");
+  expect(topBar).toHaveTextContent(/Prototype · fictional data/);
 });
 
 test("Find or ask opens from the button, ⌘K, Ctrl+K, and /, but not / while typing", async () => {
