@@ -115,3 +115,48 @@ test("no rail on the roster", () => {
   );
   expect(screen.getByTestId("rail")).toBeEmptyDOMElement();
 });
+
+const card = (id: string) =>
+  screen.getByTestId("rail").querySelector(`[data-widget="${id}"]`) as HTMLElement;
+
+test("next message: Edit opens the soonest queued message in the draft sheet", () => {
+  render(
+    <StoreProvider>
+      <RailHarness route={{ view: "today" }} />
+    </StoreProvider>,
+  );
+  // Sky's brief (Nov 20) goes before the Trail season recap (Nov 21).
+  const next = card("next-message");
+  expect(within(next).getByText("Your Sparkling Citrus brief: wave 2")).toBeInTheDocument();
+  fireEvent.click(within(next).getByRole("button", { name: /Edit/ }));
+  expect(
+    screen.getByRole("dialog", { name: /Draft: creator brief to Sky Lee/ }),
+  ).toBeInTheDocument();
+});
+
+test("activity: shows at most three in-scope entries and links to the full record", () => {
+  render(
+    <StoreProvider>
+      <RailHarness route={{ view: "campaign", id: "cmp-sparkling-launch" }} />
+    </StoreProvider>,
+  );
+  const activity = card("activity");
+  const entries = within(activity).getAllByRole("listitem").slice(0, -1);
+  expect(entries).toHaveLength(3);
+  expect(activity.textContent).not.toMatch(/Trail season|72h metrics/);
+  expect(within(activity).getByRole("link", { name: "All activity" })).toHaveAttribute(
+    "href",
+    "#activity",
+  );
+});
+
+test("compare: a campaign with no comparables shows its industry benchmark", () => {
+  render(
+    <StoreProvider>
+      <RailHarness route={{ view: "lineup", id: "cmp-holiday-gifting" }} />
+    </StoreProvider>,
+  );
+  const compare = card("compare");
+  expect(within(compare).getByText("No comparable campaigns yet.")).toBeInTheDocument();
+  expect(within(compare).getByText(/Category benchmark: Engagement rate 4.1%/)).toBeInTheDocument();
+});
