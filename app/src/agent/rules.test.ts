@@ -37,15 +37,15 @@ describe("deriveProposals", () => {
 
   test("boost card shows the agent's spending cap from AGENT_POLICY", () => {
     const boost = proposals.find((p) => p.kind === "boost-post");
-    expect(boost?.evidence.find((e) => e.label === "Agent cap")).toEqual(capEvidence([8000, 4000]));
-    // The default policy, as the card shows it today.
-    expect(capEvidence([8000, 4000]).value).toBe(
+    expect(boost?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
       "$200 per test, $1,000/day · above it, so it needs you",
     );
+    // Display only: the cap does not move either boost option out of the CM's hands.
+    expect(boost?.options.map((o) => o.lane)).toEqual(["propose", "propose", "human"]);
     expect(boost?.options.map((o) => o.label)).toEqual(["Boost $8,000", "Boost $4,000", "Not now"]);
   });
 
-  test("cap evidence: above, partly within, at, within, and no options", () => {
+  test("cap evidence: above, partly within, at, within, and no options, in plain English", () => {
     const policy = (maxDailySpend: number) => ({ ...AGENT_POLICY, maxDailySpend });
     expect(capEvidence([8000, 4000], policy(1000)).value).toBe(
       "$200 per test, $1,000/day · above it, so it needs you",
@@ -56,6 +56,12 @@ describe("deriveProposals", () => {
     expect(capEvidence([8000], policy(8000)).value).toBe("$200 per test, $8,000/day · within it");
     expect(capEvidence([8000, 4000], policy(10000)).value).toBe(
       "$200 per test, $10,000/day · within it",
+    );
+    expect(capEvidence([8000, 3000, 2000], policy(4000)).value).toBe(
+      "$200 per test, $4,000/day · $3,000 and $2,000 are within it; the rest needs you",
+    );
+    expect(capEvidence([8000, 3000, 2000, 1000], policy(4000)).value).toMatch(
+      /· \$3,000, \$2,000, and \$1,000 are within it; the rest needs you$/,
     );
     expect(capEvidence([], policy(10000)).value).toMatch(/above it, so it needs you$/);
   });

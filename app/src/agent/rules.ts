@@ -75,6 +75,10 @@ export const daysBetween = (a: string, b: string) =>
 
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 
+/** "a", "a and b", "a, b, and c" (Oxford comma). */
+const list = (xs: string[]) =>
+  xs.length < 3 ? xs.join(" and ") : `${xs.slice(0, -1).join(", ")}, and ${xs.at(-1)}`;
+
 /**
  * The "Agent cap" evidence row for a spend proposal: the caps, then which options fit under them.
  * Display only: the cap does not yet change an option's lane. No options reads as above the cap.
@@ -90,7 +94,7 @@ export function capEvidence(
       ? "above it, so it needs you"
       : within.length === options.length
         ? "within it"
-        : `${within.map(usd).join(", ")} is within it; the rest needs you`;
+        : `${list(within.map(usd))} ${within.length === 1 ? "is" : "are"} within it; the rest needs you`;
   return {
     label: "Agent cap",
     value: `${usd(maxTestSpend)} per test, ${usd(maxDailySpend)}/day · ${verdict}`,
