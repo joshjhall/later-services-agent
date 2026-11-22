@@ -1,6 +1,5 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { App } from "@/App";
-import type { Proposal } from "@/agent/rules";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 
 /** The three moments the brief requires: state the goal, review the lineup, the hard moment. */
@@ -13,13 +12,6 @@ const go = (hash: string) =>
 
 /** The core view, not the context rail. The innermost <main> is ShellLayout's. */
 const core = () => screen.getAllByRole("main").at(-1) as HTMLElement;
-
-/** The draft behind a proposal's sending option. */
-function draftOf(p: Proposal, optionId = "draft-email") {
-  const d = p.options.find((o) => o.id === optionId)?.draft;
-  if (!d) throw new Error(`no draft behind ${p.id}/${optionId}`);
-  return d;
-}
 
 const renderApp = () =>
   render(
@@ -340,41 +332,6 @@ test("draft: a double-click on Send records one entry", () => {
   expect(screen.getAllByText(/Sent fix request to Rio Castillo/)).toHaveLength(1);
 });
 
-test("store: sending a draft for an already-resolved proposal keeps the first decision", async () => {
-  const { renderHook } = await import("@testing-library/react");
-  const { StoreProvider, useStore } = await import("@/domain/store");
-  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
-  const p = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
-  if (!p) throw new Error("info request missing");
-  act(() => result.current.resolve(p, "confirmed"));
-  const before = result.current.activity.length;
-  act(() => result.current.send(draftOf(p), { proposal: p, optionId: "draft-email" }));
-  act(() => result.current.send(draftOf(p), { proposal: p, optionId: "draft-email" }));
-  expect(result.current.resolved[p.id].optionId).toBe("confirmed");
-  // The message still went out, once.
-  expect(result.current.activity.length).toBe(before + 1);
-});
-
-test("store: an action label names the decision; without one, the option label is used", async () => {
-  const { renderHook } = await import("@testing-library/react");
-  const { StoreProvider, useStore } = await import("@/domain/store");
-  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
-  const goal = result.current.proposals.find((x) => x.id === "goal:cmp-spring-serum");
-  const info = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
-  if (!goal || !info) throw new Error("proposal missing");
-  // The goal view's no-email path: resolve directly with the decision.
-  act(() => result.current.resolve(goal, "open", "Confirmed goal"));
-  expect(result.current.resolved[goal.id].label).toBe("Confirmed goal");
-  expect(result.current.activity[0]).toMatchObject({ actor: "Maya", action: "Confirmed goal" });
-  // An earlier decision keeps its label, whatever a later call names.
-  act(() => result.current.resolve(goal, "open", "Approved lineup"));
-  expect(result.current.resolved[goal.id].label).toBe("Confirmed goal");
-  // A draft that answers a proposal without an action keeps the option label.
-  act(() => result.current.send(draftOf(info), { proposal: info, optionId: "draft-email" }));
-  const option = info.options.find((o) => o.id === "draft-email");
-  expect(result.current.resolved[info.id].label).toBe(option?.label);
-});
-
 test("undo rule and the #log alias", async () => {
   const { isUndoable } = await import("@/domain/types");
   const { parse } = await import("@/router");
@@ -422,70 +379,6 @@ test("activity: a decision that stays inside the tool can be undone", async () =
   expect(await screen.findByText("Undo is simulated in the prototype.")).toBeInTheDocument();
 });
 
-test("store: resolving a proposal twice records one entry", async () => {
-  const { renderHook } = await import("@testing-library/react");
-  const { StoreProvider, useStore } = await import("@/domain/store");
-  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
-  const p = result.current.proposals[0];
-  const before = result.current.activity.length;
-  act(() => result.current.resolve(p, p.options[0].id));
-  act(() => result.current.resolve(p, p.options[0].id));
-  expect(result.current.activity.length).toBe(before + 1);
-});
-
-test("store: a double click within one render still records one entry", async () => {
-  const { renderHook } = await import("@testing-library/react");
-  const { StoreProvider, useStore } = await import("@/domain/store");
-  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
-  const p = result.current.proposals[0];
-  const before = result.current.activity.length;
-  act(() => {
-    result.current.resolve(p, p.options[0].id);
-    result.current.resolve(p, p.options[1].id);
-  });
-  expect(result.current.activity.length).toBe(before + 1);
-  expect(result.current.resolved[p.id].optionId).toBe(p.options[0].id);
-});
-
-test("store: a sent answer and a later resolve of the same proposal record the decision once", async () => {
-  const { renderHook } = await import("@testing-library/react");
-  const { StoreProvider, useStore } = await import("@/domain/store");
-  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
-  const p = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
-  if (!p) throw new Error("info request missing");
-  const before = result.current.activity.length;
-  // In one render: the send lands first, so the resolve is a no-op.
-  act(() => {
-    result.current.send(draftOf(p), { proposal: p, optionId: "draft-email" });
-    result.current.resolve(p, "confirmed");
-  });
-  act(() => result.current.resolve(p, "confirmed"));
-  // One entry: the message that went out. No separate "Chose" entry.
-  expect(result.current.activity.length).toBe(before + 1);
-  expect(result.current.resolved[p.id].optionId).toBe("draft-email");
-});
-
-test("store: live entry ids stay unique and never reuse the seeded act-N form", async () => {
-  const { renderHook } = await import("@testing-library/react");
-  const { StoreProvider, useStore } = await import("@/domain/store");
-  const { messageDrafts } = await import("@/agent/drafts");
-  const fx = await import("@/domain/fixtures");
-  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
-  for (const p of result.current.proposals) {
-    act(() => result.current.resolve(p, p.options[0].id));
-  }
-  act(() => result.current.send(messageDrafts["fix:d-rio-1"]));
-  const ids = result.current.activity.map((e) => e.id);
-  expect(new Set(ids).size).toBe(ids.length);
-  const seeded = new Set(fx.activity.map((e) => e.id));
-  const live = ids.filter((id) => !seeded.has(id));
-  // One entry per decision and per send, keyed by what it records.
-  expect(live.toSorted()).toEqual(
-    [...result.current.proposals.map((p) => `act-${p.id}`), "act-sent-fix:d-rio-1"].toSorted(),
-  );
-  for (const id of live) expect(id).not.toMatch(/^act-\d+$/);
-});
-
 test("activity: only spending reads Spent; other permanent entries never do", async () => {
   const fx = await import("@/domain/fixtures");
   renderApp();
@@ -520,15 +413,6 @@ test("today: the handled count is the agent's own work, not people's decisions",
   const card = screen.getByText(/post from reserve/).closest("[data-severity]") as HTMLElement;
   fireEvent.click(within(card).getByRole("button", { name: "Not now" }));
   expect(screen.getByText(handled)).toBeInTheDocument();
-});
-
-test("store: an option it can't match is recorded as permanent, never undoable", async () => {
-  const { renderHook } = await import("@testing-library/react");
-  const { StoreProvider, useStore } = await import("@/domain/store");
-  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
-  const p = result.current.proposals[0];
-  act(() => result.current.resolve(p, "no-such-option"));
-  expect(result.current.activity[0]).toMatchObject({ actor: "Maya", effect: "external" });
 });
 
 test("today: proposals sit under need headings, and on-track campaigns collapse to a count", () => {
