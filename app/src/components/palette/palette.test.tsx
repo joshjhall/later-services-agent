@@ -4,9 +4,10 @@ import { StoreProvider } from "@/domain/store";
 import type { Route } from "@/router";
 import { crumbs, LABELS } from "@/router";
 import { openFindOrAsk } from "@/shell/FindOrAsk";
+import { ConversationProvider, useConversation } from "./chat";
 import { FindOrAskPalette } from "./FindOrAskPalette";
 import { ACTIVITY_LABEL, buildItems, contextLine, filterItems, subjectFor } from "./items";
-import { fallbackFor, onSparklingCitrus, replyTo } from "./responses";
+import { answerTo, fallbackFor, onSparklingCitrus, replyTo } from "./responses";
 
 afterEach(() => {
   location.hash = "";
@@ -112,6 +113,37 @@ test("naming Mei says whose post it means, so the comparison answers from anywhe
   expect(replyTo(COMPARE_Q, today)).not.toMatch(/another creator/);
 });
 
+test("asking about similar campaigns answers with the compare widget, only on one campaign", () => {
+  const SIMILAR = "How does this campaign compare with similar campaigns?";
+  for (const route of [
+    citrus,
+    { view: "goal", id: "cmp-spring-serum" },
+    { view: "lineup", id: "cmp-holiday-gifting" },
+  ] as Route[]) {
+    expect(answerTo(SIMILAR, route).widget, JSON.stringify(route)).toBe("compare");
+  }
+  // With no single campaign in view there's nothing to fill the widget with, so ask which.
+  for (const route of [today, { view: "account", id: "acc-brightside" }] as Route[]) {
+    expect(answerTo(SIMILAR, route)).toEqual({ text: expect.stringMatching(/^Which campaign\?/) });
+  }
+  // Naming a creator doesn't turn a campaign question into a post question.
+  for (const q of [
+    "How does Mei's campaign compare with similar campaigns?",
+    "Compare Ben with similar campaigns",
+  ]) {
+    expect(answerTo(q, citrus).widget, q).toBe("compare");
+  }
+  // Off a campaign it still asks which campaign, rather than declining about the creator.
+  expect(answerTo("Compare Ben with similar campaigns", today).text).toMatch(/^Which campaign\?/);
+  // Ana comes first: naming her gets her story, without a widget.
+  expect(answerTo("Compare Ana with similar campaigns", citrus)).toEqual({
+    text: expect.stringMatching(/Ben is the approved backup/),
+  });
+  // Post questions still get Mei's Reel, as text.
+  expect(answerTo(COMPARE_Q, citrus)).toEqual({ text: replyTo(COMPARE_Q, citrus) });
+  expect(answerTo(COMPARE_Q, citrus).text).toMatch(/early performance/);
+});
+
 test("only Sparkling Citrus pages count as Mei's campaign", () => {
   const yes: Route[] = [
     citrus,
@@ -134,7 +166,28 @@ test("the fallback only suggests questions that make sense for the context", () 
   for (const route of [today, { view: "roster" }, { view: "activity" }] as Route[]) {
     expect(fallbackFor(route)).not.toMatch(/\bher\b|Mei|last three/);
     expect(fallbackFor(route)).toMatch(/why Ana is late/);
+    expect(fallbackFor(route)).not.toMatch(/similar campaigns/);
   }
+  // Any one campaign can be compared with similar ones; only Sparkling Citrus has Mei's Reel.
+  for (const route of [
+    citrus,
+    { view: "goal", id: "cmp-spring-serum" },
+    { view: "lineup", id: "cmp-holiday-gifting" },
+  ] as Route[]) {
+    expect(fallbackFor(route), JSON.stringify(route)).toMatch(/similar campaigns/);
+  }
+  expect(fallbackFor({ view: "goal", id: "cmp-spring-serum" })).not.toMatch(/Mei/);
+});
+
+/** Uses the conversation hook with no provider above it. */
+function Orphan() {
+  useConversation();
+  return null;
+}
+
+test("the conversation hook needs its provider", () => {
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  expect(() => render(<Orphan />)).toThrow(/ConversationProvider/);
 });
 
 test("each scripted reply matches whole words, not fragments", () => {
@@ -160,7 +213,9 @@ test("each scripted reply matches whole words, not fragments", () => {
 function renderPalette(route: Route = citrus) {
   const view = render(
     <StoreProvider>
-      <FindOrAskPalette route={route} />
+      <ConversationProvider>
+        <FindOrAskPalette route={route} />
+      </ConversationProvider>
     </StoreProvider>,
   );
   act(() => openFindOrAsk());
@@ -279,7 +334,9 @@ test("the conversation keeps the subject it started from when the route changes"
   // Browser Back (or any hash change) lands on Sparkling Citrus while the chat is open.
   rerender(
     <StoreProvider>
-      <FindOrAskPalette route={citrus} />
+      <ConversationProvider>
+        <FindOrAskPalette route={citrus} />
+      </ConversationProvider>
     </StoreProvider>,
   );
   expect(within(chat).getByText(/^About:/)).toHaveTextContent(/^About: Portfolio$/);
@@ -297,7 +354,9 @@ test("a conversation started on Sparkling Citrus keeps answering about Mei after
   fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
   rerender(
     <StoreProvider>
-      <FindOrAskPalette route={today} />
+      <ConversationProvider>
+        <FindOrAskPalette route={today} />
+      </ConversationProvider>
     </StoreProvider>,
   );
   const chat = screen.getByRole("dialog", { name: "Conversation" });
@@ -318,7 +377,9 @@ test("a new conversation picks up the page it was started from", () => {
 
   rerender(
     <StoreProvider>
-      <FindOrAskPalette route={today} />
+      <ConversationProvider>
+        <FindOrAskPalette route={today} />
+      </ConversationProvider>
     </StoreProvider>,
   );
   act(() => openFindOrAsk());

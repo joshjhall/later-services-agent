@@ -13,10 +13,9 @@ import {
 import { useStore } from "@/domain/store";
 import { href, type Route } from "@/router";
 import { FIND_OR_ASK_OPEN } from "@/shell/FindOrAsk";
-import { Conversation, exchange, type Message } from "./Conversation";
+import { Conversation } from "./Conversation";
+import { useConversation } from "./chat";
 import { buildItems, contextLine, filterItems, type PaletteItem, subjectFor } from "./items";
-
-type Chat = { route: Route; context: string; messages: Message[] };
 
 /**
  * Find or ask (information-architecture.md §1): places to go and actions while you
@@ -28,12 +27,14 @@ export function FindOrAskPalette({ route }: { route: Route }) {
   const { world } = useStore();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  // Captured when the conversation starts, so its subject and context line stay fixed
-  // even if the route changes underneath it (for example through browser Back).
-  const [chat, setChat] = useState<Chat | null>(null);
+  // Full screen, the subject is captured when the conversation starts, so its context
+  // line stays fixed even if the route changes underneath it (for example through
+  // browser Back). Docked, it follows the page instead (AppShell).
+  const { chat, docked, start, send, dock, close: endChat } = useConversation();
 
-  // While a conversation is open it owns the screen: ⌘K and `/` don't stack the palette on top.
-  const inConversation = chat !== null;
+  // While a conversation is full screen it owns the screen: ⌘K and `/` don't stack the
+  // palette on top. Docked, it sits beside the work and the palette opens as usual.
+  const inConversation = chat !== null && !docked;
   useEffect(() => {
     if (inConversation) return;
     const on = () => setOpen(true);
@@ -59,11 +60,7 @@ export function FindOrAskPalette({ route }: { route: Route }) {
   const startConversation = () => {
     const text = query.trim();
     close();
-    setChat({
-      route,
-      context: contextLine(route, world),
-      messages: text ? exchange(text, route) : [],
-    });
+    start({ route, context: contextLine(route, world) }, text || undefined);
   };
 
   return (
@@ -101,16 +98,15 @@ export function FindOrAskPalette({ route }: { route: Route }) {
           </CommandList>
         </Command>
       </CommandDialog>
-      {/* Mounted only while open, so each conversation starts with an empty draft. */}
-      {chat && (
+      {/* Full screen only while undocked; docked, AppShell shows it in the rail. The draft resets in start() and close() (chat.tsx). */}
+      {chat && !docked && (
         <Conversation
           open
-          onOpenChange={(o) => !o && setChat(null)}
+          onOpenChange={(o) => !o && endChat()}
+          onDock={dock}
           context={chat.context}
           messages={chat.messages}
-          onSend={(text) =>
-            setChat((c) => c && { ...c, messages: [...c.messages, ...exchange(text, c.route)] })
-          }
+          onSend={(text) => send(text, chat.route)}
         />
       )}
     </>

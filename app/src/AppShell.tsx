@@ -1,5 +1,8 @@
 import { Building2, Inbox, ScrollText, Users } from "lucide-react";
+import { DockedConversation } from "@/components/palette/Conversation";
+import { useConversation } from "@/components/palette/chat";
 import { FindOrAskPalette } from "@/components/palette/FindOrAskPalette";
+import { contextLine } from "@/components/palette/items";
 import { useRail } from "@/components/rail/Rail";
 import {
   Sidebar,
@@ -50,10 +53,32 @@ function View({ route }: { route: Route }) {
   }
 }
 
+/**
+ * A docked conversation takes the rail's place on every page and follows you: its
+ * context line and answers are about the page you're on. Expand takes that page with it.
+ */
+function DockedChat({ route }: { route: Route }) {
+  const { world } = useStore();
+  const { chat, send, expand, close } = useConversation();
+  if (!chat) return null;
+  const context = contextLine(route, world);
+  return (
+    <DockedConversation
+      context={context}
+      messages={chat.messages}
+      onSend={(text) => send(text, route)}
+      onExpand={() => expand({ route, context })}
+      onClose={close}
+    />
+  );
+}
+
 export function AppShell() {
   const route = useRoute();
   useFindOrAskShortcut();
-  const rail = useRail(route);
+  const widgets = useRail(route);
+  const { chat, docked } = useConversation();
+  const rail = chat && docked ? <DockedChat route={route} /> : widgets;
   const { world, proposals, resolved } = useStore();
   const open = proposals.filter((p) => !resolved[p.id]);
   const openFor = (accountId: string) =>
