@@ -7,7 +7,7 @@ import { openFindOrAsk } from "@/shell/FindOrAsk";
 import { ConversationProvider } from "./chat";
 import { FindOrAskPalette } from "./FindOrAskPalette";
 import { ACTIVITY_LABEL, buildItems, contextLine, filterItems, subjectFor } from "./items";
-import { fallbackFor, onSparklingCitrus, replyTo } from "./responses";
+import { answerTo, fallbackFor, onSparklingCitrus, replyTo } from "./responses";
 
 afterEach(() => {
   location.hash = "";
@@ -111,6 +111,24 @@ test("naming Mei says whose post it means, so the comparison answers from anywhe
   }
   // The "whose post?" prompt never points at a post the agent would then decline.
   expect(replyTo(COMPARE_Q, today)).not.toMatch(/another creator/);
+});
+
+test("asking about similar campaigns answers with the compare widget, only on one campaign", () => {
+  const SIMILAR = "How does this campaign compare with similar campaigns?";
+  for (const route of [
+    citrus,
+    { view: "goal", id: "cmp-spring-serum" },
+    { view: "lineup", id: "cmp-holiday-gifting" },
+  ] as Route[]) {
+    expect(answerTo(SIMILAR, route).widget, JSON.stringify(route)).toBe("compare");
+  }
+  // With no single campaign in view there's nothing to fill the widget with, so ask which.
+  for (const route of [today, { view: "account", id: "acc-brightside" }] as Route[]) {
+    expect(answerTo(SIMILAR, route)).toEqual({ text: expect.stringMatching(/^Which campaign\?/) });
+  }
+  // Post questions still get Mei's Reel, as text.
+  expect(answerTo(COMPARE_Q, citrus)).toEqual({ text: replyTo(COMPARE_Q, citrus) });
+  expect(answerTo(COMPARE_Q, citrus).text).toMatch(/early performance/);
 });
 
 test("only Sparkling Citrus pages count as Mei's campaign", () => {

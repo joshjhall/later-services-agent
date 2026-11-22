@@ -64,6 +64,11 @@ export const REPLIES: ScriptedReply[] = [
     reply: "Here's this campaign against similar ones. It's the same compare widget as the rail.",
     widget: "compare",
   },
+  {
+    // Nothing single to compare from here; the same pointer as the compare widget's empty state.
+    match: /\bsimilar campaigns?\b/i,
+    reply: "Which campaign? Open one and ask again, and I'll compare it with similar campaigns.",
+  },
   // Entries that name their subject come first, so "How does Ana compare with Ben?"
   // gets Ana wherever it's asked. The broad risk summary comes last.
   {
@@ -97,7 +102,8 @@ export function fallbackFor(route: Route): string {
 
 export function answerTo(question: string, route: Route): Answer {
   const hit = REPLIES.find((r) => r.match.test(question) && (r.where?.(route) ?? true));
-  return hit ? { text: hit.reply, widget: hit.widget } : { text: fallbackFor(route) };
+  if (!hit) return { text: fallbackFor(route) };
+  return hit.widget ? { text: hit.reply, widget: hit.widget } : { text: hit.reply };
 }
 
 export const replyTo = (question: string, route: Route): string => answerTo(question, route).text;
