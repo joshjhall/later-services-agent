@@ -32,6 +32,17 @@ The prototype already has the hard parts underneath: Material 3 tokens generated
 
 The style axes map onto the generated palette. *Information*: Neutral → `surface`/`muted`, Primary → `primary`, Secondary → `secondary`, Accent → `accent`, Positive → `success`, Negative → `destructive`, Notice → `warning`/`info`. *Hierarchy*: Strong → filled, Subtle → container/tonal, Quiet → outline or ghost.
 
+## Patterns worth standardizing first
+
+If this agent is one of several, these are the patterns to standardize before any component work. Each is a rule as well as a visual (*a design system is how problems are approached, not just a parts bin*).
+
+1. **Action hierarchy.** Every card or screen has exactly **one primary action**. A secondary action is either an alternative or a prerequisite ("ask why" before "approve"). Its emphasis follows that relationship, not page position. Labels mean one thing across every product: an action called "I'm interested" can't mean "learn more" on one screen and "apply" on another. Later leadership named this as a current, cross-product gap (*Interview*). In the style axes, the primary action is Strong, the secondary Subtle, and everything else Quiet.
+2. **Approve a plan** (design time). The proposal, the criteria it was built against, per-item evidence, what approval unlocks, and what stays gated after it.
+3. **Decide an exception** (run time). What happened, why it crossed the line, the options with their consequences, and the agent's recommendation as the primary action.
+4. **Exceptions first.** Collapse what passed and show what failed, with evidence and a ready-to-send next step. Showing every check is for validating the agent, not for daily use.
+5. **Tune, don't just correct.** A rejection carries a reason. Repeated reasons turn into a proposed policy change.
+6. **Front desk / back of house.** Client-facing surfaces never show agent internals (confidence, logs, autonomy). Only what a person has put their name on crosses that line.
+
 ## How agents use it
 
 `AGENTS.md` gets one rule: **before building UI, read `design-system/README.md`, then only the files for the components and patterns you need.** The README is an index with one-line summaries, the same progressive-disclosure shape as agent memory. If no component fits, the agent fills in the component request template rather than inventing one, which keeps new patterns visible and reviewable.

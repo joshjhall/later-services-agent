@@ -19,11 +19,14 @@ Rules for agents:
 
 - [Proposal card](02-ai/proposal-card.md): how the agent asks for a decision.
 - [Evidence and confidence](02-ai/evidence-and-confidence.md): per-criterion evidence, never a single opaque score.
+- [Classes of agent output](02-ai/output-classes.md): actions taken, drafts and proposals, information requests, summaries in context. One treatment each, for every agent.
 - [Autonomy lanes](02-ai/autonomy-lanes.md): agent acts / agent proposes / human decides, shown on every action.
 
 ## 03 Patterns
 
-- [Pattern template](03-pattern/_template.md). Planned: decision queue, campaign widget, conflict card.
+- [Approve a plan](03-pattern/approve-a-plan.md): design-time review of a drafted goal, criteria or lineup. One gate, named.
+- [Decide an exception](03-pattern/decide-an-exception.md): run-time escalation. Exceptions first, one primary, same label everywhere.
+- [Pattern template](03-pattern/_template.md). Planned: workflow contracts (declared inputs, collected in any order, producing a declared output; partial entries show their gaps; equivalent inputs give equivalent results; repeats are no-ops; stale writes surface as conflicts; see `docs/discovery/framing.md` §6), decision network (what each output makes available or recommended next), decision queue, campaign widget, conflict card, widget contract (space, data volume, state, accepted data sources and types, and what makes a good widget; the command palette is a specialized widget that also declares what each feature can be found or done by), command palette, widget rail. See `docs/principles.md` §6–8 and `docs/information-architecture.md`.
 
 ## 04 Components
 

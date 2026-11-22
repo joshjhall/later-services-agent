@@ -14,7 +14,7 @@ How the agent asks the CM for a decision. Used in the decision queue, campaign v
 | Title | Yes | What happened, in plain words: "Ana Reyes is quiet, draft 1 day late." |
 | Summary | Yes | One or two sentences of situation. |
 | Evidence | Yes | Per-criterion rows. See [evidence and confidence](evidence-and-confidence.md). |
-| Actions | Yes | One primary, the rest quiet. Each tagged with its [autonomy lane](autonomy-lanes.md). |
+| Actions | Yes | Exactly one primary, the rest quiet. Each tagged with its [autonomy lane](autonomy-lanes.md). Labels name the decision recorded, and match any sheet the card opens. See [decide an exception](../03-pattern/decide-an-exception.md). |
 
 ## States
 
