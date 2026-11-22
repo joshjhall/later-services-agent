@@ -1,11 +1,12 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import * as world from "@/domain/fixtures";
 import { StoreProvider } from "@/domain/store";
+import type { Route } from "@/router";
 import { crumbs, LABELS } from "@/router";
 import { openFindOrAsk } from "@/shell/FindOrAsk";
 import { FindOrAskPalette } from "./FindOrAskPalette";
 import { ACTIVITY_LABEL, buildItems, contextLine, filterItems, subjectFor } from "./items";
-import { FALLBACK, replyTo } from "./responses";
+import { fallbackFor, replyTo } from "./responses";
 
 afterEach(() => {
   location.hash = "";
@@ -58,34 +59,57 @@ test("the conversation is about the current object", () => {
   expect(contextLine({ view: "campaign", id: "cmp-gone" }, world)).toBe("Portfolio");
 });
 
-test("the compare question names the dimension it chose and offers the others", () => {
-  const reply = replyTo("How does this compare with her last three?");
-  expect(reply).toMatch(/early performance/);
-  expect(reply).toMatch(/wording, audience, or expected outcome/);
-  expect(replyTo("what's the weather")).toBe(FALLBACK);
+const today: Route = { view: "today" };
+const citrus: Route = { view: "campaign", id: "cmp-sparkling-launch" };
+const COMPARE_Q = "How does this compare with her last three?";
+
+test("from Sparkling Citrus, the compare question names the dimension it chose and offers the others", () => {
+  for (const route of [citrus, { view: "lineup", id: "cmp-sparkling-launch" } as Route]) {
+    const reply = replyTo(COMPARE_Q, route);
+    expect(reply).toMatch(/early performance/);
+    expect(reply).toMatch(/wording, audience, or expected outcome/);
+  }
+  expect(replyTo("what's the weather", citrus)).toBe(fallbackFor(citrus));
 });
 
-test("each scripted reply matches whole words, not fragments", () => {
-  expect(replyTo("Why is Ana's draft late?")).toMatch(/Ben is the approved backup/);
-  expect(replyTo("What's at risk this week?")).toMatch(/Three things need you/);
-  expect(replyTo("Show risks")).toMatch(/Three things need you/);
-  // First match wins: a question naming Ana gets her story even if it mentions risk.
-  expect(replyTo("Is Ana at risk this week?")).toMatch(/Ben is the approved backup/);
-  // Words that only contain a keyword get the fallback.
-  // Ana's story needs her name, not just "late".
-  for (const q of ["comparable", "analytics", "template", "brisk", "Is the lineup late?"]) {
-    expect(replyTo(q)).toBe(FALLBACK);
+test("elsewhere, the compare question asks whose post it means instead of assuming Mei", () => {
+  for (const route of [today, { view: "goal", id: "cmp-spring-serum" } as Route]) {
+    const reply = replyTo(COMPARE_Q, route);
+    expect(reply).toMatch(/^Whose post do you mean\?/);
+    expect(reply).not.toMatch(/early performance/);
   }
 });
 
-function renderPalette() {
-  render(
+test("the fallback only suggests questions that make sense for the context", () => {
+  expect(fallbackFor(citrus)).toMatch(/Mei's Reel compares with her last three/);
+  for (const route of [today, { view: "roster" }, { view: "activity" }] as Route[]) {
+    expect(fallbackFor(route)).not.toMatch(/\bher\b|Mei|last three/);
+    expect(fallbackFor(route)).toMatch(/why Ana is late/);
+  }
+});
+
+test("each scripted reply matches whole words, not fragments", () => {
+  const ask = (q: string) => replyTo(q, today);
+  expect(ask("Why is Ana's draft late?")).toMatch(/Ben is the approved backup/);
+  expect(ask("What's at risk this week?")).toMatch(/Three things need you/);
+  expect(ask("Show risks")).toMatch(/Three things need you/);
+  // First match wins: a question naming Ana gets her story even if it mentions risk.
+  expect(ask("Is Ana at risk this week?")).toMatch(/Ben is the approved backup/);
+  // Words that only contain a keyword get the fallback.
+  // Ana's story needs her name, not just "late".
+  for (const q of ["comparable", "analytics", "template", "brisk", "Is the lineup late?"]) {
+    expect(ask(q)).toBe(fallbackFor(today));
+  }
+});
+
+function renderPalette(route: Route = citrus) {
+  const view = render(
     <StoreProvider>
-      <FindOrAskPalette route={{ view: "campaign", id: "cmp-sparkling-launch" }} />
+      <FindOrAskPalette route={route} />
     </StoreProvider>,
   );
   act(() => openFindOrAsk());
-  return screen.getByRole("dialog", { name: "Find or ask" });
+  return { dialog: screen.getByRole("dialog", { name: "Find or ask" }), ...view };
 }
 
 const options = (dialog: HTMLElement) =>
@@ -94,7 +118,7 @@ const options = (dialog: HTMLElement) =>
     .map((o) => o.textContent);
 
 test("typing filters suggestions, and the conversation option always stays", () => {
-  const dialog = renderPalette();
+  const { dialog } = renderPalette();
   const input = within(dialog).getByRole("combobox");
   const ask = "Start a conversation about Sparkling Citrus launch";
 
@@ -109,9 +133,9 @@ test("typing filters suggestions, and the conversation option always stays", () 
 });
 
 test("choosing the conversation opens it full screen with context and a scripted answer", () => {
-  const dialog = renderPalette();
+  const { dialog } = renderPalette();
   fireEvent.change(within(dialog).getByRole("combobox"), {
-    target: { value: "How does this compare with her last three?" },
+    target: { value: COMPARE_Q },
   });
   fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
 
@@ -130,7 +154,7 @@ test("choosing the conversation opens it full screen with context and a scripted
 });
 
 test("choosing a suggestion goes there and closes the palette", () => {
-  const dialog = renderPalette();
+  const { dialog } = renderPalette();
   fireEvent.click(within(dialog).getByRole("option", { name: ACTIVITY_LABEL }));
   expect(location.hash).toBe("#activity");
   expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
@@ -138,13 +162,13 @@ test("choosing a suggestion goes there and closes the palette", () => {
 
 test("Nudge Ana opens Today, where her follow-up decision waits", () => {
   location.hash = "#activity";
-  const dialog = renderPalette();
+  const { dialog } = renderPalette();
   fireEvent.click(within(dialog).getByRole("option", { name: "Nudge Ana" }));
   expect(location.hash).toBe("#today");
 });
 
 test("a new conversation starts with an empty draft", () => {
-  const dialog = renderPalette();
+  const { dialog } = renderPalette();
   fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
   const message = () => screen.getByRole("textbox", { name: "Message" });
   fireEvent.change(message(), { target: { value: "half-typed" } });
@@ -157,7 +181,7 @@ test("a new conversation starts with an empty draft", () => {
 });
 
 test("⌘K does nothing while a conversation is open", () => {
-  const dialog = renderPalette();
+  const { dialog } = renderPalette();
   fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
   act(() => openFindOrAsk());
   expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
@@ -165,7 +189,7 @@ test("⌘K does nothing while a conversation is open", () => {
 });
 
 test("a blank message isn't sent, and Enter sends without Shift", () => {
-  const dialog = renderPalette();
+  const { dialog } = renderPalette();
   fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
   const chat = screen.getByRole("dialog", { name: "Conversation" });
   const message = within(chat).getByRole("textbox", { name: "Message" });
@@ -188,4 +212,26 @@ test("a blank message isn't sent, and Enter sends without Shift", () => {
   expect(sent()).toBe(1);
   expect(message).toHaveValue("");
   expect(scroll).toHaveBeenCalled();
+});
+
+test("the conversation keeps the subject it started from when the route changes", () => {
+  const { dialog, rerender } = renderPalette(today);
+  fireEvent.change(within(dialog).getByRole("combobox"), { target: { value: COMPARE_Q } });
+  fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
+  const chat = screen.getByRole("dialog", { name: "Conversation" });
+  expect(chat).toHaveTextContent(/Whose post do you mean/);
+
+  // Browser Back (or any hash change) lands on Sparkling Citrus while the chat is open.
+  rerender(
+    <StoreProvider>
+      <FindOrAskPalette route={citrus} />
+    </StoreProvider>,
+  );
+  expect(within(chat).getByText(/^About:/)).toHaveTextContent(/^About: Portfolio$/);
+
+  fireEvent.change(within(chat).getByRole("textbox", { name: "Message" }), {
+    target: { value: "Compare it with her last three" },
+  });
+  fireEvent.click(within(chat).getByRole("button", { name: /Send/ }));
+  expect(chat).not.toHaveTextContent(/compared early performance/);
 });

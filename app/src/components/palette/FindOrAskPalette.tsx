@@ -16,6 +16,8 @@ import { FIND_OR_ASK_OPEN } from "@/shell/FindOrAsk";
 import { Conversation, exchange, type Message } from "./Conversation";
 import { buildItems, contextLine, filterItems, type PaletteItem, subjectFor } from "./items";
 
+type Chat = { route: Route; context: string; messages: Message[] };
+
 /**
  * Find or ask (information-architecture.md §1): places to go and actions while you
  * type, and always "Start a conversation", which is all that's left once nothing
@@ -26,10 +28,12 @@ export function FindOrAskPalette({ route }: { route: Route }) {
   const { world } = useStore();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState<Message[] | null>(null);
+  // Captured when the conversation starts, so its subject and context line stay fixed
+  // even if the route changes underneath it (for example through browser Back).
+  const [chat, setChat] = useState<Chat | null>(null);
 
   // While a conversation is open it owns the screen: ⌘K and `/` don't stack the palette on top.
-  const inConversation = messages !== null;
+  const inConversation = chat !== null;
   useEffect(() => {
     if (inConversation) return;
     const on = () => setOpen(true);
@@ -55,7 +59,11 @@ export function FindOrAskPalette({ route }: { route: Route }) {
   const startConversation = () => {
     const text = query.trim();
     close();
-    setMessages(text ? exchange(text) : []);
+    setChat({
+      route,
+      context: contextLine(route, world),
+      messages: text ? exchange(text, route) : [],
+    });
   };
 
   return (
@@ -94,13 +102,15 @@ export function FindOrAskPalette({ route }: { route: Route }) {
         </Command>
       </CommandDialog>
       {/* Mounted only while open, so each conversation starts with an empty draft. */}
-      {messages && (
+      {chat && (
         <Conversation
           open
-          onOpenChange={(o) => !o && setMessages(null)}
-          context={contextLine(route, world)}
-          messages={messages}
-          onSend={(text) => setMessages((m) => [...(m ?? []), ...exchange(text)])}
+          onOpenChange={(o) => !o && setChat(null)}
+          context={chat.context}
+          messages={chat.messages}
+          onSend={(text) =>
+            setChat((c) => c && { ...c, messages: [...c.messages, ...exchange(text, c.route)] })
+          }
         />
       )}
     </>
