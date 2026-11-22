@@ -35,6 +35,19 @@ describe("deriveProposals", () => {
     ).toBe(false);
   });
 
+  test("boost card states the agent's spending cap, read from AGENT_POLICY", () => {
+    const boost = proposals.find((p) => p.kind === "boost-post");
+    const cap = boost?.evidence.find((e) => e.label === "Agent cap");
+    const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
+    const { maxTestSpend, maxDailySpend } = AGENT_POLICY;
+    const verdict =
+      8000 > maxDailySpend ? "this is above it, so it needs you" : "this is within it";
+    expect(cap?.value).toBe(
+      `${usd(maxTestSpend)} per test, ${usd(maxDailySpend)}/day · ${verdict}`,
+    );
+    expect(boost?.options.map((o) => o.label)).toEqual(["Boost $8,000", "Boost $4,000", "Not now"]);
+  });
+
   test("covers the three demo moments: goal, lineup, hard moment", () => {
     const kinds = new Set(proposals.map((p) => p.kind));
     for (const k of ["state-goal", "approve-lineup", "quiet-creator"] as const)
