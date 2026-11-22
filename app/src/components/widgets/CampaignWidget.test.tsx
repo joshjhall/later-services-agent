@@ -25,7 +25,8 @@ test.each<[Campaign["stage"], string]>([
 
 // Screen readers get each KPI bar's metric, percent, and "actual of target".
 test("KPI bars expose their value to assistive tech", () => {
-  const campaign = campaigns[0];
+  const campaign = campaigns.find((c) => c.kpis.length > 0);
+  if (!campaign) throw new Error("fixtures need a campaign with KPIs");
   render(
     <StoreProvider>
       <CampaignWidget campaign={campaign} />
