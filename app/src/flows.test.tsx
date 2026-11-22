@@ -174,6 +174,16 @@ test("activity: the outcome of a call is recorded as permanent", () => {
   expect(outcome).toHaveTextContent("Permanent: Sent");
 });
 
+test("activity: spending from the reserve is recorded as permanent", () => {
+  renderApp();
+  const card = screen.getByText(/post from reserve/).closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Boost $8,000" }));
+  go("#activity");
+  const spend = entry(/Chose "Boost \$8,000"/);
+  expect(within(spend).queryByRole("button", { name: /Undo/ })).toBeNull();
+  expect(spend).toHaveTextContent("Permanent: Spent");
+});
+
 test("store: an option it can't match is recorded as permanent, never undoable", async () => {
   const { renderHook } = await import("@testing-library/react");
   const { StoreProvider, useStore } = await import("@/domain/store");
