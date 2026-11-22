@@ -9,3 +9,4 @@ How the agent writes, in the interface and in drafts it prepares.
 - **No false precision.** Ranges and words ("about 2×", "medium confidence") over decimals the data can't support.
 - **Say what it did.** "Sent a reminder at 9:02" in the log, so nothing happens invisibly.
 - **Drafts sound like the CM**, not like the agent. External messages are always reviewed before sending in v1.
+- **Oxford comma, always.** "Rate, rights, and disclosure," not "rate, rights and disclosure."

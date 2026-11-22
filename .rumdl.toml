@@ -12,7 +12,8 @@ exclude = [
   ".vscode/**",
   ".devcontainer/**",
   "reference/**",
-  "slides/slides.md", # Slidev dialect: HTML, per-slide H1s
+  "slides/slides.md",  # Slidev dialect: HTML, per-slide H1s
+  ".claude/memory/**", # memory files start with required frontmatter, not a heading
 ]
 
 disable = [
