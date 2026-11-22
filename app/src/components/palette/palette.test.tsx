@@ -49,6 +49,13 @@ test("the compare question names the dimension it chose and offers the others", 
   expect(replyTo("what's the weather")).toBe(FALLBACK);
 });
 
+test("each scripted reply matches whole words, not fragments", () => {
+  expect(replyTo("Why is Ana's draft late?")).toMatch(/Ben is the approved backup/);
+  expect(replyTo("What's at risk this week?")).toMatch(/Three things need you/);
+  // "analytics", "template", and "brisk" contain ana, late, and risk.
+  expect(replyTo("Show analytics in a template, brisk")).toBe(FALLBACK);
+});
+
 function renderPalette() {
   render(
     <StoreProvider>
@@ -98,4 +105,25 @@ test("choosing the conversation opens it full screen with context and a scripted
   });
   fireEvent.click(within(chat).getByRole("button", { name: /Send/ }));
   expect(chat).toHaveTextContent(/Ben is the approved backup/);
+});
+
+test("choosing a suggestion goes there and closes the palette", () => {
+  location.hash = "";
+  const dialog = renderPalette();
+  fireEvent.click(within(dialog).getByRole("option", { name: ACTIVITY_LABEL }));
+  expect(location.hash).toBe("#activity");
+  expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
+});
+
+test("a new conversation starts with an empty draft", () => {
+  const dialog = renderPalette();
+  fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
+  const message = () => screen.getByRole("textbox", { name: "Message" });
+  fireEvent.change(message(), { target: { value: "half-typed" } });
+  fireEvent.keyDown(screen.getByRole("dialog", { name: "Conversation" }), { key: "Escape" });
+  expect(screen.queryByRole("dialog", { name: "Conversation" })).toBeNull();
+
+  act(() => openFindOrAsk());
+  fireEvent.click(screen.getByRole("option", { name: /Start a conversation/ }));
+  expect(message()).toHaveValue("");
 });

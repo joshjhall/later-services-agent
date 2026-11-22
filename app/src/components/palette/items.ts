@@ -32,7 +32,8 @@ const ACTIONS: PaletteItem[] = [
     group: "Do",
     label: "Nudge Ana",
     keywords: ["remind", "draft", "reyes"],
-    toast: "Reminder to Ana drafted. It's waiting in Today for you to approve.",
+    route: { view: "today" },
+    toast: "Ana is in Today: choose how to follow up.",
   },
   {
     id: "do-ana-brief",

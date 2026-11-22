@@ -90,13 +90,16 @@ export function FindOrAskPalette({ route }: { route: Route }) {
           </CommandList>
         </Command>
       </CommandDialog>
-      <Conversation
-        open={messages !== null}
-        onOpenChange={(o) => !o && setMessages(null)}
-        context={contextLine(route, world)}
-        messages={messages ?? []}
-        onSend={(text) => setMessages((m) => [...(m ?? []), ...exchange(text)])}
-      />
+      {/* Mounted only while open, so each conversation starts with an empty draft. */}
+      {messages && (
+        <Conversation
+          open
+          onOpenChange={(o) => !o && setMessages(null)}
+          context={contextLine(route, world)}
+          messages={messages}
+          onSend={(text) => setMessages((m) => [...(m ?? []), ...exchange(text)])}
+        />
+      )}
     </>
   );
 }
