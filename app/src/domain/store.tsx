@@ -96,20 +96,23 @@ interface Store {
 const Ctx = createContext<Store | null>(null);
 
 /**
- * In-memory demo state. Resolutions reset on reload, by design. `policy` exists so a test
- * can render under a different cap; the app always uses AGENT_POLICY.
+ * In-memory demo state. Resolutions reset on reload, by design. `policy` and `proposals`
+ * exist so a test can render under a different cap or a hand-built list (e.g. two boosts in
+ * one campaign); the app always uses AGENT_POLICY and the proposals derived from the fixtures.
  */
 export function StoreProvider({
   children,
   policy = AGENT_POLICY,
+  proposals: given,
 }: {
   children: ReactNode;
   policy?: AgentPolicy;
+  proposals?: Proposal[];
 }) {
   // Derived once per mount: the demo world does not change while it runs. autoRun's copy is
   // what renders, so lanes and the cap row reflect what the agent already spent.
   const [auto] = useState(() =>
-    autoRun(deriveProposals(fx, fx.DEMO_TODAY, undefined, policy), policy),
+    autoRun(given ?? deriveProposals(fx, fx.DEMO_TODAY, undefined, policy), policy),
   );
   const proposals = auto.proposals;
   const [resolved, setResolved] = useState<Record<string, Resolution>>(auto.resolved);

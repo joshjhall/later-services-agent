@@ -296,3 +296,49 @@ test("store: a boost skipped for the cap does not block a smaller one that still
   );
   expect(Object.keys(resolved).toSorted()).toEqual(["big", "small"]);
 });
+
+test("store: the provider renders autoRun's re-laned copy, so a held-back boost never reads as pre-approved", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const twin = { ...boost, id: `${boost.id}:twin` };
+  const { result } = renderHook(() => useStore(), {
+    wrapper: ({ children }) => (
+      <StoreProvider policy={policy} proposals={[boost, twin]}>
+        {children}
+      </StoreProvider>
+    ),
+  });
+  // The first $8,000 ran on its own; the twin waits for a person.
+  expect(result.current.resolved[boost.id]).toMatchObject({ optionId: "boost", by: "agent" });
+  expect(result.current.resolved[twin.id]).toBeUndefined();
+  const held = result.current.proposals.find((p) => p.id === twin.id);
+  expect(held?.options.filter((o) => o.effect === "spend").map((o) => o.lane)).toEqual([
+    "propose",
+    "propose",
+  ]);
+  expect(held?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
+    "$10,000/day, if spent in one day · $8,000 already spent · above it, so it needs you",
+  );
+});
+
+test("store: spend in one campaign leaves another campaign's proposal unchanged", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const elsewhere = {
+    ...boost,
+    id: `${boost.id}:other`,
+    campaignId: "elsewhere",
+    options: boost.options.map((o) => (o.primary ? { ...o, amount: 4_000 } : o)),
+  };
+  const { resolved, proposals } = autoRun([boost, elsewhere], policy);
+  expect(resolved[boost.id]).toMatchObject({ by: "agent" });
+  // Campaign A's $8,000 does not count against campaign B: its proposal comes back as is.
+  expect(proposals[1]).toBe(elsewhere);
+  expect(resolved[elsewhere.id]).toMatchObject({ by: "agent" });
+});
