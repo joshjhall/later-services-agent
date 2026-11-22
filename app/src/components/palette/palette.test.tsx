@@ -133,6 +133,12 @@ test("asking about similar campaigns answers with the compare widget, only on on
   ]) {
     expect(answerTo(q, citrus).widget, q).toBe("compare");
   }
+  // Off a campaign it still asks which campaign, rather than declining about the creator.
+  expect(answerTo("Compare Ben with similar campaigns", today).text).toMatch(/^Which campaign\?/);
+  // Ana comes first: naming her gets her story, without a widget.
+  expect(answerTo("Compare Ana with similar campaigns", citrus)).toEqual({
+    text: expect.stringMatching(/Ben is the approved backup/),
+  });
   // Post questions still get Mei's Reel, as text.
   expect(answerTo(COMPARE_Q, citrus)).toEqual({ text: replyTo(COMPARE_Q, citrus) });
   expect(answerTo(COMPARE_Q, citrus).text).toMatch(/early performance/);
