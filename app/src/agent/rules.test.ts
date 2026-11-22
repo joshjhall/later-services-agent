@@ -1,6 +1,6 @@
 import { campaigns, creators, deliverables, partnerships } from "@/domain/fixtures";
 import type { Effect } from "@/domain/types";
-import { AGENT_POLICY, capEvidence, deriveProposals } from "./rules";
+import { AGENT_POLICY, type AgentPolicy, capEvidence, deriveProposals } from "./rules";
 
 const world = { campaigns, creators, partnerships, deliverables };
 
@@ -89,6 +89,19 @@ describe("deriveProposals", () => {
       /· \$3,000, \$2,000, and \$1,000 are within it; the rest needs you$/,
     );
     expect(capEvidence([], policy(10000)).value).toMatch(/above it, so it needs you$/);
+  });
+
+  test("the quiet-creator and below-forecast thresholds read the policy passed in", () => {
+    const kinds = (overrides: Partial<AgentPolicy>) =>
+      new Set(
+        deriveProposals(world, undefined, undefined, { ...AGENT_POLICY, ...overrides }).map(
+          (p) => p.kind,
+        ),
+      );
+    expect(kinds({})).toContain("quiet-creator");
+    expect(kinds({ autoReminders: 99 })).not.toContain("quiet-creator");
+    expect(kinds({})).toContain("below-forecast");
+    expect(kinds({ belowForecastRatio: 0 })).not.toContain("below-forecast");
   });
 
   test("cap evidence rounds odd amounts to whole dollars", () => {
