@@ -7,6 +7,7 @@ import {
   deriveProposals,
   type Proposal,
   withinCap,
+  withSpent,
 } from "@/agent/rules";
 import * as fx from "./fixtures";
 import type { ActivityEntry, Actor } from "./types";
@@ -29,6 +30,8 @@ interface Resolution {
  * would take the total over the cap, the proposal stays open for a person. A spend with no
  * amount fails closed the same way. Only internal changes and capped spend run unasked:
  * anything that leaves the building (a message, an offer) always waits for a person.
+ * The same running total re-lanes each later proposal (`withSpent`), so an option it holds
+ * back reads as needing approval, not pre-approved. Render the returned `proposals`.
  */
 export function autoRun(
   proposals: Proposal[],
@@ -37,7 +40,10 @@ export function autoRun(
   const resolved: Record<string, Resolution> = {};
   const entries: ActivityEntry[] = [];
   const spent: Record<string, number> = {};
-  for (const p of proposals) {
+  const adjusted: Proposal[] = [];
+  for (const raw of proposals) {
+    const p = withSpent(raw, spent[raw.campaignId] ?? 0, policy);
+    adjusted.push(p);
     const o = autoOption(p);
     if (!o || o.effect === "external") continue;
     if (o.effect === "spend") {
@@ -56,7 +62,7 @@ export function autoRun(
       effect: o.effect,
     });
   }
-  return { resolved, entries };
+  return { resolved, entries, proposals: adjusted };
 }
 
 /** The proposal a sent draft answers; `action` as in `resolve`. */
@@ -100,9 +106,12 @@ export function StoreProvider({
   children: ReactNode;
   policy?: AgentPolicy;
 }) {
-  // Derived once per mount: the demo world does not change while it runs.
-  const [proposals] = useState(() => deriveProposals(fx, fx.DEMO_TODAY, undefined, policy));
-  const [auto] = useState(() => autoRun(proposals, policy));
+  // Derived once per mount: the demo world does not change while it runs. autoRun's copy is
+  // what renders, so lanes and the cap row reflect what the agent already spent.
+  const [auto] = useState(() =>
+    autoRun(deriveProposals(fx, fx.DEMO_TODAY, undefined, policy), policy),
+  );
+  const proposals = auto.proposals;
   const [resolved, setResolved] = useState<Record<string, Resolution>>(auto.resolved);
   const [sent, setSent] = useState<Record<string, MessageDraft>>({});
   // Mirrors `sent` synchronously, so a double-click within one render still sends once.

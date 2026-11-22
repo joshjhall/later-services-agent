@@ -152,8 +152,11 @@ test("store: an option it can't match is recorded as permanent, never undoable",
   expect(isUndoable(result.current.activity[0])).toBe(false);
 });
 
+/** What autoRun returns when the agent did nothing on its own; the proposals are not compared. */
+const NOTHING_RAN = { resolved: {}, entries: [], proposals: expect.any(Array) };
+
 test("store: at the default cap the agent runs nothing on its own", () => {
-  expect(autoRun(deriveProposals(fx))).toEqual({ resolved: {}, entries: [] });
+  expect(autoRun(deriveProposals(fx))).toEqual(NOTHING_RAN);
 });
 
 test("store: a recommended boost within the cap is resolved and logged as the agent's spend", () => {
@@ -195,6 +198,29 @@ test("store: the cap is per campaign, so two boosts in one campaign never jointl
   );
 });
 
+test("store: a boost the campaign total holds back reads as needing approval, not pre-approved", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const twin = { ...boost, id: `${boost.id}:twin` };
+  const { proposals } = autoRun([boost, twin], policy);
+  // The first boost is untouched: nothing was spent before it.
+  expect(proposals[0]).toBe(boost);
+  // $8,000 already spent: neither $8,000 nor $4,000 fits under $10,000 on top of it.
+  const held = proposals[1];
+  expect(held.options.filter((o) => o.effect === "spend").map((o) => o.lane)).toEqual([
+    "propose",
+    "propose",
+  ]);
+  expect(held.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
+    "$10,000/day, if spent in one day · $8,000 already spent · above it, so it needs you",
+  );
+  // Non-spend options keep their lanes.
+  expect(held.options.find((o) => o.id === "skip")?.lane).toBe("human");
+});
+
 test("store: an auto spend with no amount fails closed and waits for a person", () => {
   const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
   const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
@@ -205,7 +231,7 @@ test("store: an auto spend with no amount fails closed and waits for a person", 
     ...boost,
     options: boost.options.map(({ amount: _, ...o }) => o),
   };
-  expect(autoRun([unpriced], policy)).toEqual({ resolved: {}, entries: [] });
+  expect(autoRun([unpriced], policy)).toEqual(NOTHING_RAN);
 });
 
 test("store: spend that lands exactly on the cap runs; anything external never runs unasked", () => {
@@ -225,7 +251,7 @@ test("store: spend that lands exactly on the cap runs; anything external never r
     ...boost,
     options: boost.options.map((o) => (o.primary ? { ...o, effect: "external" as const } : o)),
   };
-  expect(autoRun([external], policy)).toEqual({ resolved: {}, entries: [] });
+  expect(autoRun([external], policy)).toEqual(NOTHING_RAN);
 });
 
 test("store: an internal auto option runs unasked and never counts toward the spending cap", () => {

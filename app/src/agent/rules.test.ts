@@ -12,6 +12,7 @@ import {
   type Option,
   type Proposal,
   withinCap,
+  withSpent,
 } from "./rules";
 
 const world = { campaigns, creators, partnerships, deliverables };
@@ -115,6 +116,45 @@ describe("deriveProposals", () => {
     expect(withinCap(1000, { maxDailySpend: -5 })).toBe(false);
     // Rounds to -0, which would otherwise let a $0 amount through.
     expect(withinCap(0, { maxDailySpend: -0.3 })).toBe(false);
+  });
+
+  test("cap evidence counts what the campaign already spent and says so", () => {
+    const policy = { maxDailySpend: 10_000 };
+    expect(capEvidence([8000, 4000], policy, 0).value).toBe(
+      "$10,000/day, if spent in one day · within it",
+    );
+    expect(capEvidence([8000, 4000], policy, 3000).value).toBe(
+      "$10,000/day, if spent in one day · $3,000 already spent · $4,000 is within it; the rest needs you",
+    );
+    expect(capEvidence([8000, 4000], policy, 8000).value).toBe(
+      "$10,000/day, if spent in one day · $8,000 already spent · above it, so it needs you",
+    );
+  });
+
+  test("withSpent re-lanes spend options against prior campaign spend and leaves the rest alone", () => {
+    const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+    const boost = deriveProposals(world, undefined, undefined, policy).find(
+      (p) => p.kind === "boost-post",
+    );
+    if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+    expect(withSpent(boost, 0, policy)).toBe(boost);
+    const lanes = (p: typeof boost) => Object.fromEntries(p.options.map((o) => [o.id, o.lane]));
+    expect(lanes(boost)).toEqual({ boost: "auto", smaller: "auto", skip: "human" });
+    expect(lanes(withSpent(boost, 3000, policy))).toEqual({
+      boost: "propose",
+      smaller: "auto",
+      skip: "human",
+    });
+    expect(lanes(withSpent(boost, 8000, policy))).toEqual({
+      boost: "propose",
+      smaller: "propose",
+      skip: "human",
+    });
+    // The input is not mutated, and a proposal with no spend options comes back as is.
+    expect(lanes(boost).boost).toBe("auto");
+    const other = deriveProposals(world).find((p) => !p.options.some((o) => o.effect === "spend"));
+    if (!other) throw new Error("fixtures should yield a proposal without spend");
+    expect(withSpent(other, 8000, policy)).toBe(other);
   });
 
   test("cap evidence shows a malformed cap as not set, not as a dollar amount", () => {
