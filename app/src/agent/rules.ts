@@ -460,17 +460,25 @@ export function deriveProposals(
 }
 
 export function fmt(n: number, unit: "%" | "$" | "" = "") {
+  // NaN and ±Infinity have no sensible figure: show the "no value" dash.
+  if (!Number.isFinite(n)) return "—";
   if (unit === "%") return `${n.toFixed(1)}%`;
-  // Scale on the magnitude so negatives get K/M too, and promote to M when the
-  // K value rounds up to 1000 (999_500 is "1.0M", not "1000K").
+  // Scale on the magnitude so negatives get K/M/B too, and promote a tier
+  // whenever its rounded value would read 1000 (999.6 is "1K", 999_500 is
+  // "1.0M", and 999_950_000 is "1.0B"). B is the top tier: campaign figures
+  // never reach trillions.
   const abs = Math.abs(n);
+  const bare = Math.round(abs);
   const k = Math.round(abs / 1e3);
+  const m = (abs / 1e6).toFixed(1);
   const body =
-    abs >= 1e6 || k >= 1e3
-      ? `${(abs / 1e6).toFixed(1)}M`
-      : abs >= 1e3
+    bare < 1e3
+      ? `${bare}`
+      : k < 1e3
         ? `${k}K`
-        : `${Math.round(abs)}`;
+        : Number(m) < 1e3
+          ? `${m}M`
+          : `${(abs / 1e9).toFixed(1)}B`;
   // The sign goes before the unit ("-$5K"), and a value that rounds to zero stays "0".
   const sign = n < 0 && body !== "0" ? "-" : "";
   return unit === "$" ? `${sign}$${body}` : `${sign}${body}`;
