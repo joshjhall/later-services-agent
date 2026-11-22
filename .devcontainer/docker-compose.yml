@@ -36,10 +36,11 @@ services:
       # codegraph index: <project>/.codegraph is symlinked here by the dev-tools
       # first-startup hook (out of the git tree, droppable to re-index).
       - later-services-agent-codegraph:/cache/codegraph
-      # pnpm content-addressable store: survives rebuilds so reinstalls skip the
-      # network. It sits on a different filesystem from app/node_modules, so pnpm
-      # copies instead of hard-linking (fine at this size).
-      - later-services-agent-pnpm-store:/cache/pnpm-store
+      # pnpm content-addressable store at /cache/pnpm (the store-dir the
+      # containers node feature configures): survives rebuilds so reinstalls skip
+      # the network. It sits on a different filesystem from app/node_modules, so
+      # pnpm copies instead of hard-linking (fine at this size).
+      - later-services-agent-pnpm-store:/cache/pnpm
     tmpfs:
       # 1Password cache is kept in memory. No uid=/gid=: paths under /cache are
       # aligned to the runtime user by fix_cache_permissions.
@@ -52,14 +53,15 @@ services:
         required: false
     environment:
       CLAUDE_MCPS: "filesystem,codegraph"
-      npm_config_store_dir: /cache/pnpm-store
       # The workspace mount is case-insensitive (macOS host), so `just` can see
       # a phantom `Justfile` beside the tracked `justfile` and refuse to run.
       JUST_JUSTFILE: /workspace/later-services-agent/justfile
-    # Vite dev server (`just dev`). Published on the host's loopback only: the
-    # prototype has no auth, and Zed does not auto-forward ports like VS Code.
+    # Vite dev server (`just dev`) and the Slidev deck (`just slides`). Published
+    # on the host's loopback only: neither has auth, and Zed does not
+    # auto-forward ports like VS Code.
     ports:
       - "127.0.0.1:5173:5173"
+      - "127.0.0.1:3030:3030"
     init: true
     # CAP_SYS_ADMIN + /dev/fuse are the minimum for the bindfs FUSE overlay that
     # fixes macOS VirtioFS ownership on the workspace bind mount. It degrades to

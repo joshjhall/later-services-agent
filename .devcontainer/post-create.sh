@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # post-create.sh — Runs once when the devcontainer is first created.
 # Verifies the tooling the containers submodule provides, then installs the
-# app's Node dependencies from pnpm-lock.yaml.
+# app's and slide deck's Node dependencies, and pandoc for the docs page.
 
 set -euo pipefail
 
@@ -37,6 +37,13 @@ fi
 
 echo "==> Installing app dependencies..."
 just install
+
+echo "==> Installing slide deck dependencies..."
+(cd slides && pnpm install --frozen-lockfile)
+
+# pandoc renders docs/overview.html (`just docs`).
+echo "==> Ensuring pandoc..."
+bash .devcontainer/install-pandoc.sh
 
 # Build the codegraph index for the codegraph MCP server. It lives on a named
 # volume that survives rebuilds, so only initialize when missing.

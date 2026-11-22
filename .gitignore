@@ -29,6 +29,9 @@ dist-ssr/
 *.local
 npm-debug.log*
 pnpm-debug.log*
+# pnpm content store (created at the workspace root when pnpm can't hard-link
+# from the configured store on another filesystem)
+.pnpm-store/
 
 # Logs / temp
 *.log
@@ -45,4 +48,8 @@ tmp/
 .codegraph/
 
 _notes.md
+docs-private/
 
+
+# Local devcontainer overrides (drumknott mounts: absolute host paths)
+.devcontainer/docker-compose.override.yml
