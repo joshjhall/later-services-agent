@@ -17,8 +17,9 @@ vi.mock("@/domain/fixtures", async (importOriginal) => {
         accountId: "acc-brightside",
         name: "Quiet week",
         objective: "awareness",
-        // A target of 0 is never below forecast, so this campaign has no card.
-        kpis: [{ metric: "Saves", target: 0, actual: 0 }],
+        // Actuals over a target of 0 are never below forecast, so this campaign has no
+        // card; unguarded, 120 / 0 is Infinity and the bar would read as full.
+        kpis: [{ metric: "Saves", target: 0, actual: 120 }],
         budget: 10_000,
         committed: 8_000,
         reserve: 2_000,
@@ -69,12 +70,16 @@ test("today: a campaign with nothing open is listed under On track, linked", () 
   expect(within(region).queryByText(/None yet/)).toBeNull();
 });
 
-test("campaign: a KPI with a target of 0 paces at zero, not NaN or Infinity", () => {
+test("campaign: a KPI with a target of 0 shows an empty bar, not a full one or NaN", () => {
   renderApp();
   go("#campaign/cmp-quiet-week");
   expect(screen.getByRole("tab", { selected: true })).toHaveTextContent("Run");
   const run = screen.getByRole("tabpanel");
   expect(within(run).getByText("Saves")).toBeInTheDocument();
-  expect(within(run).getByRole("progressbar")).not.toHaveAttribute("aria-valuenow", "NaN");
+  // Empty bar: the indicator is shifted fully left. (Progress sets no aria-valuenow.)
+  const indicator = within(run)
+    .getByRole("progressbar")
+    .querySelector<HTMLElement>('[data-slot="progress-indicator"]');
+  expect(indicator?.style.transform).toBe("translateX(-100%)");
   expect(run.textContent).not.toMatch(/NaN|Infinity/);
 });

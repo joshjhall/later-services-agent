@@ -47,10 +47,17 @@ test("each proposal kind lands on the tab of its phase", () => {
 });
 
 test("proposalTab puts each kind on its phase's tab", () => {
-  expect(proposalTab({ kind: "approve-lineup" })).toBe("plan");
-  expect(proposalTab({ kind: "info-request" })).toBe("plan");
-  expect(proposalTab({ kind: "quiet-creator" })).toBe("make");
-  expect(proposalTab({ kind: "boost-post" })).toBe("run");
-  // Every phase has a tab, so no kind can land nowhere.
-  for (const phase of Object.values(PROPOSAL_PHASE)) expect(PHASE_TAB[phase]).toBeDefined();
+  const tabs = Object.fromEntries(
+    (Object.keys(PROPOSAL_PHASE) as Kind[]).map((kind) => [kind, proposalTab({ kind })]),
+  );
+  expect(tabs).toEqual({
+    "state-goal": "plan",
+    "approve-lineup": "plan",
+    "info-request": "plan",
+    "quiet-creator": "make",
+    "review-draft": "make",
+    "boost-post": "run",
+    "below-forecast": "run",
+  });
+  expect(new Set(Object.values(PHASE_TAB))).toEqual(new Set(["plan", "make", "run"]));
 });
