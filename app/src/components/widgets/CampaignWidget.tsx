@@ -3,15 +3,16 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useStore } from "@/domain/store";
-import type { Campaign } from "@/domain/types";
+import { type Campaign, campaignPhase } from "@/domain/types";
 import { href } from "@/router";
 
+/** Secondary text after the phase, e.g. "Plan · reviewing lineup". */
 const STAGE: Record<Campaign["stage"], string> = {
-  goal: "Stating the goal",
-  lineup: "Reviewing lineup",
-  production: "In production",
-  live: "Live",
-  wrap: "Wrapping up",
+  goal: "stating the goal",
+  lineup: "reviewing lineup",
+  production: "in production",
+  live: "live",
+  wrap: "wrapping up",
 };
 
 /**
@@ -32,7 +33,9 @@ export function CampaignWidget({ campaign: c }: { campaign: Campaign }) {
               {c.name}
             </a>
           </CardTitle>
-          <Badge variant="secondary">{STAGE[c.stage]}</Badge>
+          <Badge variant="secondary">
+            {campaignPhase(c)} <span className="opacity-70">· {STAGE[c.stage]}</span>
+          </Badge>
         </div>
         <p className="text-xs text-muted-foreground capitalize">
           {c.objective} · {c.start} → {c.end}

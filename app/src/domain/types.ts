@@ -36,6 +36,19 @@ export interface Campaign {
   stage: "goal" | "lineup" | "production" | "live" | "wrap";
 }
 
+/** The deck's three campaign phases (docs/information-architecture.md, "Plan → Make → Run"). */
+export type CampaignPhase = "Plan" | "Make" | "Run";
+
+export const CAMPAIGN_PHASE: Record<Campaign["stage"], CampaignPhase> = {
+  goal: "Plan",
+  lineup: "Plan",
+  production: "Make",
+  live: "Run",
+  wrap: "Run",
+};
+
+export const campaignPhase = (c: Pick<Campaign, "stage">): CampaignPhase => CAMPAIGN_PHASE[c.stage];
+
 export interface Creator {
   id: string;
   name: string;
