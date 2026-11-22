@@ -422,6 +422,20 @@ test("store: resolving a proposal twice records one entry", async () => {
   expect(result.current.activity.length).toBe(before + 1);
 });
 
+test("store: a double click within one render still records one entry", async () => {
+  const { renderHook } = await import("@testing-library/react");
+  const { StoreProvider, useStore } = await import("@/domain/store");
+  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
+  const p = result.current.proposals[0];
+  const before = result.current.activity.length;
+  act(() => {
+    result.current.resolve(p, p.options[0].id);
+    result.current.resolve(p, p.options[1].id);
+  });
+  expect(result.current.activity.length).toBe(before + 1);
+  expect(result.current.resolved[p.id].optionId).toBe(p.options[0].id);
+});
+
 test("store: live entry ids stay unique and never reuse the seeded act-N form", async () => {
   const { renderHook } = await import("@testing-library/react");
   const { StoreProvider, useStore } = await import("@/domain/store");
