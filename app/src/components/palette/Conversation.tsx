@@ -120,14 +120,17 @@ export function Conversation({
   onOpenChange: (open: boolean) => void;
   onDock?: () => void;
 }) {
+  const docking = useRef(false);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         // The palette input that opened this has unmounted, so Radix would drop focus on
-        // <body>. Hand it to the Find or ask button so keyboard users keep their place.
+        // <body>. Keep keyboard users' place: docked, the conversation goes on in the
+        // rail's composer; ended, focus goes back to the Find or ask button.
         onCloseAutoFocus={(e) => {
           e.preventDefault();
-          focusFindOrAsk();
+          if (docking.current) focusDockedComposer();
+          else focusFindOrAsk();
         }}
         className="inset-0 top-0 left-0 flex h-dvh w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none bg-background p-0 ring-0 sm:max-w-none"
       >
@@ -137,7 +140,14 @@ export function Conversation({
             <DialogDescription>About: {thread.context}</DialogDescription>
           </div>
           {onDock && (
-            <Button variant="ghost" size="sm" onClick={onDock}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                docking.current = true;
+                onDock();
+              }}
+            >
               <PanelRightIcon /> Dock
             </Button>
           )}
@@ -146,6 +156,13 @@ export function Conversation({
       </DialogContent>
     </Dialog>
   );
+}
+
+/** Focus the docked conversation's message box, once it's in the rail. */
+function focusDockedComposer() {
+  document
+    .querySelector<HTMLElement>("[data-docked-conversation] textarea[aria-label='Message']")
+    ?.focus();
 }
 
 /**
@@ -160,6 +177,7 @@ export function DockedConversation({
   return (
     <section
       aria-label="Conversation"
+      data-docked-conversation
       className="sticky top-18 flex h-[calc(100dvh-6rem)] min-h-80 flex-col"
     >
       <header className="flex items-start gap-1 border-b pb-3">

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { App } from "@/App";
 import { openFindOrAsk } from "@/shell/FindOrAsk";
 import { ThemeProvider } from "@/theme/ThemeProvider";
@@ -163,4 +163,14 @@ test("an answer can be a widget from the rail library, full screen and docked", 
   const docked = within(rail()).getByRole("region", { name: "Conversation" });
   sendIn(docked, SIMILAR_Q);
   expect(docked.querySelectorAll('[data-widget="compare"]')).toHaveLength(2);
+});
+
+test("docking puts focus in the rail's message box, not back on Find or ask", async () => {
+  renderApp();
+  fireEvent.click(within(ask("Why is Ana late?")).getByRole("button", { name: /Dock/ }));
+  const docked = within(rail()).getByRole("region", { name: "Conversation" });
+  // Radix restores focus on the next tick.
+  await waitFor(() =>
+    expect(document.activeElement).toBe(within(docked).getByRole("textbox", { name: "Message" })),
+  );
 });

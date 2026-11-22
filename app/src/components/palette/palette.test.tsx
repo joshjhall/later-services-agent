@@ -11,10 +11,11 @@ import { ACTIVITY_LABEL, buildItems, contextLine, filterItems, subjectFor } from
 import { answerTo, fallbackFor, onSparklingCitrus, replyTo } from "./responses";
 
 // The real Toaster needs matchMedia, which jsdom lacks, so assert the call instead.
-vi.mock("sonner", async (actual) => ({
-  ...(await actual<typeof import("sonner")>()),
-  toast: vi.fn(),
-}));
+// Keep toast.success and the other methods, so a caller that uses them still works.
+vi.mock("sonner", async (actual) => {
+  const real = await actual<typeof import("sonner")>();
+  return { ...real, toast: Object.assign(vi.fn(), real.toast) };
+});
 
 afterEach(() => {
   location.hash = "";
@@ -42,6 +43,15 @@ test("every suggestion leads to a page that exists", () => {
   for (const item of items.filter((i) => i.route)) {
     // biome-ignore lint/style/noNonNullAssertion: filtered above
     expect(crumbs(item.route!, world).at(-1)?.notFound, item.label).toBeUndefined();
+  }
+});
+
+test("a stale link ends in a not-found crumb", () => {
+  for (const route of [
+    { view: "campaign", id: "cmp-gone" },
+    { view: "account", id: "acct-gone" },
+  ] as Route[]) {
+    expect(crumbs(route, world).at(-1)?.notFound).toBe(true);
   }
 });
 
@@ -324,19 +334,14 @@ test("a new conversation starts with an empty draft", () => {
   expect(message()).toHaveValue("");
 });
 
-test("⌘K does nothing while a conversation is open", () => {
-  const { dialog } = renderPalette();
-  fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
-  act(() => openFindOrAsk());
-  expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
-  expect(screen.getByRole("dialog", { name: "Conversation" })).toBeInTheDocument();
-});
-
-test("⌘K is left to the browser while a conversation is open, and claimed otherwise", () => {
+test("⌘K and / are left to the browser while a conversation is open, and claimed otherwise", () => {
   const { dialog } = renderPalette();
   fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
   // fireEvent returns false when the event was default-prevented.
   expect(fireEvent.keyDown(window, { key: "k", metaKey: true })).toBe(true);
+  expect(fireEvent.keyDown(document.body, { key: "/" })).toBe(true);
+  expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
+  expect(screen.getByRole("dialog", { name: "Conversation" })).toBeInTheDocument();
 
   fireEvent.keyDown(screen.getByRole("dialog", { name: "Conversation" }), { key: "Escape" });
   expect(fireEvent.keyDown(window, { key: "k", metaKey: true })).toBe(false);
