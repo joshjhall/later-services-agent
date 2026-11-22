@@ -7,7 +7,7 @@
  * Tunables live in AGENT_POLICY so a live demo change is one edit.
  */
 import { DEMO_TODAY } from "@/domain/fixtures";
-import type { Campaign, Creator, Deliverable, Partnership } from "@/domain/types";
+import type { Campaign, Creator, Deliverable, Effect, Partnership } from "@/domain/types";
 
 export const AGENT_POLICY = {
   /** Escalate a quiet creator when go-live is this many days away or fewer. */
@@ -34,6 +34,8 @@ export interface Option {
   label: string;
   primary?: boolean;
   lane: Lane;
+  /** What choosing this option touches; decides undo in the activity record. Required, so undo is never a silent default. */
+  effect: Effect;
 }
 
 export interface Proposal {
@@ -119,14 +121,21 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
             : { label: "Approved backup", value: "None", tone: "bad" },
         ],
         options: [
-          { id: "call", label: `Call ${c.name.split(" ")[0]}`, primary: true, lane: "human" },
-          { id: "extend", label: "Extend 2 days", lane: "propose" },
+          {
+            id: "call",
+            label: `Call ${c.name.split(" ")[0]}`,
+            primary: true,
+            lane: "human",
+            effect: "external",
+          },
+          { id: "extend", label: "Extend 2 days", lane: "propose", effect: "external" },
           ...(backupCreator
             ? [
                 {
                   id: "swap",
                   label: `Swap to ${backupCreator.name.split(" ")[0]}`,
                   lane: "propose" as const,
+                  effect: "external" as const,
                 },
               ]
             : []),
@@ -151,9 +160,20 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
           { label: "Other brief checks", value: "6 of 6 met", tone: "good" },
         ],
         options: [
-          { id: "send-fix", label: "Send fix request", primary: true, lane: "propose" },
-          { id: "corrections", label: "Approve with corrections", lane: "human" },
-          { id: "approve", label: "Approve anyway", lane: "human" },
+          {
+            id: "send-fix",
+            label: "Send fix request",
+            primary: true,
+            lane: "propose",
+            effect: "external",
+          },
+          {
+            id: "corrections",
+            label: "Approve with corrections",
+            lane: "human",
+            effect: "external",
+          },
+          { id: "approve", label: "Approve anyway", lane: "human", effect: "external" },
         ],
         confidence: "high",
         dueInDays: Math.max(0, daysBetween(today, d.goLive) - 3),
@@ -174,9 +194,9 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
           { label: "Proposed spend", value: "$8,000 of $36,000 reserve", tone: "neutral" },
         ],
         options: [
-          { id: "boost", label: "Boost $8,000", primary: true, lane: "propose" },
-          { id: "smaller", label: "Boost $4,000", lane: "propose" },
-          { id: "skip", label: "Not now", lane: "human" },
+          { id: "boost", label: "Boost $8,000", primary: true, lane: "propose", effect: "spend" },
+          { id: "smaller", label: "Boost $4,000", lane: "propose", effect: "spend" },
+          { id: "skip", label: "Not now", lane: "human", effect: "internal" },
         ],
         confidence: "medium",
         dueInDays: 1,
@@ -198,7 +218,9 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
           { label: "Objective", value: "Awareness (proposed)", tone: "neutral" },
           { label: "Primary KPI", value: "Reach 25M, video views 8M", tone: "neutral" },
         ],
-        options: [{ id: "open", label: "Review goal", primary: true, lane: "human" }],
+        options: [
+          { id: "open", label: "Review goal", primary: true, lane: "human", effect: "internal" },
+        ],
         confidence: "medium",
         dueInDays: 5,
       });
@@ -217,7 +239,9 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
           { label: "Conflict", value: "1 creator had a competitor deal 60 days ago", tone: "bad" },
           { label: "Forecast", value: "Reach 14–19M vs. 15M target", tone: "neutral" },
         ],
-        options: [{ id: "open", label: "Review lineup", primary: true, lane: "human" }],
+        options: [
+          { id: "open", label: "Review lineup", primary: true, lane: "human", effect: "internal" },
+        ],
         confidence: "medium",
         dueInDays: 2,
       });
@@ -241,8 +265,14 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
             { label: "Actual", value: fmt(k.actual, k.unit), tone: "bad" },
           ],
           options: [
-            { id: "plan", label: "Plan next-wave changes", primary: true, lane: "propose" },
-            { id: "note", label: "Add to client update", lane: "human" },
+            {
+              id: "plan",
+              label: "Plan next-wave changes",
+              primary: true,
+              lane: "propose",
+              effect: "internal",
+            },
+            { id: "note", label: "Add to client update", lane: "human", effect: "internal" },
           ],
           confidence: "medium",
           dueInDays: 3,

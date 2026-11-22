@@ -30,9 +30,9 @@ test("account, campaign, and lineup build the object path", () => {
   expect(trail[2].to).toEqual({ view: "campaign", id: "cmp-holiday-gifting" });
 });
 
-test("roster, log, and unknown ids", () => {
+test("roster, activity, and unknown ids", () => {
   expect(labels({ view: "roster" })).toEqual(["Portfolio", "Roster"]);
-  expect(labels({ view: "log" })).toEqual(["Portfolio", "Agent log"]);
+  expect(labels({ view: "activity" })).toEqual(["Portfolio", "Activity"]);
   expect(labels({ view: "campaign", id: "nope" })).toEqual(["Portfolio", "Not found"]);
   expect(labels({ view: "account", id: "nope" })).toEqual(["Portfolio", "Not found"]);
 });

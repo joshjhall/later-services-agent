@@ -85,11 +85,24 @@ export interface Partnership {
   status: "proposed" | "backup" | "confirmed" | "replaced";
 }
 
-/** What the agent did on its own: logged and undoable (framing §5). */
-export interface AgentLogEntry {
+/** Who wrote an entry: the rules engine, the agent, or a named person. */
+export type Actor = "system" | "agent" | (string & {});
+
+/**
+ * What an action touched. internal: reversible inside the tool. external: sent to a
+ * creator or client. spend: money committed. Only internal actions can be undone.
+ */
+export type Effect = "internal" | "external" | "spend";
+
+/** One record, any actor (principles §2): every entry names who did it and what it touched. */
+export interface ActivityEntry {
   id: string;
   at: ISODate;
+  actor: Actor;
   action: string;
   target: string;
-  undoable: boolean;
+  effect: Effect;
 }
+
+/** What has happened outside the system is permanent; a correction is a new action. */
+export const isUndoable = (e: Pick<ActivityEntry, "effect">): boolean => e.effect === "internal";
