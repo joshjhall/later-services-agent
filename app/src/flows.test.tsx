@@ -126,6 +126,10 @@ test("activity: one record shows system, agent, and named people as explicit act
   expect(within(entry(/Pulled 72h metrics/)).getByText("agent")).toBeInTheDocument();
   expect(within(entry(/Called Ana/)).getByText("Jordan")).toBeInTheDocument();
   expect(within(entry(/Approved lineup/)).getByText("Maya")).toBeInTheDocument();
+  // Approving a lineup is an internal gate, the same whether seeded or done live.
+  expect(
+    within(entry(/Approved lineup/)).getByRole("button", { name: /Undo/ }),
+  ).toBeInTheDocument();
 });
 
 test("activity: internal actions can be undone; anything sent is permanent", () => {

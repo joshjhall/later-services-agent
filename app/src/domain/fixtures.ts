@@ -306,8 +306,9 @@ export const activity: ActivityEntry[] = [
     id: "act-6",
     at: "2026-11-16",
     actor: "Maya",
-    action: "Approved lineup",
+    // An internal gate: nothing reaches the client until Maya presents it, so it can be undone.
+    action: "Approved lineup · internal gate",
     target: "Trail season",
-    effect: "external",
+    effect: "internal",
   },
 ];
