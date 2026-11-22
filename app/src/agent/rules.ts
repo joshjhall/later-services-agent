@@ -75,6 +75,26 @@ export const daysBetween = (a: string, b: string) =>
 
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 
+/** The "Agent cap" evidence row for a spend proposal: the caps, then which options fit under them. */
+export function capEvidence(
+  options: number[],
+  policy: { maxTestSpend: number; maxDailySpend: number } = AGENT_POLICY,
+): Evidence {
+  const { maxTestSpend, maxDailySpend } = policy;
+  const within = options.filter((n) => n <= maxDailySpend);
+  const verdict =
+    within.length === options.length
+      ? "within it, so the agent could run it"
+      : within.length === 0
+        ? "above it, so it needs you"
+        : `${within.map(usd).join(", ")} is within it; the rest needs you`;
+  return {
+    label: "Agent cap",
+    value: `${usd(maxTestSpend)} per test, ${usd(maxDailySpend)}/day · ${verdict}`,
+    tone: "neutral",
+  };
+}
+
 interface World {
   campaigns: Campaign[];
   creators: Creator[];
@@ -200,7 +220,6 @@ export function deriveProposals(
 
     if (d.stage === "live" && p.whitelisting) {
       const spend = 8000;
-      const { maxTestSpend, maxDailySpend } = AGENT_POLICY;
       out.push({
         id: `boost:${d.id}`,
         kind: "boost-post",
@@ -212,13 +231,7 @@ export function deriveProposals(
           { label: "Engagement vs. median", value: "2.3×", tone: "good" },
           { label: "Whitelisting", value: `Yes, ${p.usageRightsDays} days`, tone: "good" },
           { label: "Proposed spend", value: `${usd(spend)} of $36,000 reserve`, tone: "neutral" },
-          {
-            label: "Agent cap",
-            value: `${usd(maxTestSpend)} per test, ${usd(maxDailySpend)}/day · ${
-              spend > maxDailySpend ? "this is above it, so it needs you" : "this is within it"
-            }`,
-            tone: "neutral",
-          },
+          capEvidence([spend, spend / 2]),
         ],
         options: [
           {

@@ -1,5 +1,5 @@
 import { campaigns, creators, deliverables, partnerships } from "@/domain/fixtures";
-import { AGENT_POLICY, deriveProposals } from "./rules";
+import { AGENT_POLICY, capEvidence, deriveProposals } from "./rules";
 
 const world = { campaigns, creators, partnerships, deliverables };
 
@@ -35,17 +35,24 @@ describe("deriveProposals", () => {
     ).toBe(false);
   });
 
-  test("boost card states the agent's spending cap, read from AGENT_POLICY", () => {
+  test("boost card shows the agent's spending cap from AGENT_POLICY", () => {
     const boost = proposals.find((p) => p.kind === "boost-post");
-    const cap = boost?.evidence.find((e) => e.label === "Agent cap");
-    const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
-    const { maxTestSpend, maxDailySpend } = AGENT_POLICY;
-    const verdict =
-      8000 > maxDailySpend ? "this is above it, so it needs you" : "this is within it";
-    expect(cap?.value).toBe(
-      `${usd(maxTestSpend)} per test, ${usd(maxDailySpend)}/day · ${verdict}`,
-    );
+    expect(boost?.evidence.find((e) => e.label === "Agent cap")).toEqual(capEvidence([8000, 4000]));
     expect(boost?.options.map((o) => o.label)).toEqual(["Boost $8,000", "Boost $4,000", "Not now"]);
+  });
+
+  test("cap evidence: above, partly within, at, and within the daily cap", () => {
+    const policy = (maxDailySpend: number) => ({ ...AGENT_POLICY, maxDailySpend });
+    expect(capEvidence([8000, 4000], policy(1000)).value).toBe(
+      "$200 per test, $1,000/day · above it, so it needs you",
+    );
+    expect(capEvidence([8000, 4000], policy(5000)).value).toBe(
+      "$200 per test, $5,000/day · $4,000 is within it; the rest needs you",
+    );
+    expect(capEvidence([8000], policy(8000)).value).toMatch(
+      /within it, so the agent could run it$/,
+    );
+    expect(capEvidence([8000, 4000], policy(10000)).value).toMatch(/within it/);
   });
 
   test("covers the three demo moments: goal, lineup, hard moment", () => {

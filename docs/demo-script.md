@@ -42,7 +42,7 @@ A path through the prototype for the 20-minute walkthrough. Run `just dev` and o
 ## 6. Tuning the robot (if time)
 
 - Change `AGENT_POLICY.escalateWithinDays` live. A CM's repeated correction would propose exactly this change; today it's one line in the rules layer.
-- Change `AGENT_POLICY.maxDailySpend` live. The boost card's "Agent cap" row is read from it: raise it above $8,000 and the card says the spend is within the cap. Guardrails in code, not prose.
+- Change `AGENT_POLICY.maxDailySpend` live. The boost card's "Agent cap" row is read from it: set it to $5,000 and the card says the $4,000 option is within the cap; raise it above $8,000 and both are. The guardrail lives in code, and the card reads it.
 
 ## Live-change candidates
 
