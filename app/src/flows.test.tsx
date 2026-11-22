@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { App } from "@/App";
+import type { Proposal } from "@/agent/rules";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 
 /** The three moments the brief requires: state the goal, review the lineup, the hard moment. */
@@ -12,6 +13,13 @@ const go = (hash: string) =>
 
 /** The core view, not the context rail. The innermost <main> is ShellLayout's. */
 const core = () => screen.getAllByRole("main").at(-1) as HTMLElement;
+
+/** The draft behind a proposal's sending option. */
+function draftOf(p: Proposal, optionId = "draft-email") {
+  const d = p.options.find((o) => o.id === optionId)?.draft;
+  if (!d) throw new Error(`no draft behind ${p.id}/${optionId}`);
+  return d;
+}
 
 const renderApp = () =>
   render(
@@ -335,18 +343,13 @@ test("draft: a double-click on Send records one entry", () => {
 test("store: sending a draft for an already-resolved proposal keeps the first decision", async () => {
   const { renderHook } = await import("@testing-library/react");
   const { StoreProvider, useStore } = await import("@/domain/store");
-  const { messageDrafts } = await import("@/agent/drafts");
   const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
   const p = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
   if (!p) throw new Error("info request missing");
   act(() => result.current.resolve(p, "confirmed"));
   const before = result.current.activity.length;
-  act(() =>
-    result.current.send(messageDrafts["info:cr-ana"], { proposal: p, optionId: "draft-email" }),
-  );
-  act(() =>
-    result.current.send(messageDrafts["info:cr-ana"], { proposal: p, optionId: "draft-email" }),
-  );
+  act(() => result.current.send(draftOf(p), { proposal: p, optionId: "draft-email" }));
+  act(() => result.current.send(draftOf(p), { proposal: p, optionId: "draft-email" }));
   expect(result.current.resolved[p.id].optionId).toBe("confirmed");
   // The message still went out, once.
   expect(result.current.activity.length).toBe(before + 1);
@@ -355,7 +358,6 @@ test("store: sending a draft for an already-resolved proposal keeps the first de
 test("store: an action label names the decision; without one, the option label is used", async () => {
   const { renderHook } = await import("@testing-library/react");
   const { StoreProvider, useStore } = await import("@/domain/store");
-  const { messageDrafts } = await import("@/agent/drafts");
   const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
   const goal = result.current.proposals.find((x) => x.id === "goal:cmp-spring-serum");
   const info = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
@@ -368,9 +370,7 @@ test("store: an action label names the decision; without one, the option label i
   act(() => result.current.resolve(goal, "open", "Approved lineup"));
   expect(result.current.resolved[goal.id].label).toBe("Confirmed goal");
   // A draft that answers a proposal without an action keeps the option label.
-  act(() =>
-    result.current.send(messageDrafts["info:cr-ana"], { proposal: info, optionId: "draft-email" }),
-  );
+  act(() => result.current.send(draftOf(info), { proposal: info, optionId: "draft-email" }));
   const option = info.options.find((o) => o.id === "draft-email");
   expect(result.current.resolved[info.id].label).toBe(option?.label);
 });
@@ -450,14 +450,13 @@ test("store: a double click within one render still records one entry", async ()
 test("store: a sent answer and a later resolve of the same proposal record the decision once", async () => {
   const { renderHook } = await import("@testing-library/react");
   const { StoreProvider, useStore } = await import("@/domain/store");
-  const { messageDrafts } = await import("@/agent/drafts");
   const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
   const p = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
   if (!p) throw new Error("info request missing");
   const before = result.current.activity.length;
   // In one render: the send lands first, so the resolve is a no-op.
   act(() => {
-    result.current.send(messageDrafts["info:cr-ana"], { proposal: p, optionId: "draft-email" });
+    result.current.send(draftOf(p), { proposal: p, optionId: "draft-email" });
     result.current.resolve(p, "confirmed");
   });
   act(() => result.current.resolve(p, "confirmed"));
@@ -475,14 +474,14 @@ test("store: live entry ids stay unique and never reuse the seeded act-N form", 
   for (const p of result.current.proposals) {
     act(() => result.current.resolve(p, p.options[0].id));
   }
-  act(() => result.current.send(messageDrafts["info:cr-ana"]));
+  act(() => result.current.send(messageDrafts["fix:d-rio-1"]));
   const ids = result.current.activity.map((e) => e.id);
   expect(new Set(ids).size).toBe(ids.length);
   const seeded = new Set(fx.activity.map((e) => e.id));
   const live = ids.filter((id) => !seeded.has(id));
   // One entry per decision and per send, keyed by what it records.
   expect(live.toSorted()).toEqual(
-    [...result.current.proposals.map((p) => `act-${p.id}`), "act-sent-info:cr-ana"].toSorted(),
+    [...result.current.proposals.map((p) => `act-${p.id}`), "act-sent-fix:d-rio-1"].toSorted(),
   );
   for (const id of live) expect(id).not.toMatch(/^act-\d+$/);
 });

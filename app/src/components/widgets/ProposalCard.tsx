@@ -1,6 +1,5 @@
 import { CheckCircle2 } from "lucide-react";
 import { useState } from "react";
-import { draftFor } from "@/agent/drafts";
 import { proposalTab } from "@/agent/needs";
 import type { Proposal } from "@/agent/rules";
 import { Badge } from "@/components/ui/badge";
@@ -45,11 +44,11 @@ export function ProposalCard({ proposal: p, compact }: { proposal: Proposal; com
   const sev = SEVERITY[p.severity];
   const [calling, setCalling] = useState(false);
   const [drafting, setDrafting] = useState<string | null>(null);
-  const draft = drafting ? draftFor(p.id, drafting) : undefined;
+  const draft = p.options.find((o) => o.id === drafting)?.draft;
 
   // Some options open a working view or a draft instead of resolving in place.
   const act = (optionId: string) => {
-    if (draftFor(p.id, optionId)) {
+    if (p.options.find((o) => o.id === optionId)?.draft) {
       setDrafting(optionId);
       return;
     }

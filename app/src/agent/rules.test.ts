@@ -249,15 +249,75 @@ describe("deriveProposals", () => {
     expect(count({ ...world, campaigns: pastLineup }, withAna("core"))).toBe(0);
   });
 
-  test("information request: never raised without a drafted email behind it", () => {
-    // Ben is a core lineup member on the roster; flag him as profile-only too. He has no drafted email.
+  test("information request: raised for any profile-only core member, with its own email", () => {
+    // Ben is a core lineup member on the roster; flag him as profile-only too.
     const ben = creators.map((c) =>
       c.handle === "@benpours" ? { ...c, audienceSource: "profile" as const } : c,
     );
-    const ids = deriveProposals({ ...world, creators: ben })
-      .filter((p) => p.kind === "info-request")
-      .map((p) => p.id);
-    expect(ids).toEqual(["info:cmp-holiday-gifting:cr-ana"]);
+    const requests = deriveProposals({ ...world, creators: ben }).filter(
+      (p) => p.kind === "info-request",
+    );
+    expect(requests.map((p) => p.id)).toEqual([
+      "info:cmp-holiday-gifting:cr-ana",
+      "info:cmp-holiday-gifting:cr-ben",
+    ]);
+    const benDraft = requests[1].options.find((o) => o.id === "draft-email")?.draft;
+    expect(benDraft?.id).toBe(requests[1].id);
+    expect(benDraft?.target).toBe("Ben Okafor · Holiday gifting");
+    expect(requests[1].title).toBe("Confirm Ben's audience is mostly US");
+    expect(requests[1].assumption).toMatch(/mostly US from the TikTok profile/);
+  });
+
+  test("information request: the email names the client when accounts are known", async () => {
+    const { accounts } = await import("@/domain/fixtures");
+    const body = (w: typeof world & { accounts?: typeof accounts }) =>
+      deriveProposals(w)
+        .find((p) => p.id === "info:cmp-holiday-gifting:cr-ana")
+        ?.options.find((o) => o.id === "draft-email")?.draft?.body;
+    expect(body({ ...world, accounts })).toMatch(
+      /the Brightside Beverages Holiday gifting campaign/,
+    );
+    expect(body(world)).toMatch(/proposing Ana for the Holiday gifting campaign\./);
+  });
+
+  test("draft review: any submitted draft gets a review with a fix request to send", () => {
+    // Mei's live Reel, moved back to submitted: no hand-written fix request exists for it.
+    const submitted = deliverables.map((d) =>
+      d.id === "d-mei-1" ? { ...d, stage: "submitted" as const } : d,
+    );
+    const review = deriveProposals({ ...world, deliverables: submitted }).find(
+      (p) => p.id === "review:d-mei-1",
+    );
+    expect(review?.options.map((o) => o.id)).toEqual(["send-fix", "corrections", "approve"]);
+    const draft = review?.options[0].draft;
+    expect(draft).toMatchObject({
+      id: "fix:d-mei-1",
+      to: "Mei Tanaka",
+      target: "Mei Tanaka · Sparkling Citrus launch",
+      campaignId: review?.campaignId,
+    });
+    expect(draft?.body).toMatch(/^Hi Mei,/);
+    expect(draft?.body).toMatch(/Go-live stays Nov 15\./);
+  });
+
+  test("draft review: still offers a fix request when the campaign is missing", () => {
+    const orphan = campaigns.filter((c) => c.id !== "cmp-sparkling-launch");
+    const submitted = deliverables.map((d) =>
+      d.id === "d-mei-1" ? { ...d, stage: "submitted" as const } : d,
+    );
+    const review = deriveProposals({ ...world, campaigns: orphan, deliverables: submitted }).find(
+      (p) => p.id === "review:d-mei-1",
+    );
+    expect(review?.options[0].draft).toMatchObject({
+      campaignId: "cmp-sparkling-launch",
+      target: "Mei Tanaka · IG Reel + Story ×2",
+    });
+  });
+
+  test("draft review: a hand-written fix request wins over the generated one", async () => {
+    const { messageDrafts } = await import("./drafts");
+    const review = deriveProposals(world).find((p) => p.id === "review:d-rio-1");
+    expect(review?.options[0].draft).toBe(messageDrafts["fix:d-rio-1"]);
   });
 });
 

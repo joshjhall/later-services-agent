@@ -200,11 +200,12 @@ export function GoalView({ id }: { id: string }) {
           )}
         </CardFooter>
       </Card>
-      {clientEmail && (
+      {/* Mounted only while open, so "Not yet" drops edits and reopening shows the agent's draft. */}
+      {clientEmail && drafting && (
         <DraftSheet
           draft={clientEmail}
           answers={proposal && { proposal, optionId: "open", action: "Confirmed goal" }}
-          open={drafting}
+          open
           onOpenChange={setDrafting}
         />
       )}
