@@ -69,7 +69,8 @@ test("each scripted reply matches whole words, not fragments", () => {
   expect(replyTo("What's at risk this week?")).toMatch(/Three things need you/);
   expect(replyTo("Show risks")).toMatch(/Three things need you/);
   // Words that only contain a keyword get the fallback.
-  for (const q of ["comparable", "analytics", "template", "brisk"]) {
+  // Ana's story needs her name, not just "late".
+  for (const q of ["comparable", "analytics", "template", "brisk", "Is the lineup late?"]) {
     expect(replyTo(q)).toBe(FALLBACK);
   }
 });
@@ -150,4 +151,12 @@ test("a new conversation starts with an empty draft", () => {
   act(() => openFindOrAsk());
   fireEvent.click(screen.getByRole("option", { name: /Start a conversation/ }));
   expect(message()).toHaveValue("");
+});
+
+test("⌘K does nothing while a conversation is open", () => {
+  const dialog = renderPalette();
+  fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
+  act(() => openFindOrAsk());
+  expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
+  expect(screen.getByRole("dialog", { name: "Conversation" })).toBeInTheDocument();
 });

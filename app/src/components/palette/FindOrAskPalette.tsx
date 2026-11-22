@@ -28,11 +28,14 @@ export function FindOrAskPalette({ route }: { route: Route }) {
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<Message[] | null>(null);
 
+  // While a conversation is open it owns the screen: ⌘K and `/` don't stack the palette on top.
+  const inConversation = messages !== null;
   useEffect(() => {
+    if (inConversation) return;
     const on = () => setOpen(true);
     addEventListener(FIND_OR_ASK_OPEN, on);
     return () => removeEventListener(FIND_OR_ASK_OPEN, on);
-  }, []);
+  }, [inConversation]);
 
   const items = useMemo(() => buildItems(world), [world]);
   const matches = filterItems(items, query);

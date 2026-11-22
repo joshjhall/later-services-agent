@@ -13,7 +13,7 @@ export const REPLIES: ScriptedReply[] = [
       "I compared early performance, since Mei's Reel went live on Nov 15. At day 3 it has 4.1% engagement against an average of 3.2% for her last three Reels at the same point, so it's tracking above her pattern and should land near 1.4M views. I can also compare wording, audience, or expected outcome instead.",
   },
   {
-    match: /\b(ana|late|quiet)\b/i,
+    match: /\bana\b/i,
     reply:
       "Ana's draft was due Nov 17 and she hasn't replied since Nov 11, after two reminders. Her go-live is Nov 24, so there are six days left. Ben is the approved backup. In Today I've proposed a last nudge through her manager, with a swap to Ben if she doesn't answer by tomorrow.",
   },
