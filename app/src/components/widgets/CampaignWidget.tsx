@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useStore } from "@/domain/store";
-import { type Campaign, campaignPhase } from "@/domain/types";
+import { type Campaign, campaignPhase, kpiPct } from "@/domain/types";
 import { href } from "@/router";
 
 /** Secondary text after the phase, e.g. "Plan · reviewing lineup". */
@@ -63,7 +63,11 @@ export function CampaignWidget({ campaign: c }: { campaign: Campaign }) {
                 {fmt(k.actual, k.unit)} / {fmt(k.target, k.unit)}
               </span>
             </div>
-            <Progress value={Math.min(100, (k.actual / k.target) * 100)} />
+            <Progress
+              value={kpiPct(k)}
+              aria-label={k.metric}
+              getValueLabel={() => `${fmt(k.actual, k.unit)} of ${fmt(k.target, k.unit)}`}
+            />
           </div>
         ))}
         <div className="flex justify-between text-xs text-muted-foreground tabular-nums">

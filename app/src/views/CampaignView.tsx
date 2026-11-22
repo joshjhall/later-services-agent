@@ -172,7 +172,11 @@ export function CampaignView({ id, tab }: { id: string; tab?: CampaignTab }) {
                           {fmt(k.actual, k.unit)} / {fmt(k.target, k.unit)}
                         </span>
                       </div>
-                      <Progress value={kpiPct(k)} />
+                      <Progress
+                        value={kpiPct(k)}
+                        aria-label={k.metric}
+                        getValueLabel={() => `${fmt(k.actual, k.unit)} of ${fmt(k.target, k.unit)}`}
+                      />
                     </div>
                   ))
                 ) : (
