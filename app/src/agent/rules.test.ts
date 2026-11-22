@@ -67,6 +67,9 @@ describe("deriveProposals", () => {
     expect(lanes(4_000)).toEqual(["propose", "auto", "human"]);
     expect(lanes(3_999)).toEqual(["propose", "propose", "human"]);
     expect(lanes(10_000)).toEqual(["auto", "auto", "human"]);
+    // A zero cap lets nothing through, and a negative cap fails closed: nothing is automatic.
+    expect(lanes(0)).toEqual(["propose", "propose", "human"]);
+    expect(lanes(-1)).toEqual(["propose", "propose", "human"]);
     expect(boostAt(10_000)?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
       "$10,000/day, if spent in one day · within it",
     );
@@ -80,6 +83,7 @@ describe("deriveProposals", () => {
     expect(withinCap(4000.6, { maxDailySpend: 4000.5 })).toBe(false);
     expect(withinCap(0.4, { maxDailySpend: 0 })).toBe(false);
     expect(withinCap(0, { maxDailySpend: 0 })).toBe(true);
+    expect(withinCap(1, { maxDailySpend: 0 })).toBe(false);
   });
 
   test("withinCap fails closed on a malformed amount or cap", () => {
