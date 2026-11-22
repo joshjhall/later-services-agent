@@ -55,4 +55,4 @@ docs-private/
 .devcontainer/docker-compose.override.yml
 
 # Local devcontainer config (lists the gitignored compose override)
-.devcontainer/devcontainer.json
+.devcontainer/local/

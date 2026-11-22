@@ -18,7 +18,18 @@ Built for the Later VP, UX take-home exercise (`reference/`).
 
 ## Run it
 
-In the devcontainer, or on a host with Node 26+, pnpm, and `just`:
+**Quickest, in the devcontainer** (Docker and VS Code with Dev Containers):
+
+```sh
+git clone https://github.com/joshjhall/later-services-agent.git
+cd later-services-agent
+git submodule update --init --checkout containers   # the devcontainer build tooling
+code .                                              # then "Reopen in Container"
+```
+
+No `.env` files or 1Password access are needed to run the prototype; those only configure git signing and CLI auth for development.
+
+**Or on a host** with Node 26+, pnpm, and `just`. Either way:
 
 ```sh
 just dev       # prototype: http://localhost:5173
@@ -35,6 +46,8 @@ The whole palette (app light and dark, charts, status colors, and the overview p
 2. Run `just theme` to regenerate the committed CSS fallbacks and rebuild `docs/overview.html` to match.
 
 ## Development setup
+
+For committing from the container (git identity, signing, and `gh` auth through 1Password):
 
 ```sh
 git submodule update --init --checkout containers
