@@ -22,6 +22,12 @@ export const REPLIES: ScriptedReply[] = [
     reply:
       "Ana's draft was due Nov 17 and she hasn't replied since Nov 11, after two reminders. Her go-live is Nov 24, so there are six days left. Ben is the approved backup. In Today I've proposed a last nudge through her manager, with a swap to Ben if she doesn't answer by tomorrow.",
   },
+  {
+    // A compare question about another creator: only Mei has a live post, so say so
+    // rather than answer about her. Drop a name once that creator has a live post.
+    match: /^(?=.*\b(ben|jules|rio|sky)\b)(?=.*(\bcompare\b|\blast three\b))/i,
+    reply: "I only have Mei's Reel live to compare right now.",
+  },
   // Entries that name their subject come first, so "How does Ana compare with Ben?"
   // gets Ana wherever it's asked. The broad risk summary comes last.
   {

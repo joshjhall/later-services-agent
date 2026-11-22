@@ -80,6 +80,16 @@ test("elsewhere, the compare question asks whose post it means instead of assumi
   }
 });
 
+test("a compare question about another creator gets an honest decline, not Mei's numbers", () => {
+  const decline = "I only have Mei's Reel live to compare right now.";
+  for (const route of [citrus, today]) {
+    expect(replyTo("How does Ben compare with his last three?", route)).toBe(decline);
+    expect(replyTo("Compare Rio's draft", route)).toBe(decline);
+  }
+  // Naming a creator without asking to compare doesn't trigger it.
+  expect(replyTo("What's Jules up to?", citrus)).toBe(fallbackFor(citrus));
+});
+
 test("only Sparkling Citrus pages count as Mei's campaign", () => {
   const yes: Route[] = [
     citrus,
