@@ -63,6 +63,10 @@ test("reviewing the lineup: an incomplete candidate shows its gaps and can still
   expect(hana.getByRole("radio", { name: "In lineup" })).toHaveAttribute("aria-checked", "true");
   expect(screen.getByText("1 member still needs details")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: /Approve lineup/ })).toBeEnabled();
+  // Only lineup members count: as a backup, Hana keeps her chip but leaves the tally.
+  fireEvent.click(hana.getByRole("radio", { name: "Backup" }));
+  expect(screen.getByText("Needs: rate and usage rights")).toBeInTheDocument();
+  expect(screen.queryByText("Open items")).not.toBeInTheDocument();
 });
 
 test("hard moment: Call opens the brief, and the outcome resolves the escalation", () => {
@@ -89,4 +93,12 @@ test("lineup totals block approval when creator fees exceed the budget", async (
     open: 1,
   });
   expect(lineupTotals(candidates, all, 50_000)).toMatchObject({ over: true });
+  expect(lineupTotals(candidates, { ...all, "@hanahosts": "backup" }, 72_000)).toMatchObject({
+    open: 0,
+  });
+  // Every incomplete lineup member counts.
+  const twoOpen = candidates.map((c) =>
+    c.handle === "@riocooks" ? { ...c, missing: ["rate"] } : c,
+  );
+  expect(lineupTotals(twoOpen, all, 72_000)).toMatchObject({ open: 2 });
 });
