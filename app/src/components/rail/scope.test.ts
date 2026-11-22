@@ -62,6 +62,7 @@ test("activityIn scopes by campaign id when names share a prefix", () => {
   ] as ActivityEntry[];
   // With an id, an entry lands only in its own campaign.
   // Without one, "z" falls back to name matching, which is loose: its target contains both names.
+  // That is a known limitation of the fallback, not a goal; tighten it if entries ever lack ids.
   expect(activityIn(entries, campaigns, ["a"]).map((e) => e.id)).toEqual(["x", "z"]);
   expect(activityIn(entries, campaigns, ["b"]).map((e) => e.id)).toEqual(["y", "z"]);
   // An account scope holding both counts each entry once.
