@@ -19,6 +19,10 @@ export const AGENT_POLICY = {
   autoReminders: 2,
   /** A KPI below this share of target (time-adjusted) is "below forecast". */
   belowForecastRatio: 0.8,
+  /** Largest test spend (USD) the agent may run on its own. */
+  maxTestSpend: 200,
+  /** Most the agent may spend (USD) per campaign per day; anything above needs a person. */
+  maxDailySpend: 1000,
 } as const;
 
 export type Lane = "auto" | "propose" | "human";
@@ -68,6 +72,35 @@ export interface Proposal {
 const day = 86_400_000;
 export const daysBetween = (a: string, b: string) =>
   Math.round((Date.parse(b) - Date.parse(a)) / day);
+
+const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
+
+/** "a", "a and b", "a, b, and c" (Oxford comma). */
+const list = (xs: string[]) =>
+  xs.length < 3 ? xs.join(" and ") : `${xs.slice(0, -1).join(", ")}, and ${xs.at(-1)}`;
+
+/**
+ * The "Agent cap" evidence row for a spend proposal: the caps, then which options fit under them.
+ * Display only: the cap does not yet change an option's lane. No options reads as above the cap.
+ */
+export function capEvidence(
+  options: number[],
+  policy: { maxTestSpend: number; maxDailySpend: number } = AGENT_POLICY,
+): Evidence {
+  const { maxTestSpend, maxDailySpend } = policy;
+  const within = options.filter((n) => n <= maxDailySpend);
+  const verdict =
+    options.length === 0 || within.length === 0
+      ? "above it, so it needs you"
+      : within.length === options.length
+        ? "within it"
+        : `${list(within.map(usd))} ${within.length === 1 ? "is" : "are"} within it; the rest needs you`;
+  return {
+    label: "Agent cap",
+    value: `${usd(maxTestSpend)} per test, ${usd(maxDailySpend)}/day · ${verdict}`,
+    tone: "neutral",
+  };
+}
 
 interface World {
   campaigns: Campaign[];
@@ -193,6 +226,7 @@ export function deriveProposals(
     }
 
     if (d.stage === "live" && p.whitelisting) {
+      const spend = 8000;
       out.push({
         id: `boost:${d.id}`,
         kind: "boost-post",
@@ -203,11 +237,18 @@ export function deriveProposals(
         evidence: [
           { label: "Engagement vs. median", value: "2.3×", tone: "good" },
           { label: "Whitelisting", value: `Yes, ${p.usageRightsDays} days`, tone: "good" },
-          { label: "Proposed spend", value: "$8,000 of $36,000 reserve", tone: "neutral" },
+          { label: "Proposed spend", value: `${usd(spend)} of $36,000 reserve`, tone: "neutral" },
+          capEvidence([spend, spend / 2]),
         ],
         options: [
-          { id: "boost", label: "Boost $8,000", primary: true, lane: "propose", effect: "spend" },
-          { id: "smaller", label: "Boost $4,000", lane: "propose", effect: "spend" },
+          {
+            id: "boost",
+            label: `Boost ${usd(spend)}`,
+            primary: true,
+            lane: "propose",
+            effect: "spend",
+          },
+          { id: "smaller", label: `Boost ${usd(spend / 2)}`, lane: "propose", effect: "spend" },
           { id: "skip", label: "Not now", lane: "human", effect: "internal" },
         ],
         confidence: "medium",
