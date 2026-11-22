@@ -19,7 +19,10 @@ export const AGENT_POLICY = {
   autoReminders: 2,
   /** A KPI below this share of target (time-adjusted) is "below forecast". */
   belowForecastRatio: 0.8,
-  /** Largest test spend (USD) the agent may run on its own. */
+  /**
+   * Largest test spend (USD) the agent may run on its own. Not read yet: the prototype has no
+   * test-spend proposal, and a boost is not a test. Kept because the brief and slides quote it.
+   */
   maxTestSpend: 200,
   /** Most the agent may spend (USD) per campaign per day; anything above needs a person. */
   maxDailySpend: 1000,

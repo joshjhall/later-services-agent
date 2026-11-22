@@ -82,9 +82,18 @@ describe("deriveProposals", () => {
       expect(cap(below)).not.toBe("within it");
     }
     const primary = boosts.find((o) => o.primary);
+    expect(primary).toBeDefined();
     expect(boost?.evidence.find((e) => e.label === "Proposed spend")?.value).toMatch(
       new RegExp(`^\\${primary?.label.replace("Boost ", "")} of`),
     );
+  });
+
+  test("maxTestSpend is not read yet: changing it changes no proposal", () => {
+    const changed = deriveProposals(world, undefined, undefined, {
+      ...AGENT_POLICY,
+      maxTestSpend: AGENT_POLICY.maxTestSpend * 100,
+    });
+    expect(changed).toEqual(proposals);
   });
 
   test("cap evidence: above, partly within, at, within, and no options, in plain English", () => {
