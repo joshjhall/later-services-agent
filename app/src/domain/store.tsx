@@ -69,10 +69,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (sentNow.current.has(draft.id)) return; // idempotent
         sentNow.current.add(draft.id);
         setSent((s) => ({ ...s, [draft.id]: draft }));
-        if (answers && !resolved[answers.proposal.id]) {
+        if (answers) {
           const { proposal, optionId } = answers;
           const label = proposal.options.find((o) => o.id === optionId)?.label ?? optionId;
-          setResolved((r) => ({ ...r, [proposal.id]: { optionId, label, at: fx.DEMO_TODAY } }));
+          // Checked inside the updater, so an earlier decision always stands.
+          setResolved((r) =>
+            r[proposal.id] ? r : { ...r, [proposal.id]: { optionId, label, at: fx.DEMO_TODAY } },
+          );
         }
         setActivity((a) => [
           {
