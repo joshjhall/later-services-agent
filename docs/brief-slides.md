@@ -39,5 +39,5 @@ Grouped by the core slide each one supports.
 ## Still open
 
 1. **A12 counts** are from `docs/assumptions.md` as of Nov 22. Recount if assumptions change.
-2. **Slides 1 and 3, and A1, A2, and A6, depend on the prototype.** After the palette, rail, and campaign tabs are built, replace the wireframe on slide 3 with a screenshot, or keep the wireframe and point to the live prototype.
+2. **Slides 1 and 3, and A1, A2, and A6, depend on the prototype.** The palette, rail, docked conversation, and campaign tabs are now built. Slide 3 can keep the wireframe and point to the live prototype, or swap in a screenshot; that's a presenter choice. The demo script ([`demo-script.md`](demo-script.md)) walks the prototype in the deck's order.
 3. **Not checked visually by the agent.** Headless Chromium needs system libraries the container lacks, so review it in a browser.

@@ -87,12 +87,13 @@ The campaign's state picks the default tab: Plan until the lineup is approved, M
 
 ## 6. How the prototype maps to this
 
-| IA | Prototype today | Gap |
+| IA | Prototype today | Still a gap |
 | --- | --- | --- |
-| Top nav with Find or ask | Left sidebar, no palette | Add the top bar, breadcrumb and ⌘K |
+| Top nav with Find or ask | Top bar with breadcrumb and Find or ask (⌘K or `/`); the palette offers Go to, Do, and "Start a conversation about…" | The left sidebar stays alongside, so the existing navigation keeps working |
 | Portfolio grouped by need | `#today`, grouped by `needOf` in `app/src/agent/needs.ts`; ranked within each group | Do a thing has no task source yet beyond below-forecast |
 | Account | `#account/<id>` | — |
 | Campaign: Plan and Make | `#campaign/<id>/plan` and `/make`; Plan links to `#goal` and `#lineup` | Goal and lineup open as their own screens, not embedded |
-| Campaign: Run (Measure, Amplify) | `#campaign/<id>/run`: KPI pacing, reserve, and boost and below-forecast cards | Per-asset results and comparable campaigns |
+| Campaign: Run (Measure, Amplify) | `#campaign/<id>/run`: KPI pacing, reserve, and boost and below-forecast cards | Per-asset results |
 | Asset | Within campaign rows | — (cut) |
-| Rail | None | 2–3 widgets on the campaign and lineup screens |
+| Rail | 2–4 widgets chosen by a rule (`selectRail()` in `app/src/components/rail/select.ts`): summary, compare to similar campaigns, next scheduled message, and recent activity; no rail on goal, roster, or activity | The rule is hand-written; the creator-history widget for an asset doesn't exist |
+| Conversation | Docks in the rail and follows the page; scripted answers in text or the compare widget | Answers are scripted, not generated |

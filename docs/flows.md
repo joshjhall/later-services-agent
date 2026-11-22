@@ -215,7 +215,7 @@ flowchart TB
     s6[Client<br/>requests]
   end
   s1 & s2 & s3 & s4 & s5 & s6 --> AG[Agent]
-  AG -->|handled alone| LOG[(Agent log,<br/>undoable)]
+  AG -->|handled alone| LOG[(Activity,<br/>undoable)]
   AG -->|needs a decision| QUEUE[Decision queue,<br/>ranked by consequence × time]
   QUEUE --> W1[Today:<br/>cross-account]
   QUEUE --> W2[Account view:<br/>campaign widgets in state]

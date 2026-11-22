@@ -41,7 +41,7 @@ The primary persona is the person the screens are designed for. Secondary person
 
 **Context.** Desktop, many tabs, constant interruptions. Works in five-minute gaps between calls, so every card has to stand alone.
 
-**What the design gives her:** the decision queue, the two review patterns, the call brief, the agent log, per-action autonomy.
+**What the design gives her:** the decision queue, the two review patterns, the call brief, the Activity record, per-action autonomy.
 
 **What would change this persona:** if AMs turn out to hand the queue to coordinators entirely, the coordinator becomes primary and the AM view becomes a portfolio summary.
 

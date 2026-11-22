@@ -65,7 +65,7 @@ clicks: 1
 
 <div class="log mt-6">
 <div v-click="1" class="entry"><span class="t">Mon 9:02</span><span class="what">Draft reminder sent to Ana · from Maya's team</span><span class="chip rule">system</span></div>
-<div v-click="2" class="entry"><span class="t">Tue 14:40</span><span class="what">Called Ana · draft moved to Thursday</span><span class="chip human">Jordan</span></div>
+<div v-click="2" class="entry"><span class="t">Tue 14:40</span><span class="what">Called Ana · no answer, left voicemail</span><span class="chip human">Jordan</span></div>
 <div v-click="3" class="entry"><span class="t">Wed 10:15</span><span class="what">Fix request sent to Rio · from Maya's team</span><span class="chip agent">agent</span></div>
 <div v-click="4" class="entry"><span class="t">Wed 16:30</span><span class="what">Lineup approved · Holiday gifting</span><span class="chip human">Maya</span></div>
 </div>
