@@ -436,6 +436,25 @@ test("store: a double click within one render still records one entry", async ()
   expect(result.current.resolved[p.id].optionId).toBe(p.options[0].id);
 });
 
+test("store: a sent answer and a later resolve of the same proposal record the decision once", async () => {
+  const { renderHook } = await import("@testing-library/react");
+  const { StoreProvider, useStore } = await import("@/domain/store");
+  const { messageDrafts } = await import("@/agent/drafts");
+  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
+  const p = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
+  if (!p) throw new Error("info request missing");
+  const before = result.current.activity.length;
+  // In one render: the send lands first, so the resolve is a no-op.
+  act(() => {
+    result.current.send(messageDrafts["info:cr-ana"], { proposal: p, optionId: "draft-email" });
+    result.current.resolve(p, "confirmed");
+  });
+  act(() => result.current.resolve(p, "confirmed"));
+  // One entry: the message that went out. No separate "Chose" entry.
+  expect(result.current.activity.length).toBe(before + 1);
+  expect(result.current.resolved[p.id].optionId).toBe("draft-email");
+});
+
 test("store: live entry ids stay unique and never reuse the seeded act-N form", async () => {
   const { renderHook } = await import("@testing-library/react");
   const { StoreProvider, useStore } = await import("@/domain/store");
