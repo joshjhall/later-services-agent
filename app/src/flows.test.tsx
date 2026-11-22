@@ -55,6 +55,16 @@ test("reviewing the lineup: conflicted creator starts removed; fees update live"
   expect(screen.getByRole("button", { name: /Approve lineup/ })).toBeEnabled();
 });
 
+test("reviewing the lineup: an incomplete candidate shows its gaps and can still join", () => {
+  renderApp();
+  go("#lineup/cmp-holiday-gifting");
+  expect(screen.getByText("Needs: rate and usage rights")).toBeInTheDocument();
+  const hana = within(screen.getByRole("radiogroup", { name: "Role for Hana Sato" }));
+  expect(hana.getByRole("radio", { name: "In lineup" })).toHaveAttribute("aria-checked", "true");
+  expect(screen.getByText("1 member still needs details")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /Approve lineup/ })).toBeEnabled();
+});
+
 test("hard moment: Call opens the brief, and the outcome resolves the escalation", () => {
   renderApp();
   const card = screen.getByText(/Ana Reyes is quiet/).closest("[data-severity]") as HTMLElement;
@@ -72,6 +82,11 @@ test("lineup totals block approval when creator fees exceed the budget", async (
   const { lineupDrafts } = await import("@/agent/drafts");
   const { candidates } = lineupDrafts["cmp-holiday-gifting"];
   const all = Object.fromEntries(candidates.map((c) => [c.handle, "core" as const]));
-  expect(lineupTotals(candidates, all, 72_000)).toMatchObject({ fees: 58_000, over: false });
+  // Hana's open rate and usage rights are counted but don't block approval.
+  expect(lineupTotals(candidates, all, 72_000)).toMatchObject({
+    fees: 58_000,
+    over: false,
+    open: 1,
+  });
   expect(lineupTotals(candidates, all, 50_000)).toMatchObject({ over: true });
 });

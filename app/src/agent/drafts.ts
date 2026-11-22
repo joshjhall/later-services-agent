@@ -69,6 +69,8 @@ export interface LineupCandidate {
   fromRoster: boolean;
   criteria: { label: string; fit: Fit; note: string }[];
   flag?: string;
+  /** Details still open (e.g. rate, usage rights). Don't block adding them to the lineup. */
+  missing?: string[];
 }
 
 export interface LineupDraft {
@@ -168,6 +170,7 @@ export const lineupDrafts: Record<string, LineupDraft> = {
           "One 2024 post flagged for profanity; reviewed, low risk",
           "No history with us; 2 references",
         ]),
+        missing: ["rate", "usage rights"],
       },
       {
         creatorName: "Theo Grant",

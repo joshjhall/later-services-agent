@@ -27,8 +27,12 @@ export function lineupTotals(
     fees,
     backups: Object.values(picks).filter((p) => p === "backup").length,
     over: fees > feeBudget,
+    /** Lineup members with open details. Shown, never a gate. */
+    open: core.filter((c) => c.missing?.length).length,
   };
 }
+
+const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
 
 const FIT: Record<Fit, { label: string; cls: string }> = {
   met: { label: "Met", cls: "bg-success-container text-on-success-container" },
@@ -90,6 +94,11 @@ export function LineupView({ id }: { id: string }) {
                     ) : (
                       <Badge variant="outline">New to us</Badge>
                     )}
+                    {c.missing?.length ? (
+                      <Badge className="bg-warning-container text-on-warning-container">
+                        Needs: {listFormat.format(c.missing)}
+                      </Badge>
+                    ) : null}
                     <span className="ml-auto text-sm tabular-nums text-muted-foreground">
                       {fmt(c.fee, "$")} · reach ~{c.forecastReach}
                     </span>
@@ -171,6 +180,15 @@ export function LineupView({ id }: { id: string }) {
                 {fmt(totals.fees, "$")} / {fmt(draft.budget.creatorFees, "$")}
               </span>
             </div>
+            {totals.open > 0 && (
+              <div className="flex justify-between">
+                <span>Open items</span>
+                <span>
+                  {totals.open} {totals.open === 1 ? "member still needs" : "members still need"}{" "}
+                  details
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span>Amplification reserve</span>
               <span className="tabular-nums">{fmt(draft.budget.reserve, "$")}</span>
