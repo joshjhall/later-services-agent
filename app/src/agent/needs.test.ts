@@ -9,6 +9,7 @@ test("needOf sorts every kind into a need", () => {
   expect(needOf(p("state-goal"))).toBe("now");
   expect(needOf(p("review-draft"))).toBe("ready");
   expect(needOf(p("boost-post"))).toBe("ready");
+  expect(needOf(p("info-request"))).toBe("ready");
   expect(needOf(p("quiet-creator", "warning"))).toBe("waiting");
   expect(needOf(p("below-forecast", "warning"))).toBe("todo");
 });
@@ -33,6 +34,7 @@ test("each proposal kind lands on the tab of its phase", () => {
   expect(PROPOSAL_PHASE).toEqual({
     "state-goal": "Plan",
     "approve-lineup": "Plan",
+    "info-request": "Plan",
     "quiet-creator": "Make",
     "review-draft": "Make",
     "boost-post": "Run",

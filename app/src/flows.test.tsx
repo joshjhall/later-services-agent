@@ -348,7 +348,10 @@ test("store: an option it can't match is recorded as permanent, never undoable",
 
 test("today: proposals sit under need headings, and on-track campaigns collapse to a count", () => {
   renderApp();
-  const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+  // Only the need sections' own headings: other UI (dialogs) may add h2s.
+  const headings = Array.from(document.querySelectorAll('h2[id^="need-"]')).map(
+    (h) => h.textContent,
+  );
   expect(headings[0]).toMatch(/^Needs you now/);
   const order = [
     "Needs you now",

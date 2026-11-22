@@ -26,6 +26,7 @@ export function needOf(p: Pick<Proposal, "kind" | "severity">): Need {
       return "now"; // blocked until you decide
     case "review-draft":
     case "boost-post":
+    case "info-request": // a quick confirmation the agent has teed up
       return "ready";
     case "quiet-creator":
       return "waiting";
@@ -57,6 +58,7 @@ export function groupByNeed<P extends Pick<Proposal, "kind" | "severity">>(
 export const PROPOSAL_PHASE: Record<Proposal["kind"], CampaignPhase> = {
   "state-goal": "Plan",
   "approve-lineup": "Plan",
+  "info-request": "Plan", // about a creator in the proposed lineup
   "quiet-creator": "Make",
   "review-draft": "Make",
   "boost-post": "Run",
