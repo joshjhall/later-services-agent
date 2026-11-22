@@ -10,6 +10,9 @@ const go = (hash: string) =>
     window.dispatchEvent(new HashChangeEvent("hashchange"));
   });
 
+/** The core view, not the context rail. The innermost <main> is ShellLayout's. */
+const core = () => screen.getAllByRole("main").at(-1) as HTMLElement;
+
 const renderApp = () =>
   render(
     <ThemeProvider>
@@ -71,7 +74,9 @@ test("reviewing the lineup: an incomplete candidate shows its gaps and can still
 
 test("hard moment: Call opens the brief, and the outcome resolves the escalation", () => {
   renderApp();
-  const card = screen.getByText(/Ana Reyes is quiet/).closest("[data-severity]") as HTMLElement;
+  const card = within(core())
+    .getByText(/Ana Reyes is quiet/)
+    .closest("[data-severity]") as HTMLElement;
   fireEvent.click(within(card).getByRole("button", { name: "Call Ana" }));
   const sheet = screen.getByRole("dialog");
   expect(within(sheet).getByText(/Call brief: Ana/)).toBeInTheDocument();
@@ -350,7 +355,9 @@ test("undo rule and the #log alias", async () => {
 
 test("activity: the outcome of a call is recorded as permanent", () => {
   renderApp();
-  const card = screen.getByText(/Ana Reyes is quiet/).closest("[data-severity]") as HTMLElement;
+  const card = within(core())
+    .getByText(/Ana Reyes is quiet/)
+    .closest("[data-severity]") as HTMLElement;
   fireEvent.click(within(card).getByRole("button", { name: "Call Ana" }));
   fireEvent.click(
     within(screen.getByRole("dialog")).getByRole("button", { name: /She'll deliver Friday/ }),
@@ -500,7 +507,9 @@ test("today: on track is empty while every campaign has a card, and heading coun
     );
   const before = nowCount();
   // Resolving a card drops the heading count, but the campaign stays out of On track.
-  const card = screen.getByText(/Ana Reyes is quiet/).closest("[data-severity]") as HTMLElement;
+  const card = within(core())
+    .getByText(/Ana Reyes is quiet/)
+    .closest("[data-severity]") as HTMLElement;
   fireEvent.click(within(card).getByRole("button", { name: "Extend 2 days" }));
   expect(nowCount()).toBe(before - 1);
   expect(screen.getByRole("button", { name: "On track · 0 campaigns" })).toBeInTheDocument();

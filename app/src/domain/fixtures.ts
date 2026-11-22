@@ -1,4 +1,14 @@
-import type { Account, ActivityEntry, Campaign, Creator, Deliverable, Partnership } from "./types";
+import type {
+  Account,
+  ActivityEntry,
+  Benchmark,
+  Campaign,
+  Comparison,
+  Creator,
+  Deliverable,
+  Partnership,
+  ScheduledMessage,
+} from "./types";
 
 /** The demo's "today". Every date below is relative to it. */
 export const DEMO_TODAY = "2026-11-18";
@@ -316,3 +326,79 @@ export const activity: ActivityEntry[] = [
     effect: "external",
   },
 ];
+
+/** Messages the agent has queued (Invented). The rail shows the next one in scope. */
+export const scheduledMessages: ScheduledMessage[] = [
+  {
+    id: "sched-sky-brief",
+    campaignId: "cmp-sparkling-launch",
+    sendAt: "2026-11-20",
+    kind: "creator brief",
+    to: "Sky Lee",
+    target: "Sky Lee · Sparkling Citrus",
+    subject: "Your Sparkling Citrus brief: wave 2",
+    body: [
+      "Hi Sky,",
+      "",
+      "Here's the brief for wave 2. Three things matter most: the can on camera in the first 3 seconds, the line “bright, not sweet”, and #ad on screen.",
+      "",
+      "Draft due Dec 1, live Dec 5.",
+      "",
+      "Maya",
+    ].join("\n"),
+  },
+  {
+    id: "sched-trail-recap",
+    campaignId: "cmp-trail-season",
+    sendAt: "2026-11-21",
+    kind: "client email",
+    to: "Sam Patel, Northwind Outdoor",
+    target: "Trail season",
+    subject: "Trail season: weekly recap",
+    body: [
+      "Hi Sam,",
+      "",
+      "This week: attributed revenue reached $61k of $250k, and CTR is 0.7% against a 1.2% target. We're testing a second hook with two creators and will share results Monday.",
+      "",
+      "Maya",
+    ].join("\n"),
+  },
+];
+
+/**
+ * Similar past campaigns on the headline metric (Invented). Counts are chosen so the
+ * compare widget shows each layout: Sparkling has many, Trail season one, others none.
+ */
+export const comparisons: Comparison[] = [
+  {
+    campaignId: "cmp-sparkling-launch",
+    metric: "Engagement rate",
+    unit: "%",
+    value: 5.1,
+    peers: [
+      { name: "Cold brew summer", value: 6.2 },
+      { name: "Zero-sugar relaunch", value: 5.6 },
+      { name: "Lime seltzer launch", value: 4.9 },
+      { name: "Festival sampling", value: 4.6 },
+      { name: "Back to school", value: 4.2 },
+      { name: "Tropical line", value: 3.9 },
+      { name: "Winter warmers", value: 3.5 },
+      { name: "Game day", value: 3.1 },
+      { name: "Hydration week", value: 2.8 },
+    ],
+  },
+  {
+    campaignId: "cmp-trail-season",
+    metric: "CTR",
+    unit: "%",
+    value: 0.7,
+    peers: [{ name: "Spring trail kit", value: 1.1 }],
+  },
+];
+
+/** Category benchmarks by industry, the fallback when nothing comparable exists (Invented). */
+export const benchmarks: Record<string, Benchmark> = {
+  Beverage: { metric: "Engagement rate", unit: "%", value: 4.1 },
+  "Outdoor apparel": { metric: "CTR", unit: "%", value: 0.9 },
+  Beauty: { metric: "Engagement rate", unit: "%", value: 3.8 },
+};

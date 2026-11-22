@@ -125,3 +125,31 @@ export interface ActivityEntry {
 
 /** What has happened outside the system is permanent; a correction is a new action. */
 export const isUndoable = (e: Pick<ActivityEntry, "effect">): boolean => e.effect === "internal";
+
+/** A message the agent has queued to go out on a date. Same shape as a reviewable draft. */
+export interface ScheduledMessage {
+  id: string;
+  campaignId: string;
+  sendAt: ISODate;
+  kind: "creator brief" | "client email";
+  to: string;
+  target: string;
+  subject: string;
+  body: string;
+}
+
+/** One campaign's result next to similar past campaigns on the same metric. */
+export interface Comparison {
+  campaignId: string;
+  metric: string;
+  unit?: Kpi["unit"];
+  value: number;
+  peers: { name: string; value: number }[];
+}
+
+/** What to compare against when there are no similar campaigns yet. */
+export interface Benchmark {
+  metric: string;
+  unit?: Kpi["unit"];
+  value: number;
+}

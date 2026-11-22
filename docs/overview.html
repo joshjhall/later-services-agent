@@ -1021,7 +1021,7 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 </tr>
 </tbody>
 </table></div>
-<p>The campaign's state picks the default tab: Plan until the lineup is approved, Make until the first post is live, Run after that. All three are always one click away. <em>Open question: whether Amplify belongs to the account manager or to Paid Media.</em></p>
+<p>The campaign's state picks the default tab: Plan until the lineup is approved, Make until the first post is live, Run after that. All three are always one click away. A card can belong to a tab the campaign doesn't open on, for example a quiet creator (Make) on a campaign already in Run. The default tab stays tied to the phase, so the screen is predictable; the tab shows a count of open cards, and every card links its campaign name to the tab that holds it. <em>Open question: whether Amplify belongs to the account manager or to Paid Media.</em></p>
 <h2 id="ia-5-the-throughline-always-know-where-you-are-and-whats-next"><span class="hnum">5</span>The throughline: always know where you are and what's next</h2>
 <ul>
 <li><strong>The breadcrumb is the map.</strong> Every screen shows its place in portfolio › account › campaign › asset, and each level is a link.</li>
@@ -1046,8 +1046,8 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 </tr>
 <tr>
 <td>Portfolio grouped by need</td>
-<td><code>#today</code> (ranked queue)</td>
-<td>Group by need, not only by rank</td>
+<td><code>#today</code>, grouped by <code>needOf</code> in <code>app/src/agent/needs.ts</code>; ranked within each group</td>
+<td>Do a thing has no task source yet beyond below-forecast</td>
 </tr>
 <tr>
 <td>Account</td>
@@ -1056,13 +1056,13 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 </tr>
 <tr>
 <td>Campaign: Plan and Make</td>
-<td><code>#goal</code>, <code>#lineup</code>, <code>#campaign/&lt;id&gt;</code></td>
-<td>Unify under one campaign screen with tabs</td>
+<td><code>#campaign/&lt;id&gt;/plan</code> and <code>/make</code>; Plan links to <code>#goal</code> and <code>#lineup</code></td>
+<td>Goal and lineup open as their own screens, not embedded</td>
 </tr>
 <tr>
 <td>Campaign: Run (Measure, Amplify)</td>
-<td>Below-forecast card only</td>
-<td>Stub tab</td>
+<td><code>#campaign/&lt;id&gt;/run</code>: KPI pacing, reserve, and boost and below-forecast cards</td>
+<td>Per-asset results and comparable campaigns</td>
 </tr>
 <tr>
 <td>Asset</td>
@@ -2480,7 +2480,11 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <li>The agent can spend a small, capped test budget (about 5–10% of the amplification reserve) on early micro-experiments across audiences and placements, then propose splitting the remaining spend across 2–5 buckets for a person to approve. <em>Invented; requires whitelisting rights.</em></li>
 <li>The app is organized around four core objects (portfolio › account › campaign › asset) plus a cross-cutting roster. A campaign is a set of asset slots, often over-cast by 20–40% so there are backups. <em>Invented; see <a href="#ia">information-architecture.md</a>.</em></li>
 <li>Layout: top navigation with a visible Find or ask entry point, a core context area of ~70–75% for the work, and a contextual widget rail of ~25–30%. <em>Design decision.</em></li>
-<li>In the pod's view, an action is attributed to a person or to <strong>system</strong>; whether a rule or an agent acted is shown only in the detailed trace (with version, prompt and inputs). Messages outside the pod always come from the account manager's team. <em>Design decision.</em></li>
+<li>During the move to top navigation, the prototype keeps a collapsible left sidebar as secondary navigation (accounts with open-proposal counts, Roster, and Activity). It may go once Find or ask and the portfolio view cover those jumps. <em>Invented.</em></li>
+<li>In the pod's Activity view, every entry names its actor: <strong>system</strong> (a rule), <strong>agent</strong>, or a person by name. The detailed trace (version, prompt, and inputs) sits behind that. Messages outside the pod always come from the account manager's team. <em>Design decision; revised from person-or-system so the record matches the "one record, any actor" slide.</em></li>
+<li>Agent output reaches people in four named classes: actions taken, drafts and proposals, information requests, and summaries in context. Every card names its class. A draft opens in an editable sheet and goes out only when a person presses Send; the send is one permanent entry from the account manager's team, and closing the sheet records nothing. <em>Design decision; see <code>design-system/02-ai/output-classes.md</code>.</em></li>
+<li>An information request states the assumption the agent made and what changes if it's wrong. The demo's example (Ana's audience assumed mostly US from her profile; her manager at "Northstar Talent" can confirm) is <em>Invented</em>. The agent-drafted creator brief exists as a fixture but isn't wired to a button, because briefs go out after the client approves the lineup, which the prototype doesn't model. <em>Invented; a deliberate cut.</em></li>
+<li>Undo follows what an action touched: <strong>internal</strong> (status, pacing, logging) can be undone; <strong>external</strong> (anything sent to a creator or client, including a change agreed on a call) and <strong>spend</strong> are permanent, and a correction is a new entry. <em>Design decision; the effect taxonomy is Invented.</em></li>
 <li>The data model (portfolio › account › campaign › asset, a campaign as slots and candidates) is organized the way I would organize it, not the way Later's data is known to be. It's the assumption I'm least comfortable with. A heuristic review of the current product and a working session with engineering come before any real proposal. <em>Invented; highest-risk assumption.</em></li>
 <li>Most decisions fit four outcomes. Two, three or five are fine in the same pattern; a decision with dozens of possible outcomes needs a different interface. <em>Design decision; to test.</em></li>
 <li>No user research, heuristic review or competitive teardown was done. Low-hanging improvements to the current UI are therefore not proposed. <em>Constraint of the timebox.</em></li>
@@ -2491,6 +2495,14 @@ a:focus-visible { outline: 2px solid var(--md-primary); outline-offset: 3px; bor
 <li>LLM behavior is simulated with scripted, deterministic responses. <em>Constraint of the 2–4 hour timebox.</em></li>
 <li>All brands, creators, campaigns and numbers in the demo are fictional. <em>Invented.</em></li>
 <li>The demo's hard moment is "a creator goes quiet with a deadline close." <em>Design decision.</em></li>
+<li>Find or ask suggestions and conversation answers are scripted: a fixed list of places and actions, and a small table of replies keyed on recognizable questions (<code>app/src/components/palette/</code>). A production build would pass the current object and its data to an agent. <em>Constraint of the timebox.</em></li>
+<li>Creators have no page of their own in the prototype, so choosing a creator in Find or ask goes to the roster. <em>Invented.</em></li>
+<li>The conversation opens full screen; docking it into the rail so it follows you as you navigate (information architecture step 5) is cut for now. <em>Design decision; to build next.</em></li>
+<li>Today groups proposals by need with one rule: anything critical, and any goal or lineup awaiting approval, needs you now; drafts to review, boosts, and information requests are ready to move; a quiet creator is waiting on someone; a below-forecast KPI is a thing to do. Campaigns with nothing open are on track and collapse to a count. <em>Invented</em>; the groups come from <a href="information-architecture.md#3-the-portfolio-groups-by-whats-needed-not-by-name">information-architecture.md §3</a>.</li>
+<li>A campaign opens on its phase tab even when an urgent card sits on another tab. The tab carries a count of open cards, and each card's campaign name links straight to the tab holding it. The alternative, opening on the most urgent tab, was rejected because the default tab would then move as the queue changes. <em>Design decision; to test.</em></li>
+<li>The campaign's Plan tab links to the goal and lineup screens rather than embedding them, so each keeps one heading and one approval gate. <em>Design decision; cut for the timebox.</em></li>
+<li>The context rail picks its widgets with one rule in <code>app/src/components/rail/select.ts</code>: summary first; compare on a single campaign or lineup; the next scheduled message when one is queued; recent activity last. No rail on goal, roster, or activity. A production build would let a model choose among widgets whose declared data fits. <em>Invented; design decision.</em></li>
+<li>Scheduled messages, comparable past campaigns, and category benchmarks are fictional, sized so the compare widget shows each of its layouts (none, one, and several). <em>Invented.</em></li>
 </ul>
 </section>
 <section id="research" class="doc"><header class="doc-head"><p class="kicker">Research</p><p class="doc-title">Sources behind every claim</p><p class="src">Source: <code>docs/discovery/research.md</code></p></header><p class="lede">Public research compiled 2026-11-17 to ground <a href="#framing">framing.md</a>. "Stated" = a public source says it; "inference" = our reading. Several sources are vendor blogs (some selling competing tools); treat benchmarks as directional. Confirm third-party claims before quoting them in the deliverable.</p>

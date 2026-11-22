@@ -2,6 +2,9 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { App } from "@/App";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 
+/** The core view, not the context rail. The innermost <main> is ShellLayout's. */
+const core = () => screen.getAllByRole("main").at(-1) as HTMLElement;
+
 const renderApp = () =>
   render(
     <ThemeProvider>
@@ -27,14 +30,16 @@ beforeEach(() => {
 test("Today shows the quiet-creator escalation first, and injects the palette", () => {
   renderApp();
   expect(screen.getByRole("heading", { level: 1, name: "Today" })).toBeInTheDocument();
-  const first = screen.getAllByText(/is quiet/)[0];
+  const first = within(core()).getAllByText(/is quiet/)[0];
   expect(first).toHaveTextContent("Ana Reyes is quiet");
   expect(document.getElementById("md3-palette")?.textContent).toContain("--primary:");
 });
 
 test("resolving a proposal records it once and logs it", () => {
   renderApp();
-  const card = screen.getByText(/Ana Reyes is quiet/).closest("[data-severity]") as HTMLElement;
+  const card = within(core())
+    .getByText(/Ana Reyes is quiet/)
+    .closest("[data-severity]") as HTMLElement;
   fireEvent.click(within(card).getByRole("button", { name: "Extend 2 days" }));
   expect(within(card).getByText(/Extend 2 days · logged/)).toBeInTheDocument();
   expect(within(card).queryByRole("button", { name: "Swap to Ben" })).toBeNull();
