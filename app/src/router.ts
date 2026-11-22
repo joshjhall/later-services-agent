@@ -50,7 +50,12 @@ export function useRoute(): Route {
 export const LABELS = { activity: "Activity", notFound: "Not found" } as const;
 
 /** One step in the top bar's breadcrumb. `to` is absent on the current page. */
-export type Crumb = { label: string; to?: Route };
+export type Crumb = {
+  label: string;
+  to?: Route;
+  /** Set on the last crumb when the route points at something that no longer exists. */
+  notFound?: true;
+};
 
 type Places = {
   accounts: { id: string; name: string }[];
@@ -60,7 +65,7 @@ type Places = {
 /** Portfolio › account › campaign › step, derived from the route (information-architecture.md §1). */
 export function crumbs(route: Route, world: Places): Crumb[] {
   const trail: Crumb[] = [{ label: "Portfolio", to: { view: "today" } }];
-  const notFound = () => [...trail, { label: LABELS.notFound }];
+  const notFound = () => [...trail, { label: LABELS.notFound, notFound: true as const }];
 
   if (route.view === "roster") trail.push({ label: "Roster", to: route });
   else if (route.view === "activity") trail.push({ label: LABELS.activity, to: route });

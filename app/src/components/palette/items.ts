@@ -122,8 +122,9 @@ type Places = Pick<World, "accounts" | "campaigns">;
 
 /** Breadcrumb labels for the route; a stale or broken link falls back to the portfolio. */
 function placeLabels(route: Route, world: Places): string[] {
-  const labels = crumbs(route, world).map((c) => c.label);
-  return labels.at(-1) === LABELS.notFound ? labels.slice(0, 1) : labels;
+  const trail = crumbs(route, world);
+  const labels = trail.map((c) => c.label);
+  return trail.at(-1)?.notFound ? labels.slice(0, 1) : labels;
 }
 
 /** The current object, named for "Start a conversation about …". */

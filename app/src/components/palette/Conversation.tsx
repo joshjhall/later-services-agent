@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { InputGroup, InputGroupAddon, InputGroupTextarea } from "@/components/ui/input-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { focusFindOrAsk } from "@/shell/FindOrAsk";
 import { type Message, useConversation } from "./chat";
 
 export type { Message } from "./chat";
@@ -121,7 +122,15 @@ export function Conversation({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="inset-0 top-0 left-0 flex h-dvh w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none bg-background p-0 ring-0 sm:max-w-none">
+      <DialogContent
+        // The palette input that opened this has unmounted, so Radix would drop focus on
+        // <body>. Hand it to the Find or ask button so keyboard users keep their place.
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          focusFindOrAsk();
+        }}
+        className="inset-0 top-0 left-0 flex h-dvh w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none bg-background p-0 ring-0 sm:max-w-none"
+      >
         <header className="flex items-start gap-4 border-b px-6 py-3 pr-12">
           <div className="grid flex-1 gap-1">
             <DialogTitle>Conversation</DialogTitle>

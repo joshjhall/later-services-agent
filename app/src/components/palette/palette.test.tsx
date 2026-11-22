@@ -1,16 +1,24 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { toast } from "sonner";
 import * as world from "@/domain/fixtures";
 import { StoreProvider } from "@/domain/store";
 import type { Route } from "@/router";
-import { crumbs, LABELS } from "@/router";
-import { openFindOrAsk } from "@/shell/FindOrAsk";
+import { crumbs, href } from "@/router";
+import { FindOrAskButton, openFindOrAsk, useFindOrAskShortcut } from "@/shell/FindOrAsk";
 import { ConversationProvider, useConversation } from "./chat";
 import { FindOrAskPalette } from "./FindOrAskPalette";
 import { ACTIVITY_LABEL, buildItems, contextLine, filterItems, subjectFor } from "./items";
 import { answerTo, fallbackFor, onSparklingCitrus, replyTo } from "./responses";
 
+// The real Toaster needs matchMedia, which jsdom lacks, so assert the call instead.
+vi.mock("sonner", async (actual) => ({
+  ...(await actual<typeof import("sonner")>()),
+  toast: vi.fn(),
+}));
+
 afterEach(() => {
   location.hash = "";
+  vi.mocked(toast).mockClear();
   vi.restoreAllMocks();
 });
 
@@ -33,7 +41,7 @@ test("a campaign matches by its account's name as well as its own", () => {
 test("every suggestion leads to a page that exists", () => {
   for (const item of items.filter((i) => i.route)) {
     // biome-ignore lint/style/noNonNullAssertion: filtered above
-    expect(crumbs(item.route!, world).at(-1)?.label, item.label).not.toBe(LABELS.notFound);
+    expect(crumbs(item.route!, world).at(-1)?.notFound, item.label).toBeUndefined();
   }
 });
 
@@ -210,16 +218,29 @@ test("each scripted reply matches whole words, not fragments", () => {
   }
 });
 
+function Shortcuts() {
+  useFindOrAskShortcut();
+  return null;
+}
+
+const harness = (route: Route) => (
+  <StoreProvider>
+    <ConversationProvider>
+      <Shortcuts />
+      <FindOrAskButton />
+      <FindOrAskPalette route={route} />
+    </ConversationProvider>
+  </StoreProvider>
+);
+
+/** Render the palette (open) with the shortcut hook and top-bar button; `navigate` changes the route in place. */
 function renderPalette(route: Route = citrus) {
-  const view = render(
-    <StoreProvider>
-      <ConversationProvider>
-        <FindOrAskPalette route={route} />
-      </ConversationProvider>
-    </StoreProvider>,
-  );
+  const view = render(harness(route));
   act(() => openFindOrAsk());
-  return { dialog: screen.getByRole("dialog", { name: "Find or ask" }), ...view };
+  return {
+    dialog: screen.getByRole("dialog", { name: "Find or ask" }),
+    navigate: (to: Route) => view.rerender(harness(to)),
+  };
 }
 
 const options = (dialog: HTMLElement) =>
@@ -270,11 +291,24 @@ test("choosing a suggestion goes there and closes the palette", () => {
   expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
 });
 
-test("Nudge Ana opens Today, where her follow-up decision waits", () => {
-  location.hash = "#activity";
+const doActions = items.filter((i) => i.group === "Do" && i.route);
+
+test.each(doActions.map((i) => [i.label, i] as const))(
+  "%s goes where it points and closes the palette",
+  (label, item) => {
+    location.hash = "#activity"; // every action points somewhere else
+    const { dialog } = renderPalette();
+    fireEvent.click(within(dialog).getByRole("option", { name: label }));
+    // biome-ignore lint/style/noNonNullAssertion: filtered to route-bearing actions
+    expect(location.hash).toBe(href(item.route!));
+    expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
+  },
+);
+
+test("Nudge Ana says her follow-up decision waits in Today", () => {
   const { dialog } = renderPalette();
   fireEvent.click(within(dialog).getByRole("option", { name: "Nudge Ana" }));
-  expect(location.hash).toBe("#today");
+  expect(toast).toHaveBeenCalledWith("Ana is in Today: choose how to follow up.");
 });
 
 test("a new conversation starts with an empty draft", () => {
@@ -296,6 +330,28 @@ test("⌘K does nothing while a conversation is open", () => {
   act(() => openFindOrAsk());
   expect(screen.queryByRole("dialog", { name: "Find or ask" })).toBeNull();
   expect(screen.getByRole("dialog", { name: "Conversation" })).toBeInTheDocument();
+});
+
+test("⌘K is left to the browser while a conversation is open, and claimed otherwise", () => {
+  const { dialog } = renderPalette();
+  fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
+  // fireEvent returns false when the event was default-prevented.
+  expect(fireEvent.keyDown(window, { key: "k", metaKey: true })).toBe(true);
+
+  fireEvent.keyDown(screen.getByRole("dialog", { name: "Conversation" }), { key: "Escape" });
+  expect(fireEvent.keyDown(window, { key: "k", metaKey: true })).toBe(false);
+  expect(screen.getByRole("dialog", { name: "Find or ask" })).toBeInTheDocument();
+});
+
+test("closing a conversation returns focus to the Find or ask button", async () => {
+  const { dialog } = renderPalette();
+  fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
+  fireEvent.keyDown(screen.getByRole("dialog", { name: "Conversation" }), { key: "Escape" });
+  expect(screen.queryByRole("dialog", { name: "Conversation" })).toBeNull();
+  // Radix restores focus on the next tick.
+  await waitFor(() =>
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: /Find or ask/ })),
+  );
 });
 
 test("a blank message isn't sent, and Enter sends without Shift", () => {
@@ -325,20 +381,14 @@ test("a blank message isn't sent, and Enter sends without Shift", () => {
 });
 
 test("the conversation keeps the subject it started from when the route changes", () => {
-  const { dialog, rerender } = renderPalette(today);
+  const { dialog, navigate } = renderPalette(today);
   fireEvent.change(within(dialog).getByRole("combobox"), { target: { value: COMPARE_Q } });
   fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
   const chat = screen.getByRole("dialog", { name: "Conversation" });
   expect(chat).toHaveTextContent(/Whose post do you mean/);
 
   // Browser Back (or any hash change) lands on Sparkling Citrus while the chat is open.
-  rerender(
-    <StoreProvider>
-      <ConversationProvider>
-        <FindOrAskPalette route={citrus} />
-      </ConversationProvider>
-    </StoreProvider>,
-  );
+  navigate(citrus);
   expect(within(chat).getByText(/^About:/)).toHaveTextContent(/^About: Portfolio$/);
 
   fireEvent.change(within(chat).getByRole("textbox", { name: "Message" }), {
@@ -350,15 +400,9 @@ test("the conversation keeps the subject it started from when the route changes"
 });
 
 test("a conversation started on Sparkling Citrus keeps answering about Mei after leaving", () => {
-  const { dialog, rerender } = renderPalette(citrus);
+  const { dialog, navigate } = renderPalette(citrus);
   fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
-  rerender(
-    <StoreProvider>
-      <ConversationProvider>
-        <FindOrAskPalette route={today} />
-      </ConversationProvider>
-    </StoreProvider>,
-  );
+  navigate(today);
   const chat = screen.getByRole("dialog", { name: "Conversation" });
   expect(within(chat).getByText(/^About:/)).toHaveTextContent(
     "About: Portfolio › Brightside Beverages › Sparkling Citrus launch",
@@ -371,17 +415,11 @@ test("a conversation started on Sparkling Citrus keeps answering about Mei after
 });
 
 test("a new conversation picks up the page it was started from", () => {
-  const { dialog, rerender } = renderPalette(citrus);
+  const { dialog, navigate } = renderPalette(citrus);
   fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
   fireEvent.keyDown(screen.getByRole("dialog", { name: "Conversation" }), { key: "Escape" });
 
-  rerender(
-    <StoreProvider>
-      <ConversationProvider>
-        <FindOrAskPalette route={today} />
-      </ConversationProvider>
-    </StoreProvider>,
-  );
+  navigate(today);
   act(() => openFindOrAsk());
   fireEvent.change(screen.getByRole("combobox"), { target: { value: COMPARE_Q } });
   fireEvent.click(screen.getByRole("option", { name: /Start a conversation/ }));
