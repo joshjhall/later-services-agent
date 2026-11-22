@@ -102,3 +102,10 @@ test("lineup totals block approval when creator fees exceed the budget", async (
   );
   expect(lineupTotals(twoOpen, all, 72_000)).toMatchObject({ open: 2 });
 });
+
+test("open-item copy uses the Oxford comma and plural wording", async () => {
+  const { needsLabel, openItemsLabel } = await import("@/views/LineupView");
+  expect(needsLabel(["rate", "usage rights", "term"])).toBe("Needs: rate, usage rights, and term");
+  expect(openItemsLabel(1)).toBe("1 member still needs details");
+  expect(openItemsLabel(2)).toBe("2 members still need details");
+});
