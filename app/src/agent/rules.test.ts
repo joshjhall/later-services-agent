@@ -72,11 +72,14 @@ describe("deriveProposals", () => {
     );
   });
 
-  test("withinCap compares in whole dollars, as the cap row does", () => {
+  test("withinCap rounds only toward caution: amount up, cap down", () => {
     expect(withinCap(4000, { maxDailySpend: 4000 })).toBe(true);
-    expect(withinCap(4000.4, { maxDailySpend: 4000 })).toBe(true);
-    expect(withinCap(4000.5, { maxDailySpend: 4000 })).toBe(false);
-    expect(withinCap(4001, { maxDailySpend: 4000.5 })).toBe(true);
+    expect(withinCap(4000, { maxDailySpend: 4000.9 })).toBe(true);
+    expect(withinCap(4000.4, { maxDailySpend: 4000 })).toBe(false);
+    // Never a fraction of a dollar over a fractional cap.
+    expect(withinCap(4000.6, { maxDailySpend: 4000.5 })).toBe(false);
+    expect(withinCap(0.4, { maxDailySpend: 0 })).toBe(false);
+    expect(withinCap(0, { maxDailySpend: 0 })).toBe(true);
   });
 
   test("withinCap fails closed on a malformed amount or cap", () => {
@@ -222,16 +225,17 @@ describe("deriveProposals", () => {
     );
   });
 
-  test("cap evidence compares in whole dollars, so the row never contradicts itself", () => {
-    // $5,000 shown against a $5,000 cap reads as within it, from either side of the rounding.
+  test("cap evidence rounds only toward caution, as withinCap does", () => {
+    // Cents over a whole-dollar cap need a person.
     expect(capEvidence([5000.4], { maxDailySpend: 5000 }).value).toBe(
-      "$5,000/day, if spent in one day · within it",
+      "$5,000/day, if spent in one day · above it, so it needs you",
     );
+    // A fractional cap is shown, and compared, rounded down.
     expect(capEvidence([5000], { maxDailySpend: 4999.6 }).value).toBe(
-      "$5,000/day, if spent in one day · within it",
+      "$4,999/day, if spent in one day · above it, so it needs you",
     );
-    expect(capEvidence([5001], { maxDailySpend: 5000 }).value).toMatch(
-      /above it, so it needs you$/,
+    expect(capEvidence([4999], { maxDailySpend: 4999.6 }).value).toBe(
+      "$4,999/day, if spent in one day · within it",
     );
   });
 

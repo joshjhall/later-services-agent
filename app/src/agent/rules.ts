@@ -101,8 +101,9 @@ const list = (xs: string[]) =>
 const isAmount = (n: number) => Number.isFinite(n) && n >= 0;
 
 /**
- * True when the agent may spend this amount on its own: at or under the daily cap, compared in
- * whole dollars, as displayed, so the "Agent cap" row and the option lanes agree at the boundary.
+ * True when the agent may spend this amount on its own: at or under the daily cap, in whole
+ * dollars. Rounding only ever goes toward caution (amount up, cap down, and the row shows the cap
+ * rounded down too), so the "Agent cap" row and the lanes agree and the agent never overspends.
  * A non-finite or negative amount or cap fails closed: it needs a person.
  */
 export const withinCap = (
@@ -111,7 +112,7 @@ export const withinCap = (
 ) =>
   isAmount(amount) &&
   isAmount(policy.maxDailySpend) &&
-  Math.round(amount) <= Math.round(policy.maxDailySpend);
+  Math.ceil(amount) <= Math.floor(policy.maxDailySpend);
 
 /**
  * The "Agent cap" evidence row for a boost: the daily cap, then which amounts fit under it.
@@ -124,8 +125,8 @@ export function capEvidence(
   amounts: number[],
   policy: Pick<AgentPolicy, "maxDailySpend"> = AGENT_POLICY,
 ): Evidence {
-  // Shown in whole dollars; withinCap rounds the same way, so the row never contradicts itself.
-  const cap = Math.round(policy.maxDailySpend);
+  // Shown rounded down, as withinCap compares it, so the row never contradicts itself.
+  const cap = Math.floor(policy.maxDailySpend);
   const within = amounts.filter((n) => withinCap(n, policy));
   const verdict =
     amounts.length === 0 || within.length === 0
