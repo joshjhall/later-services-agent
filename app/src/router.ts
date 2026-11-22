@@ -49,7 +49,7 @@ export function crumbs(route: Route, world: Places): Crumb[] {
   const notFound = () => [...trail, { label: "Not found" }];
 
   if (route.view === "roster") trail.push({ label: "Roster", to: route });
-  else if (route.view === "log") trail.push({ label: "Agent log", to: route });
+  else if (route.view === "activity") trail.push({ label: "Activity", to: route });
   else if (route.view === "account") {
     const account = world.accounts.find((a) => a.id === route.id);
     if (!account) return notFound();

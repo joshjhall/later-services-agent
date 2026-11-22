@@ -115,7 +115,7 @@ test("every destination stays reachable from the sidebar", () => {
     Today: "#today",
     "Brightside Beverages": "#account/acc-brightside",
     Roster: "#roster",
-    "Agent log": "#log",
+    Activity: "#activity",
   };
   for (const [name, target] of Object.entries(links)) {
     expect(screen.getByRole("link", { name })).toHaveAttribute("href", target);

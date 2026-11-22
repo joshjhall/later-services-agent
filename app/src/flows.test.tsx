@@ -124,7 +124,9 @@ test("activity: one record shows system, agent, and named people as explicit act
   renderApp();
   go("#activity");
   expect(screen.getByRole("heading", { level: 1, name: "Activity" })).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: /Activity/ })).toBeInTheDocument();
+  // Sidebar and breadcrumb both link here now that the top bar exists.
+  const links = screen.getAllByRole("link", { name: /Activity/ });
+  expect(links.some((l) => l.getAttribute("href") === "#activity")).toBe(true);
   expect(within(entry(/Draft reminder sent to Ana/)).getByText("system")).toBeInTheDocument();
   expect(within(entry(/Pulled 72h metrics/)).getByText("agent")).toBeInTheDocument();
   expect(within(entry(/Called Ana/)).getByText("Jordan")).toBeInTheDocument();
