@@ -117,6 +117,7 @@ test("each scripted reply matches whole words, not fragments", () => {
   expect(replyTo("How does Ana compare with Ben?", citrus)).toMatch(/Ben is the approved backup/);
   // A compare question that also mentions the week is still a compare question.
   expect(replyTo("How does her Reel compare this week?", citrus)).toMatch(/early performance/);
+  expect(ask("How does her Reel compare this week?")).toMatch(/^Whose post do you mean\?/);
   // Words that only contain a keyword get the fallback.
   // Ana's story needs her name, not just "late".
   for (const q of ["comparable", "analytics", "template", "brisk", "Is the lineup late?"]) {
