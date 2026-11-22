@@ -79,6 +79,6 @@ test("campaign: a KPI with a target of 0 renders without NaN or Infinity", () =>
   // The value itself is unit-tested in kpiPct; here, the bar renders and no NaN leaks.
   const bar = within(run).getByRole("progressbar", { name: "Saves" });
   expect(bar).toHaveAttribute("aria-valuenow", "0");
-  expect(bar.getAttribute("aria-valuetext")).not.toMatch(/NaN|Infinity/);
+  expect(bar).toHaveAttribute("aria-valuetext", "120 of 0");
   expect(run.textContent).not.toMatch(/NaN|Infinity/);
 });
