@@ -39,3 +39,50 @@ test("resolving a proposal records it once and logs it", () => {
   expect(within(card).getByText(/Extend 2 days · logged/)).toBeInTheDocument();
   expect(within(card).queryByRole("button", { name: "Swap to Ben" })).toBeNull();
 });
+
+test("the top bar breadcrumb follows the route", async () => {
+  location.hash = "#lineup/cmp-holiday-gifting";
+  renderApp();
+  const crumb = within(screen.getByRole("navigation", { name: "breadcrumb" }));
+  expect(crumb.getByRole("link", { name: "Brightside Beverages" })).toHaveAttribute(
+    "href",
+    "#account/acc-brightside",
+  );
+  expect(crumb.getByRole("link", { name: "Holiday gifting" })).toHaveAttribute(
+    "href",
+    "#campaign/cmp-holiday-gifting",
+  );
+  expect(crumb.getByText("Lineup")).toHaveAttribute("aria-current", "page");
+});
+
+test("Find or ask opens from the button, ⌘K, and /, but not / while typing", async () => {
+  renderApp();
+  const dialog = () => screen.queryByRole("dialog", { name: "Find or ask" });
+  const close = () => fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+
+  fireEvent.click(screen.getByRole("button", { name: /Find or ask/ }));
+  expect(await screen.findByRole("dialog", { name: "Find or ask" })).toBeInTheDocument();
+  close();
+  expect(dialog()).toBeNull();
+
+  fireEvent.keyDown(document.body, { key: "k", metaKey: true });
+  expect(dialog()).toBeInTheDocument();
+  close();
+
+  fireEvent.keyDown(document.body, { key: "/" });
+  expect(dialog()).toBeInTheDocument();
+  close();
+
+  const input = document.createElement("input");
+  document.body.append(input);
+  fireEvent.keyDown(input, { key: "/" });
+  expect(dialog()).toBeNull();
+  input.remove();
+});
+
+test("every destination stays reachable", () => {
+  renderApp();
+  for (const name of ["Today", "Brightside Beverages", "Roster", "Agent log"]) {
+    expect(screen.getAllByRole("link", { name: new RegExp(name) }).length).toBeGreaterThan(0);
+  }
+});

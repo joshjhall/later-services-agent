@@ -1,4 +1,5 @@
 import { Building2, Inbox, ScrollText, Users } from "lucide-react";
+import type { ReactNode } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,12 +13,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useStore } from "@/domain/store";
 import { href, type Route, useRoute } from "@/router";
+import { FindOrAskPlaceholder, useFindOrAskShortcut } from "@/shell/FindOrAsk";
+import { TopBar } from "@/shell/TopBar";
 import { ThemeControls } from "@/theme/ThemeControls";
 import { AccountView } from "@/views/AccountView";
 import { CampaignView } from "@/views/CampaignView";
@@ -46,8 +48,15 @@ function View({ route }: { route: Route }) {
   }
 }
 
+/** Widgets for the right rail, chosen by context (#11). `null` hides the rail. */
+function railFor(_route: Route): ReactNode {
+  return null;
+}
+
 export function AppShell() {
   const route = useRoute();
+  useFindOrAskShortcut();
+  const rail = railFor(route);
   const { world, proposals, resolved } = useStore();
   const open = proposals.filter((p) => !resolved[p.id]);
   const openFor = (accountId: string) =>
@@ -66,7 +75,6 @@ export function AppShell() {
         <Sidebar>
           <SidebarHeader className="px-4 py-3">
             <span className="text-sm font-semibold">Services Agent</span>
-            <span className="text-xs text-muted-foreground">Maya · Account Manager</span>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
@@ -116,22 +124,28 @@ export function AppShell() {
               </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>
-          <SidebarFooter className="px-3 py-3">
+          <SidebarFooter className="gap-2 px-3 py-3">
+            <span className="text-xs text-muted-foreground">
+              Prototype · fictional data · demo date Nov 18, 2026
+            </span>
             <ThemeControls />
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <div className="flex h-12 items-center gap-2 border-b px-4">
-            <SidebarTrigger />
-            <span className="text-xs text-muted-foreground">
-              Prototype · fictional data · demo date Nov 18, 2026
-            </span>
+          <TopBar route={route} />
+          <div className={rail ? "grid lg:grid-cols-[minmax(0,1fr)_minmax(16rem,28%)]" : undefined}>
+            <main className="mx-auto w-full max-w-6xl p-6">
+              <View route={route} />
+            </main>
+            {rail && (
+              <aside aria-label="Context rail" className="border-l p-4">
+                {rail}
+              </aside>
+            )}
           </div>
-          <main className="mx-auto w-full max-w-6xl p-6">
-            <View route={route} />
-          </main>
         </SidebarInset>
       </SidebarProvider>
+      <FindOrAskPlaceholder />
       <Toaster />
     </TooltipProvider>
   );

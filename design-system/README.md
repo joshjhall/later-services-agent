@@ -31,7 +31,7 @@ Rules for agents:
 ## 04 Components
 
 - [Component template](04-component/_template.md) · [Request template](04-component/_request-template.md)
-- [Button](04-component/button.md) · [Badge](04-component/badge.md)
+- [Button](04-component/button.md) · [Badge](04-component/badge.md) · [Breadcrumb](04-component/breadcrumb.md)
 
 ## 05 Content
 
