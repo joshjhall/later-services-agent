@@ -1,8 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
 import { type MessageDraft, messageDrafts } from "@/agent/drafts";
-import type { Proposal } from "@/agent/rules";
+import { AGENT_POLICY, deriveProposals, type Proposal } from "@/agent/rules";
 import * as fx from "@/domain/fixtures";
-import { StoreProvider, useStore } from "@/domain/store";
+import { autoRun, StoreProvider, useStore } from "@/domain/store";
 import { isUndoable } from "@/domain/types";
 
 // The rail scopes activity by `campaignId`; an entry without it falls back to
@@ -150,4 +150,30 @@ test("store: an option it can't match is recorded as permanent, never undoable",
   act(() => result.current.resolve(p, "no-such-option"));
   expect(result.current.activity[0]).toMatchObject({ actor: "Maya", effect: "external" });
   expect(isUndoable(result.current.activity[0])).toBe(false);
+});
+
+test("store: at the default cap the agent runs nothing on its own", () => {
+  expect(autoRun(deriveProposals(fx))).toEqual({ resolved: {}, entries: [] });
+});
+
+test("store: a recommended boost within the cap is resolved and logged as the agent's spend", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 8_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const { result } = renderHook(() => useStore(), {
+    wrapper: ({ children }) => <StoreProvider policy={policy}>{children}</StoreProvider>,
+  });
+  expect(result.current.resolved[boost.id]).toMatchObject({ optionId: "boost", by: "agent" });
+  expect(entry(result, `act-auto-${boost.id}`)).toMatchObject({
+    actor: "agent",
+    effect: "spend",
+    campaignId: boost.campaignId,
+  });
+  // Already decided: a later click records nothing new.
+  const before = result.current.activity.length;
+  act(() => result.current.resolve(boost, "smaller"));
+  expect(result.current.activity).toHaveLength(before);
+  expect(result.current.resolved[boost.id].optionId).toBe("boost");
 });

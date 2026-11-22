@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { deriveProposals } from "@/agent/rules";
+import { AGENT_POLICY, deriveProposals } from "@/agent/rules";
 import * as fx from "@/domain/fixtures";
 import { StoreProvider } from "@/domain/store";
 import { ProposalCard } from "./ProposalCard";
@@ -71,4 +71,31 @@ test("the campaign link goes to the card's tab, and is left out if the campaign 
   );
   expect(screen.queryByRole("link", { name: /campaign/i })).toBeNull();
   expect(screen.queryAllByRole("link").filter((a) => !a.textContent?.trim())).toEqual([]);
+});
+
+const boostAt = (maxDailySpend: number) => {
+  const policy = { ...AGENT_POLICY, maxDailySpend };
+  const p = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (x) => x.kind === "boost-post",
+  );
+  if (!p) throw new Error("fixtures should yield a boost-post proposal");
+  render(
+    <StoreProvider policy={policy}>
+      <ProposalCard proposal={p} />
+    </StoreProvider>,
+  );
+};
+
+test("a within-cap option the agent didn't recommend waits for the CM, marked Pre-approved", () => {
+  boostAt(5_000);
+  const group = (name: string) => screen.getByRole("button", { name }).parentElement;
+  expect(group("Boost $4,000")).toHaveTextContent("Pre-approved");
+  expect(group("Boost $8,000")).toHaveTextContent("Needs approval");
+  expect(screen.queryByText("Automatic")).toBeNull();
+});
+
+test("a recommended boost within the cap arrives done by the agent", () => {
+  boostAt(8_000);
+  expect(screen.queryByRole("button", { name: /Boost/ })).toBeNull();
+  expect(screen.getByText(/Boost \$8,000 · done by the agent · logged/)).toBeInTheDocument();
 });

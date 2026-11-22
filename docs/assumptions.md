@@ -45,6 +45,7 @@ These inputs are thin: three conversations and public material, with no time spe
 
 - The agent acts alone on logistics (reminders, receipt tracking, post verification, internal status), proposes judgment calls, and never speaks to the client or commits money without approval in v1. Gated action types graduate to automatic as the record shows they're safe, within code-enforced limits, so escalations stay rare enough to be read. *Design decision.*
 - Autonomy is set per action type and can be raised or revoked. *Design decision.*
+- Within the daily spending cap, the agent carries out its own recommendation without asking and logs it as its own spend. It never spends an amount it didn't recommend: a smaller option that fits the cap stays on the card as **Pre-approved**, for the CM to choose. *Invented.*
 - The reminder cadence before a draft deadline is T-10, T-8 and T-7. The agent escalates when the draft is late and slack to go-live falls below a threshold that depends on the creator's history and whether a backup is available. *Invented.*
 - Every proposal carries per-criterion evidence and a confidence level, not a single opaque score. *Design decision.*
 - The agent consumes the existing draft-review checker and shows exceptions first: what failed, with evidence, and a ready-to-send fix request to the creator. Passing checks collapse. *Design decision, following the CPO's view above.*

@@ -3,6 +3,7 @@ import type { Effect } from "@/domain/types";
 import {
   AGENT_POLICY,
   type AgentPolicy,
+  autoOption,
   capEvidence,
   daysBetween,
   deriveProposals,
@@ -74,6 +75,22 @@ describe("deriveProposals", () => {
     expect(boostAt(10_000)?.evidence.find((e) => e.label === "Agent cap")?.value).toBe(
       "$10,000/day, if spent in one day · within it",
     );
+  });
+
+  test("the agent runs a boost on its own only when its recommendation fits the cap", () => {
+    const boostAt = (maxDailySpend: number) =>
+      deriveProposals(world, undefined, undefined, { ...AGENT_POLICY, maxDailySpend }).find(
+        (p) => p.kind === "boost-post",
+      );
+    const auto = (cap: number) => {
+      const p = boostAt(cap);
+      if (!p) throw new Error("fixtures should yield a boost-post proposal");
+      return autoOption(p)?.id;
+    };
+    expect(auto(AGENT_POLICY.maxDailySpend)).toBeUndefined();
+    // Only the smaller, non-recommended amount fits: never spent unasked.
+    expect(auto(5_000)).toBeUndefined();
+    expect(auto(8_000)).toBe("boost");
   });
 
   test("withinCap rounds only toward caution: amount up, cap down", () => {

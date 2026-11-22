@@ -87,6 +87,17 @@ export interface Proposal {
   ifWrong?: string;
 }
 
+/**
+ * The option the agent carries out on its own, if any: its recommendation (the primary
+ * option) when that is in the auto lane and sends nothing for review. An auto-lane option
+ * that is not the recommendation is never run unasked: the agent does not spend an amount
+ * it did not propose. It stays on the card, pre-approved, for the CM to choose.
+ */
+export const autoOption = (p: Proposal): Option | undefined => {
+  const pick = p.options.find((o) => o.primary);
+  return pick?.lane === "auto" && !pick.draft ? pick : undefined;
+};
+
 const day = 86_400_000;
 export const daysBetween = (a: string, b: string) =>
   Math.round((Date.parse(b) - Date.parse(a)) / day);

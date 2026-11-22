@@ -12,9 +12,22 @@ const LANES = {
   },
 } as const;
 
-/** Who acts: the autonomy split from framing §5, shown on every action. */
-export function LaneBadge({ lane, className }: { lane: Lane; className?: string }) {
-  const { icon: Icon, label, cls } = LANES[lane];
+/**
+ * Who acts: the autonomy split from framing §5, shown on every action. `label` overrides
+ * the lane's wording for one use (an auto-lane option the agent left for the CM reads
+ * "Pre-approved"); the lane's icon and colour stay.
+ */
+export function LaneBadge({
+  lane,
+  label: override,
+  className,
+}: {
+  lane: Lane;
+  label?: string;
+  className?: string;
+}) {
+  const { icon: Icon, label: laneLabel, cls } = LANES[lane];
+  const label = override ?? laneLabel;
   return (
     <span
       className={cn(
