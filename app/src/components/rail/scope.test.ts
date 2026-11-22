@@ -48,23 +48,29 @@ test("scopeOf: goal is one campaign; unknown ids are empty, which hides the rail
   ).toEqual([]);
 });
 
+const sharedPrefix = [
+  { id: "a", name: "Sparkling Citrus" },
+  { id: "b", name: "Sparkling Citrus relaunch" },
+];
+
 test("activityIn scopes by campaign id when names share a prefix", () => {
-  const campaigns = [
-    { id: "a", name: "Sparkling Citrus" },
-    { id: "b", name: "Sparkling Citrus relaunch" },
-  ];
   const entries = [
     { id: "x", target: "Ana Reyes · Sparkling Citrus", campaignId: "a" },
     { id: "y", target: "Ana Reyes · Sparkling Citrus relaunch", campaignId: "b" },
-    { id: "z", target: "Sparkling Citrus relaunch" },
-    // An id outside the scope excludes the entry, even though its text names an in-scope campaign.
-    { id: "w", target: "Sparkling Citrus", campaignId: "other" },
   ] as ActivityEntry[];
-  // With an id, an entry lands only in its own campaign.
-  // Without one, "z" falls back to name matching, which is loose: its target contains both names.
-  // That is a known limitation of the fallback, not a goal; tighten it if entries ever lack ids.
-  expect(activityIn(entries, campaigns, ["a"]).map((e) => e.id)).toEqual(["x", "z"]);
-  expect(activityIn(entries, campaigns, ["b"]).map((e) => e.id)).toEqual(["y", "z"]);
+  expect(activityIn(entries, sharedPrefix, ["a"]).map((e) => e.id)).toEqual(["x"]);
+  expect(activityIn(entries, sharedPrefix, ["b"]).map((e) => e.id)).toEqual(["y"]);
   // An account scope holding both counts each entry once.
-  expect(activityIn(entries, campaigns, ["a", "b"]).map((e) => e.id)).toEqual(["x", "y", "z"]);
+  expect(activityIn(entries, sharedPrefix, ["a", "b"]).map((e) => e.id)).toEqual(["x", "y"]);
+});
+
+test("activityIn excludes an entry whose id is out of scope, even if its text names an in-scope campaign", () => {
+  const entries = [{ id: "w", target: "Sparkling Citrus", campaignId: "other" }] as ActivityEntry[];
+  expect(activityIn(entries, sharedPrefix, ["a"])).toEqual([]);
+});
+
+test("activityIn falls back to name matching for an entry without an id", () => {
+  const entries = [{ id: "z", target: "Rio Castillo · Trail season" }] as ActivityEntry[];
+  expect(activityIn(entries, campaigns, ["cmp-trail-season"]).map((e) => e.id)).toEqual(["z"]);
+  expect(activityIn(entries, campaigns, ["cmp-sparkling-launch"])).toEqual([]);
 });
