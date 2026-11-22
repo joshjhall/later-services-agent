@@ -61,6 +61,8 @@ test("hard moment: Call opens the brief, and the outcome resolves the escalation
   fireEvent.click(within(card).getByRole("button", { name: "Call Ana" }));
   const sheet = screen.getByRole("dialog");
   expect(within(sheet).getByText(/Call brief: Ana/)).toBeInTheDocument();
+  // Same action, same label on the card and in the sheet.
+  expect(within(sheet).getByRole("button", { name: "Swap to Ben" })).toBeInTheDocument();
   fireEvent.click(within(sheet).getByRole("button", { name: /She'll deliver Friday/ }));
   expect(within(card).getByText(/Extend 2 days · logged/)).toBeInTheDocument();
 });

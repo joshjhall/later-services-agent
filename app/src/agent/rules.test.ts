@@ -40,4 +40,14 @@ describe("deriveProposals", () => {
     for (const k of ["state-goal", "approve-lineup", "quiet-creator"] as const)
       expect(kinds).toContain(k);
   });
+
+  test("action hierarchy: every proposal has exactly one primary action", () => {
+    for (const p of proposals) expect(p.options.filter((o) => o.primary)).toHaveLength(1);
+  });
+
+  test("draft review is exceptions first: the fix request leads", () => {
+    const review = proposals.find((p) => p.kind === "review-draft");
+    expect(review?.options.find((o) => o.primary)?.id).toBe("send-fix");
+    expect(review?.evidence[0].tone).toBe("bad");
+  });
 });

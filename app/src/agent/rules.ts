@@ -142,17 +142,18 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
         kind: "review-draft",
         severity: "info",
         campaignId: p.campaignId,
-        title: `Review ${c.name}'s draft`,
-        summary: `${d.kind}. Agent's brief check: 6 of 7 requirements met; disclosure placement needs a look.`,
+        title: `${c.name}'s draft misses 1 of 7 brief checks`,
+        // Exceptions first (framing §7): lead with what failed and a ready
+        // fix request; passing checks collapse to one row.
+        summary: `${d.kind}. Disclosure is in the caption but not on screen. The agent drafted a fix request for ${c.name.split(" ")[0]}.`,
         evidence: [
-          { label: "Key message", value: "Met", tone: "good" },
-          { label: "Product on screen ≥ 3s", value: "Met", tone: "good" },
-          { label: "#ad in first line", value: "Partly: in caption, not on-screen", tone: "bad" },
+          { label: "Disclosure on screen", value: "Not met: caption only", tone: "bad" },
+          { label: "Other brief checks", value: "6 of 6 met", tone: "good" },
         ],
         options: [
-          { id: "approve", label: "Approve", primary: true, lane: "human" },
+          { id: "send-fix", label: "Send fix request", primary: true, lane: "propose" },
           { id: "corrections", label: "Approve with corrections", lane: "human" },
-          { id: "needs-work", label: "Needs work", lane: "human" },
+          { id: "approve", label: "Approve anyway", lane: "human" },
         ],
         confidence: "high",
         dueInDays: Math.max(0, daysBetween(today, d.goLive) - 3),
@@ -240,8 +241,8 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
             { label: "Actual", value: fmt(k.actual, k.unit), tone: "bad" },
           ],
           options: [
-            { id: "plan", label: "See next-wave options", primary: true, lane: "propose" },
-            { id: "note", label: "Note for client update", lane: "human" },
+            { id: "plan", label: "Plan next-wave changes", primary: true, lane: "propose" },
+            { id: "note", label: "Add to client update", lane: "human" },
           ],
           confidence: "medium",
           dueInDays: 3,

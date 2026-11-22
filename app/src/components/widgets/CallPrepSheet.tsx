@@ -29,6 +29,8 @@ export function CallPrepSheet({
 }) {
   const { resolve } = useStore();
   const first = p.title.split(" ")[0];
+  // Reuse the card's own labels so the same action reads the same everywhere.
+  const swap = p.options.find((o) => o.id === "swap");
   const finish = (optionId: string) => {
     resolve(p, optionId);
     onOpenChange(false);
@@ -90,9 +92,11 @@ export function CallPrepSheet({
             <Button size="sm" onClick={() => finish("extend")}>
               <Phone /> She'll deliver Friday
             </Button>
-            <Button size="sm" variant="outline" onClick={() => finish("swap")}>
-              Swap to backup
-            </Button>
+            {swap && (
+              <Button size="sm" variant="outline" onClick={() => finish("swap")}>
+                {swap.label}
+              </Button>
+            )}
             <Button size="sm" variant="ghost" onClick={() => onOpenChange(false)}>
               No answer yet
             </Button>
