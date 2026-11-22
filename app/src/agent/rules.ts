@@ -98,19 +98,28 @@ const list = (xs: string[]) =>
   xs.length < 3 ? xs.join(" and ") : `${xs.slice(0, -1).join(", ")}, and ${xs.at(-1)}`;
 
 /**
+ * True when the agent may spend this amount on its own: at or under the daily cap, compared in
+ * whole dollars, as displayed, so the "Agent cap" row and the option lanes agree at the boundary.
+ */
+export const withinCap = (
+  amount: number,
+  policy: Pick<AgentPolicy, "maxDailySpend"> = AGENT_POLICY,
+) => Math.round(amount) <= Math.round(policy.maxDailySpend);
+
+/**
  * The "Agent cap" evidence row for a boost: the daily cap, then which amounts fit under it.
  * Each amount is compared as if spent in one day, and the row says so: the fixtures carry no
  * boost duration, so a daily rate would be invented. The per-test cap is left out because a
- * boost is not a test. Display only: the cap does not yet change an option's lane.
- * No amounts reads as above the cap.
+ * boost is not a test. The same check (`withinCap`) decides each boost option's lane, so the
+ * row and the buttons never disagree. No amounts reads as above the cap.
  */
 export function capEvidence(
   amounts: number[],
   policy: Pick<AgentPolicy, "maxDailySpend"> = AGENT_POLICY,
 ): Evidence {
-  // Compare in whole dollars, as displayed, so the row never contradicts itself at the cap.
+  // Shown in whole dollars; withinCap rounds the same way, so the row never contradicts itself.
   const cap = Math.round(policy.maxDailySpend);
-  const within = amounts.filter((n) => Math.round(n) <= cap);
+  const within = amounts.filter((n) => withinCap(n, policy));
   const verdict =
     amounts.length === 0 || within.length === 0
       ? "above it, so it needs you"
@@ -290,7 +299,8 @@ export function deriveProposals(
               id: b.id,
               label: `Boost ${usd(b.amount)}`,
               primary: b.primary,
-              lane: "propose",
+              // Enforced, not just shown: within the cap the agent may boost on its own.
+              lane: withinCap(b.amount, policy) ? "auto" : "propose",
               effect: "spend",
             }),
           ),
