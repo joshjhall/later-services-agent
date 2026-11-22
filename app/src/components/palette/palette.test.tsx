@@ -95,6 +95,8 @@ test("each scripted reply matches whole words, not fragments", () => {
   expect(ask("Show risks")).toMatch(/Three things need you/);
   // First match wins: a question naming Ana gets her story even if it mentions risk.
   expect(ask("Is Ana at risk this week?")).toMatch(/Ben is the approved backup/);
+  // A compare question that names its subject isn't met with "whose post?".
+  expect(ask("How does Ana compare with Ben?")).toMatch(/Ben is the approved backup/);
   // Words that only contain a keyword get the fallback.
   // Ana's story needs her name, not just "late".
   for (const q of ["comparable", "analytics", "template", "brisk", "Is the lineup late?"]) {
@@ -233,5 +235,25 @@ test("the conversation keeps the subject it started from when the route changes"
     target: { value: "Compare it with her last three" },
   });
   fireEvent.click(within(chat).getByRole("button", { name: /Send/ }));
+  expect(within(chat).getAllByText(/^Whose post do you mean/)).toHaveLength(2);
   expect(chat).not.toHaveTextContent(/compared early performance/);
+});
+
+test("a conversation started on Sparkling Citrus keeps answering about Mei after leaving", () => {
+  const { dialog, rerender } = renderPalette(citrus);
+  fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
+  rerender(
+    <StoreProvider>
+      <FindOrAskPalette route={today} />
+    </StoreProvider>,
+  );
+  const chat = screen.getByRole("dialog", { name: "Conversation" });
+  expect(within(chat).getByText(/^About:/)).toHaveTextContent(
+    "About: Portfolio › Brightside Beverages › Sparkling Citrus launch",
+  );
+  fireEvent.change(within(chat).getByRole("textbox", { name: "Message" }), {
+    target: { value: COMPARE_Q },
+  });
+  fireEvent.click(within(chat).getByRole("button", { name: /Send/ }));
+  expect(chat).toHaveTextContent(/compared early performance/);
 });
