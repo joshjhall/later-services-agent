@@ -344,6 +344,9 @@ test("⌘K and / are left to the browser while a conversation is open, and claim
   expect(screen.getByRole("dialog", { name: "Conversation" })).toBeInTheDocument();
 
   fireEvent.keyDown(screen.getByRole("dialog", { name: "Conversation" }), { key: "Escape" });
+  expect(fireEvent.keyDown(document.body, { key: "/" })).toBe(false);
+  expect(screen.getByRole("dialog", { name: "Find or ask" })).toBeInTheDocument();
+  fireEvent.keyDown(screen.getByRole("dialog", { name: "Find or ask" }), { key: "Escape" });
   expect(fireEvent.keyDown(window, { key: "k", metaKey: true })).toBe(false);
   expect(screen.getByRole("dialog", { name: "Find or ask" })).toBeInTheDocument();
 });
