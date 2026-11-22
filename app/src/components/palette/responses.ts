@@ -11,18 +11,12 @@ export type ScriptedReply = { match: RegExp; where?: (route: Route) => boolean; 
 
 /** Mei's live Reel belongs to this campaign, so "her last three" only makes sense here. */
 export const onSparklingCitrus = (route: Route) =>
-  "id" in route && route.id === "cmp-sparkling-launch";
+  (route.view === "campaign" || route.view === "goal" || route.view === "lineup") &&
+  route.id === "cmp-sparkling-launch";
 
 const COMPARE = /\bcompare\b|\blast three\b/i;
 
 export const REPLIES: ScriptedReply[] = [
-  {
-    // Ambiguous ask: the agent picks a dimension, says which, and offers the others (principles.md).
-    match: COMPARE,
-    where: onSparklingCitrus,
-    reply:
-      "I compared early performance, since Mei's Reel went live on Nov 15. At day 3 it has 4.1% engagement against an average of 3.2% for her last three Reels at the same point, so it's tracking above her pattern and should land near 1.4M views. I can also compare wording, audience, or expected outcome instead.",
-  },
   {
     match: /\bana\b/i,
     reply:
@@ -33,9 +27,17 @@ export const REPLIES: ScriptedReply[] = [
     reply:
       "Three things need you this week: Ana's overdue draft on Sparkling Citrus, Rio's draft that misses the disclosure check, and the Spring serum goal waiting for client sign-off. Everything else is on track.",
   },
+  // The compare entries come after the ones that name their subject, so
+  // "How does Ana compare with Ben?" gets Ana wherever it's asked.
   {
-    // Nobody is in context here, so ask whose post rather than guess. Kept after the
-    // entries that name their subject, so "How does Ana compare…" still gets Ana.
+    // Ambiguous ask: the agent picks a dimension, says which, and offers the others (principles.md).
+    match: COMPARE,
+    where: onSparklingCitrus,
+    reply:
+      "I compared early performance, since Mei's Reel went live on Nov 15. At day 3 it has 4.1% engagement against an average of 3.2% for her last three Reels at the same point, so it's tracking above her pattern and should land near 1.4M views. I can also compare wording, audience, or expected outcome instead.",
+  },
+  {
+    // Nobody is in context here, so ask whose post rather than guess.
     match: COMPARE,
     reply:
       "Whose post do you mean? The only live post right now is Mei's Reel on Sparkling Citrus launch. Ask from that campaign and I'll compare it with her last three, or name another creator's post.",

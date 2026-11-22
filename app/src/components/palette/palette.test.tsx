@@ -6,7 +6,7 @@ import { crumbs, LABELS } from "@/router";
 import { openFindOrAsk } from "@/shell/FindOrAsk";
 import { FindOrAskPalette } from "./FindOrAskPalette";
 import { ACTIVITY_LABEL, buildItems, contextLine, filterItems, subjectFor } from "./items";
-import { fallbackFor, replyTo } from "./responses";
+import { fallbackFor, onSparklingCitrus, replyTo } from "./responses";
 
 afterEach(() => {
   location.hash = "";
@@ -80,6 +80,23 @@ test("elsewhere, the compare question asks whose post it means instead of assumi
   }
 });
 
+test("only Sparkling Citrus pages count as Mei's campaign", () => {
+  const yes: Route[] = [
+    citrus,
+    { view: "goal", id: "cmp-sparkling-launch" },
+    { view: "lineup", id: "cmp-sparkling-launch" },
+  ];
+  const no: Route[] = [
+    today,
+    { view: "roster" },
+    { view: "activity" },
+    { view: "campaign", id: "cmp-spring-serum" },
+    { view: "account", id: "cmp-sparkling-launch" },
+  ];
+  for (const r of yes) expect(onSparklingCitrus(r), JSON.stringify(r)).toBe(true);
+  for (const r of no) expect(onSparklingCitrus(r), JSON.stringify(r)).toBe(false);
+});
+
 test("the fallback only suggests questions that make sense for the context", () => {
   expect(fallbackFor(citrus)).toMatch(/Mei's Reel compares with her last three/);
   for (const route of [today, { view: "roster" }, { view: "activity" }] as Route[]) {
@@ -95,8 +112,9 @@ test("each scripted reply matches whole words, not fragments", () => {
   expect(ask("Show risks")).toMatch(/Three things need you/);
   // First match wins: a question naming Ana gets her story even if it mentions risk.
   expect(ask("Is Ana at risk this week?")).toMatch(/Ben is the approved backup/);
-  // A compare question that names its subject isn't met with "whose post?".
+  // A compare question that names its subject gets that subject, wherever it's asked.
   expect(ask("How does Ana compare with Ben?")).toMatch(/Ben is the approved backup/);
+  expect(replyTo("How does Ana compare with Ben?", citrus)).toMatch(/Ben is the approved backup/);
   // Words that only contain a keyword get the fallback.
   // Ana's story needs her name, not just "late".
   for (const q of ["comparable", "analytics", "template", "brisk", "Is the lineup late?"]) {
