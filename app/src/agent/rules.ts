@@ -7,8 +7,15 @@
  * Tunables live in AGENT_POLICY so a live demo change is one edit.
  */
 import { DEMO_TODAY } from "@/domain/fixtures";
-import type { Campaign, Creator, Deliverable, Effect, Partnership } from "@/domain/types";
-import { lineupDrafts as defaultLineups, draftFor, type LineupDraft } from "./drafts";
+import type { Account, Campaign, Creator, Deliverable, Effect, Partnership } from "@/domain/types";
+import {
+  audienceMarket,
+  lineupDrafts as defaultLineups,
+  infoRequestDraft,
+  type LineupDraft,
+  type MessageDraft,
+  messageDrafts,
+} from "./drafts";
 
 export const AGENT_POLICY = {
   /** Escalate a quiet creator when go-live is this many days away or fewer. */
@@ -49,6 +56,11 @@ export interface Option {
   lane: Lane;
   /** What choosing this option touches; decides undo in the activity record. Required, so undo is never a silent default. */
   effect: Effect;
+  /**
+   * The message this option sends. An option with a draft opens it for review
+   * instead of resolving in place, and resolves only when it is sent.
+   */
+  draft?: MessageDraft;
 }
 
 export interface Proposal {
@@ -113,6 +125,8 @@ export function capEvidence(
 }
 
 interface World {
+  /** Names the client in generated drafts; optional so a test can pass a smaller world. */
+  accounts?: Account[];
   campaigns: Campaign[];
   creators: Creator[];
   partnerships: Partnership[];
@@ -200,7 +214,9 @@ export function deriveProposals(
       });
     }
 
-    if (d.stage === "submitted") {
+    // Only offer review once a fix request is drafted; otherwise "Send fix request" would log a send that never happened.
+    const fixDraft = messageDrafts[`fix:${d.id}`];
+    if (d.stage === "submitted" && fixDraft) {
       out.push({
         id: `review:${d.id}`,
         kind: "review-draft",
@@ -222,6 +238,7 @@ export function deriveProposals(
             primary: true,
             lane: "propose",
             effect: "external",
+            draft: fixDraft,
           },
           {
             id: "corrections",
@@ -364,19 +381,20 @@ export function deriveProposals(
     for (const cand of lineups[cmp.id]?.candidates ?? []) {
       const c = w.creators.find((x) => x.handle === cand.handle);
       if (cand.role !== "core" || c?.audienceSource !== "profile") continue;
-      const id = `info:${cmp.id}:${c.id}`;
-      // Only ask when there's a drafted email to send; otherwise the option would log a send that never happened.
-      if (!draftFor(id, "draft-email")) continue;
+      const client = w.accounts?.find((a) => a.id === cmp.accountId)?.name;
+      const draft = infoRequestDraft({ creator: c, campaign: cmp, client });
+      const id = draft.id;
       const first = c.name.split(" ")[0];
+      const market = audienceMarket(c);
       out.push({
         id,
         kind: "info-request",
         severity: "info",
         campaignId: cmp.id,
-        title: `Confirm ${first}'s audience is mostly US`,
+        title: `Confirm ${first}'s audience is mostly ${market}`,
         summary: `${first} is in the proposed lineup at ${cand.forecastReach} forecast reach.`,
-        assumption: `I assumed ${first}'s audience is mostly US from the ${c.platform} profile.`,
-        ifWrong: "If it's mostly UK, the lineup's reach estimate drops.",
+        assumption: `I assumed ${first}'s audience is mostly ${market} from the ${c.platform} profile.`,
+        ifWrong: "If it isn't, the lineup's reach estimate drops.",
         evidence: [
           { label: "Profile says", value: c.audience, tone: "neutral" },
           { label: "Who can confirm", value: c.representedBy ?? first, tone: "neutral" },
@@ -388,6 +406,7 @@ export function deriveProposals(
             primary: true,
             lane: "propose",
             effect: "external",
+            draft,
           },
           { id: "confirmed", label: "Mark confirmed", lane: "human", effect: "internal" },
         ],

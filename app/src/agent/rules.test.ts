@@ -249,15 +249,29 @@ describe("deriveProposals", () => {
     expect(count({ ...world, campaigns: pastLineup }, withAna("core"))).toBe(0);
   });
 
-  test("information request: never raised without a drafted email behind it", () => {
-    // Ben is a core lineup member on the roster; flag him as profile-only too. He has no drafted email.
+  test("information request: raised for any profile-only core member, with its own email", () => {
+    // Ben is a core lineup member on the roster; flag him as profile-only too.
     const ben = creators.map((c) =>
       c.handle === "@benpours" ? { ...c, audienceSource: "profile" as const } : c,
     );
-    const ids = deriveProposals({ ...world, creators: ben })
-      .filter((p) => p.kind === "info-request")
-      .map((p) => p.id);
-    expect(ids).toEqual(["info:cmp-holiday-gifting:cr-ana"]);
+    const requests = deriveProposals({ ...world, creators: ben }).filter(
+      (p) => p.kind === "info-request",
+    );
+    expect(requests.map((p) => p.id)).toEqual([
+      "info:cmp-holiday-gifting:cr-ana",
+      "info:cmp-holiday-gifting:cr-ben",
+    ]);
+    const benDraft = requests[1].options.find((o) => o.id === "draft-email")?.draft;
+    expect(benDraft?.id).toBe(requests[1].id);
+    expect(benDraft?.target).toBe("Ben Okafor · Holiday gifting");
+  });
+
+  test("draft review: not raised without a drafted fix request behind it", () => {
+    const noFix = deliverables.map((d) =>
+      d.id === "d-rio-1" ? { ...d, id: "d-rio-undrafted" } : d,
+    );
+    const kinds = deriveProposals({ ...world, deliverables: noFix }).map((p) => p.id);
+    expect(kinds).not.toContain("review:d-rio-undrafted");
   });
 });
 

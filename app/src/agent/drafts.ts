@@ -3,7 +3,7 @@
  * (flows §2) and the proposed lineup (flows §4). Deterministic stand-ins for
  * what an LLM would produce from the brief and the roster.
  */
-import type { Objective } from "@/domain/types";
+import type { Campaign, Creator, Objective } from "@/domain/types";
 
 export interface GoalDraft {
   campaignId: string;
@@ -270,24 +270,6 @@ export const messageDrafts: Record<string, MessageDraft> = {
       "Maya",
     ].join("\n"),
   },
-  "info:cr-ana": {
-    id: "info:cr-ana",
-    kind: "info request",
-    to: "Northstar Talent (Ana Reyes's manager)",
-    target: "Ana Reyes · Holiday gifting",
-    campaignId: "cmp-holiday-gifting",
-    subject: "Quick check on Ana's audience split",
-    body: [
-      "Hi,",
-      "",
-      "We're proposing Ana for Brightside's Holiday gifting campaign, which targets US audiences. Her profile suggests her audience is mostly US. Could you confirm the country split from her latest TikTok analytics?",
-      "",
-      "A screenshot is perfect.",
-      "",
-      "Thanks,",
-      "Maya",
-    ].join("\n"),
-  },
   // Not wired to a button yet: briefs go out after the client approves the lineup.
   "brief:cr-ana": {
     id: "brief:cr-ana",
@@ -311,12 +293,49 @@ export const messageDrafts: Record<string, MessageDraft> = {
   },
 };
 
-/** Which draft a proposal option opens, keyed "<proposal id>/<option id>". */
-const DRAFT_OPTIONS: Record<string, string> = {
-  "review:d-rio-1/send-fix": "fix:d-rio-1",
-  "info:cmp-holiday-gifting:cr-ana/draft-email": "info:cr-ana",
-};
+/** The market a profile's audience line leads with, e.g. "US" from "US, 18–29, 68% women". */
+export const audienceMarket = (creator: Pick<Creator, "audience">): string =>
+  creator.audience.split(",")[0].trim();
 
-/** The draft an option opens instead of resolving in place, if any. */
-export const draftFor = (proposalId: string, optionId: string): MessageDraft | undefined =>
-  messageDrafts[DRAFT_OPTIONS[`${proposalId}/${optionId}`]];
+/**
+ * The email asking someone to confirm a creator's self-reported audience split,
+ * built from the creator and campaign so any lineup member can raise one. Goes to
+ * the talent manager when there is one, otherwise to the creator.
+ */
+export function infoRequestDraft({
+  creator: c,
+  campaign,
+  client,
+}: {
+  creator: Creator;
+  campaign: Pick<Campaign, "id" | "name">;
+  /** The client's name, e.g. "Brightside Beverages"; left out when unknown. */
+  client?: string;
+}): MessageDraft {
+  const first = c.name.split(" ")[0];
+  const market = audienceMarket(c);
+  const forCampaign = client
+    ? `the ${client} ${campaign.name} campaign`
+    : `the ${campaign.name} campaign`;
+  const ask = c.representedBy
+    ? `We're proposing ${first} for ${forCampaign}. ${first}'s ${c.platform} profile suggests the audience is mostly ${market}. Could you confirm the country split from ${first}'s latest ${c.platform} analytics?`
+    : `We'd love to have you in ${forCampaign}. Your ${c.platform} profile suggests your audience is mostly ${market}. Could you confirm the country split from your latest ${c.platform} analytics?`;
+  return {
+    id: `info:${campaign.id}:${c.id}`,
+    kind: "info request",
+    to: c.representedBy ? `${c.representedBy} (${c.name}'s manager)` : c.name,
+    target: `${c.name} · ${campaign.name}`,
+    campaignId: campaign.id,
+    subject: `Quick check on ${first}'s audience split`,
+    body: [
+      c.representedBy ? "Hi," : `Hi ${first},`,
+      "",
+      ask,
+      "",
+      "A screenshot is perfect.",
+      "",
+      "Thanks,",
+      "Maya",
+    ].join("\n"),
+  };
+}
