@@ -32,6 +32,7 @@ export const REPLIES: ScriptedReply[] = [
   {
     // A compare question about another creator: only Mei has a live post, so say so
     // rather than answer about her. Drop a name once that creator has a live post.
+    // Keep this before the Mei entry: a question naming both declines (tested).
     match: comparesCreator("ben|jules|rio|sky"),
     reply: "I only have Mei's Reel live to compare right now.",
   },

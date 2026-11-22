@@ -85,6 +85,9 @@ test("a compare question about another creator gets an honest decline, not Mei's
   for (const route of [citrus, today]) {
     for (const name of ["Ben", "Jules", "Rio", "Sky"]) {
       expect(replyTo(`How does ${name} compare with their last three?`, route), name).toBe(decline);
+      // Mei's comparison is with her own last three, so naming a second creator still declines.
+      expect(replyTo(`How does Mei compare with ${name}?`, route), name).toBe(decline);
+      expect(replyTo(`How does ${name} compare with Mei's Reel?`, route), name).toBe(decline);
     }
     // A Shift+Enter follow-up splits the name and the ask across lines.
     expect(replyTo("Ben?\nHow does he compare with his last three?", route)).toBe(decline);
