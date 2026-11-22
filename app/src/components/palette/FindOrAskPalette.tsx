@@ -37,7 +37,10 @@ export function FindOrAskPalette({ route }: { route: Route }) {
   const inConversation = chat !== null && !docked;
   useEffect(() => {
     if (inConversation) return;
-    const on = () => setOpen(true);
+    const on = (e: Event) => {
+      e.preventDefault(); // claim it: openFindOrAsk() reports that the palette opened
+      setOpen(true);
+    };
     addEventListener(FIND_OR_ASK_OPEN, on);
     return () => removeEventListener(FIND_OR_ASK_OPEN, on);
   }, [inConversation]);
