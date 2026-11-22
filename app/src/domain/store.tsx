@@ -49,6 +49,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [sent, setSent] = useState<Record<string, MessageDraft>>({});
   // Mirrors `sent` synchronously, so a double-click within one render still sends once.
   const sentNow = useRef(new Set<string>());
+  // Mirrors `resolved` the same way, so two resolves within one render record once.
+  const resolvedNow = useRef(new Set<string>());
   const [activity, setActivity] = useState(fx.activity);
   const proposals = useMemo(() => deriveProposals(fx), []);
 
@@ -59,7 +61,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       resolved,
       activity,
       resolve: (p, optionId, action) => {
-        if (resolved[p.id]) return; // idempotent
+        if (resolvedNow.current.has(p.id)) return; // idempotent
+        resolvedNow.current.add(p.id);
         const option = p.options.find((o) => o.id === optionId);
         const label = action ?? option?.label ?? optionId;
         setResolved((r) => ({ ...r, [p.id]: { optionId, label, at: fx.DEMO_TODAY } }));
@@ -83,6 +86,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setSent((s) => ({ ...s, [draft.id]: draft }));
         if (answers) {
           const { proposal, optionId, action } = answers;
+          resolvedNow.current.add(proposal.id);
           const label =
             action ?? proposal.options.find((o) => o.id === optionId)?.label ?? optionId;
           // Checked inside the updater, so an earlier decision always stands.

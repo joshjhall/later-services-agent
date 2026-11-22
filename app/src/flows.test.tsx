@@ -143,12 +143,41 @@ test("activity: one record shows system, agent, and named people as explicit act
 
 test("activity: the seeded record agrees with the campaign data it describes", async () => {
   const fx = await import("@/domain/fixtures");
-  const names = [...fx.creators, ...fx.campaigns].map((x) => x.name);
+  // A creator is named in full; a campaign by its name, or that name less its last
+  // word ("Sparkling Citrus" for "Sparkling Citrus launch"). Never a bare first word.
+  const shortForm = (name: string) => name.split(" ").slice(0, -1).join(" ");
+  const names = (part: string) => [
+    ...fx.creators.filter((c) => c.name === part),
+    ...fx.campaigns.filter(
+      (c) => c.name === part || (part.includes(" ") && shortForm(c.name) === part),
+    ),
+  ];
   for (const e of fx.activity) {
-    // Each target names a real creator or campaign, and nothing is dated in the future.
-    expect(names.some((n) => e.target.includes(n.split(" ")[0]))).toBe(true);
+    // Each part of a target names exactly one creator or campaign, and nothing is dated in the future.
+    for (const part of e.target.split(" · ")) expect(names(part)).toHaveLength(1);
     expect(e.at <= fx.DEMO_TODAY).toBe(true);
   }
+  const seeded = (action: RegExp) => {
+    const found = fx.activity.find((e) => action.test(e.action));
+    if (!found) throw new Error(`No seeded entry matches ${action}`);
+    return found;
+  };
+  const deliverable = (id: string) => {
+    const found = fx.deliverables.find((d) => d.id === id);
+    if (!found) throw new Error(`No deliverable ${id}`);
+    return found;
+  };
+  // Rio's draft was received the day of his last contact, and is waiting on review.
+  const rio = deliverable("d-rio-1");
+  expect(seeded(/Logged draft receipt/).at).toBe(rio.lastCreatorContact);
+  expect(rio.stage).toBe("submitted");
+  // Mei's post went live the day the check started, and isn't verified yet.
+  const mei = deliverable("d-mei-1");
+  expect(seeded(/Started live-post check/).at).toBe(mei.goLive);
+  expect(mei.stage).toBe("live");
+  // Maya approved Mei's draft after it was due in and before it went live.
+  const approved = seeded(/Approved Mei's draft/).at;
+  expect(approved >= mei.draftDue && approved <= mei.goLive).toBe(true);
   // Ana is quiet: no one has reached her since her last contact.
   const ana = fx.deliverables.find((d) => d.id === "d-ana-1");
   const anaContact = fx.activity.filter(
@@ -167,6 +196,7 @@ test("activity: internal actions can be undone; anything sent is permanent", () 
   const reminder = entry(/Draft reminder sent to Ana/);
   expect(within(reminder).queryByRole("button", { name: /Undo/ })).toBeNull();
   expect(reminder).toHaveTextContent("Permanent");
+  expect(reminder).not.toHaveTextContent("Spent");
 });
 
 test("draft: a fix request opens an editable draft, and sending records it once", () => {
@@ -187,6 +217,7 @@ test("draft: a fix request opens an editable draft, and sending records it once"
   expect(within(sent).getByText("Maya")).toBeInTheDocument();
   expect(within(sent).queryByRole("button", { name: /Undo/ })).toBeNull();
   expect(sent).toHaveTextContent("Permanent");
+  expect(sent).not.toHaveTextContent("Spent");
   // One record per send: no separate "Chose" entry for the same decision.
   expect(screen.queryByText(/Chose "Send fix request"/)).toBeNull();
 });
@@ -367,6 +398,7 @@ test("activity: the outcome of a call is recorded as permanent", () => {
   expect(within(outcome).getByText("Maya")).toBeInTheDocument();
   expect(within(outcome).queryByRole("button", { name: /Undo/ })).toBeNull();
   expect(outcome).toHaveTextContent("Permanent");
+  expect(outcome).not.toHaveTextContent("Spent");
 });
 
 test("activity: spending from the reserve is recorded as permanent", () => {
@@ -388,6 +420,98 @@ test("activity: a decision that stays inside the tool can be undone", async () =
   expect(within(decision).getByText("Maya")).toBeInTheDocument();
   fireEvent.click(within(decision).getByRole("button", { name: /Undo/ }));
   expect(await screen.findByText("Undo is simulated in the prototype.")).toBeInTheDocument();
+});
+
+test("store: resolving a proposal twice records one entry", async () => {
+  const { renderHook } = await import("@testing-library/react");
+  const { StoreProvider, useStore } = await import("@/domain/store");
+  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
+  const p = result.current.proposals[0];
+  const before = result.current.activity.length;
+  act(() => result.current.resolve(p, p.options[0].id));
+  act(() => result.current.resolve(p, p.options[0].id));
+  expect(result.current.activity.length).toBe(before + 1);
+});
+
+test("store: a double click within one render still records one entry", async () => {
+  const { renderHook } = await import("@testing-library/react");
+  const { StoreProvider, useStore } = await import("@/domain/store");
+  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
+  const p = result.current.proposals[0];
+  const before = result.current.activity.length;
+  act(() => {
+    result.current.resolve(p, p.options[0].id);
+    result.current.resolve(p, p.options[1].id);
+  });
+  expect(result.current.activity.length).toBe(before + 1);
+  expect(result.current.resolved[p.id].optionId).toBe(p.options[0].id);
+});
+
+test("store: a sent answer and a later resolve of the same proposal record the decision once", async () => {
+  const { renderHook } = await import("@testing-library/react");
+  const { StoreProvider, useStore } = await import("@/domain/store");
+  const { messageDrafts } = await import("@/agent/drafts");
+  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
+  const p = result.current.proposals.find((x) => x.id === "info:cmp-holiday-gifting:cr-ana");
+  if (!p) throw new Error("info request missing");
+  const before = result.current.activity.length;
+  // In one render: the send lands first, so the resolve is a no-op.
+  act(() => {
+    result.current.send(messageDrafts["info:cr-ana"], { proposal: p, optionId: "draft-email" });
+    result.current.resolve(p, "confirmed");
+  });
+  act(() => result.current.resolve(p, "confirmed"));
+  // One entry: the message that went out. No separate "Chose" entry.
+  expect(result.current.activity.length).toBe(before + 1);
+  expect(result.current.resolved[p.id].optionId).toBe("draft-email");
+});
+
+test("store: live entry ids stay unique and never reuse the seeded act-N form", async () => {
+  const { renderHook } = await import("@testing-library/react");
+  const { StoreProvider, useStore } = await import("@/domain/store");
+  const { messageDrafts } = await import("@/agent/drafts");
+  const fx = await import("@/domain/fixtures");
+  const { result } = renderHook(() => useStore(), { wrapper: StoreProvider });
+  for (const p of result.current.proposals) {
+    act(() => result.current.resolve(p, p.options[0].id));
+  }
+  act(() => result.current.send(messageDrafts["info:cr-ana"]));
+  const ids = result.current.activity.map((e) => e.id);
+  expect(new Set(ids).size).toBe(ids.length);
+  const seeded = new Set(fx.activity.map((e) => e.id));
+  const live = ids.filter((id) => !seeded.has(id));
+  // One entry per decision and per send, keyed by what it records.
+  expect(live.toSorted()).toEqual(
+    [...result.current.proposals.map((p) => `act-${p.id}`), "act-sent-info:cr-ana"].toSorted(),
+  );
+  for (const id of live) expect(id).not.toMatch(/^act-\d+$/);
+});
+
+test("activity: only spending reads Spent; other permanent entries never do", async () => {
+  const fx = await import("@/domain/fixtures");
+  renderApp();
+  const card = screen.getByText(/post from reserve/).closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Boost $8,000" }));
+  go("#activity");
+  // Newest first: the boost, then the seeded record, in order.
+  const effects = ["spend", ...fx.activity.map((e) => e.effect)];
+  const entries = screen.getAllByTestId("activity-entry");
+  expect(entries).toHaveLength(effects.length);
+  entries.forEach((el, i) => {
+    const undo = within(el).queryByRole("button", { name: /Undo/ });
+    if (effects[i] === "internal") {
+      expect(undo).not.toBeNull();
+      expect(el).not.toHaveTextContent("Permanent");
+      return;
+    }
+    expect(undo).toBeNull();
+    if (effects[i] === "spend") expect(el).toHaveTextContent("Permanent: Spent");
+    else {
+      expect(el).toHaveTextContent("Permanent");
+      expect(el).not.toHaveTextContent("Spent");
+    }
+  });
+  expect(entries[0]).toHaveTextContent(/Chose "Boost \$8,000"/);
 });
 
 test("today: the handled count is the agent's own work, not people's decisions", () => {
