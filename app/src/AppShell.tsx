@@ -1,5 +1,6 @@
 import { Building2, Inbox, ScrollText, Users } from "lucide-react";
 import type { ReactNode } from "react";
+import { FindOrAskPalette } from "@/components/palette/FindOrAskPalette";
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +19,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useStore } from "@/domain/store";
 import { href, type Route, useRoute } from "@/router";
-import { FindOrAskPlaceholder, useFindOrAskShortcut } from "@/shell/FindOrAsk";
+import { useFindOrAskShortcut } from "@/shell/FindOrAsk";
 import { ShellLayout } from "@/shell/ShellLayout";
 import { TopBar } from "@/shell/TopBar";
 import { ThemeControls } from "@/theme/ThemeControls";
@@ -135,7 +136,7 @@ export function AppShell() {
           </ShellLayout>
         </SidebarInset>
       </SidebarProvider>
-      <FindOrAskPlaceholder />
+      <FindOrAskPalette route={route} />
       <Toaster />
     </TooltipProvider>
   );
