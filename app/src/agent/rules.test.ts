@@ -100,6 +100,8 @@ describe("deriveProposals", () => {
       );
     expect(kinds({})).toContain("quiet-creator");
     expect(kinds({ autoReminders: 99 })).not.toContain("quiet-creator");
+    expect(kinds({ quietAfterDays: 999 })).not.toContain("quiet-creator");
+    expect(kinds({ escalateWithinDays: -999 })).not.toContain("quiet-creator");
     expect(kinds({})).toContain("below-forecast");
     expect(kinds({ belowForecastRatio: 0 })).not.toContain("below-forecast");
   });
