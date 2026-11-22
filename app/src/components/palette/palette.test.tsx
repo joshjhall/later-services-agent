@@ -4,6 +4,7 @@ import { StoreProvider } from "@/domain/store";
 import type { Route } from "@/router";
 import { crumbs, LABELS } from "@/router";
 import { openFindOrAsk } from "@/shell/FindOrAsk";
+import { ConversationProvider } from "./chat";
 import { FindOrAskPalette } from "./FindOrAskPalette";
 import { ACTIVITY_LABEL, buildItems, contextLine, filterItems, subjectFor } from "./items";
 import { fallbackFor, onSparklingCitrus, replyTo } from "./responses";
@@ -160,7 +161,9 @@ test("each scripted reply matches whole words, not fragments", () => {
 function renderPalette(route: Route = citrus) {
   const view = render(
     <StoreProvider>
-      <FindOrAskPalette route={route} />
+      <ConversationProvider>
+        <FindOrAskPalette route={route} />
+      </ConversationProvider>
     </StoreProvider>,
   );
   act(() => openFindOrAsk());
@@ -279,7 +282,9 @@ test("the conversation keeps the subject it started from when the route changes"
   // Browser Back (or any hash change) lands on Sparkling Citrus while the chat is open.
   rerender(
     <StoreProvider>
-      <FindOrAskPalette route={citrus} />
+      <ConversationProvider>
+        <FindOrAskPalette route={citrus} />
+      </ConversationProvider>
     </StoreProvider>,
   );
   expect(within(chat).getByText(/^About:/)).toHaveTextContent(/^About: Portfolio$/);
@@ -297,7 +302,9 @@ test("a conversation started on Sparkling Citrus keeps answering about Mei after
   fireEvent.click(within(dialog).getByRole("option", { name: /Start a conversation/ }));
   rerender(
     <StoreProvider>
-      <FindOrAskPalette route={today} />
+      <ConversationProvider>
+        <FindOrAskPalette route={today} />
+      </ConversationProvider>
     </StoreProvider>,
   );
   const chat = screen.getByRole("dialog", { name: "Conversation" });
@@ -318,7 +325,9 @@ test("a new conversation picks up the page it was started from", () => {
 
   rerender(
     <StoreProvider>
-      <FindOrAskPalette route={today} />
+      <ConversationProvider>
+        <FindOrAskPalette route={today} />
+      </ConversationProvider>
     </StoreProvider>,
   );
   act(() => openFindOrAsk());

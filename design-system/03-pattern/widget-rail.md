@@ -34,6 +34,8 @@ Every widget in the registry (`WIDGETS` in `widgets.tsx`) declares:
 
 - The selection is deterministic: the same route and data give the same widgets. In production a model would choose from widgets whose declared data fits, and a rule takes over as patterns settle ([principles §3](../../docs/principles.md#3-rules-first-agent-for-the-exceptions-human-for-the-ambiguous)).
 - Widgets update with the store: sending the next message removes it, and the widget drops out when nothing else is queued.
+- **Docked conversation.** Docking the conversation puts it in the rail in place of the widgets, on every page, with the text entry at the bottom. It follows the page you're on; Expand returns it full screen, Close gives the rail back to its widgets. Code: `app/src/components/palette/chat.tsx`.
+- **Widgets as answers.** A scripted answer may name a widget from the same library (`widget` in `responses.ts`); the conversation renders it live in its card under the text, filled with the campaign in view. One library serves the rail, chat answers, and eventually the core screens.
 
 ## Do / Don't
 

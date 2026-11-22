@@ -1,3 +1,4 @@
+import type { WidgetId } from "@/components/rail/select";
 import type { Route } from "@/router";
 
 /**
@@ -7,12 +8,26 @@ import type { Route } from "@/router";
  * A production build would call an agent with the current object and its data;
  * here a small table keyed on recognizable questions keeps the demo deterministic.
  */
-export type ScriptedReply = { match: RegExp; where?: (route: Route) => boolean; reply: string };
+export type ScriptedReply = {
+  match: RegExp;
+  where?: (route: Route) => boolean;
+  reply: string;
+  /** A widget from the rail library to show under the reply, filled with the campaign in view. */
+  widget?: WidgetId;
+};
+
+/** A scripted answer: the text, and optionally a library widget to show with it. */
+export type Answer = { text: string; widget?: WidgetId };
+
+type CampaignRoute = Extract<Route, { view: "campaign" | "goal" | "lineup" }>;
+
+/** Pages about exactly one campaign, so a campaign-level widget has something to show. */
+export const onOneCampaign = (route: Route): route is CampaignRoute =>
+  route.view === "campaign" || route.view === "goal" || route.view === "lineup";
 
 /** Mei's live Reel belongs to this campaign, so "her last three" only makes sense here. */
 export const onSparklingCitrus = (route: Route) =>
-  (route.view === "campaign" || route.view === "goal" || route.view === "lineup") &&
-  route.id === "cmp-sparkling-launch";
+  onOneCampaign(route) && route.id === "cmp-sparkling-launch";
 
 const COMPARE = /\bcompare\b|\blast three\b/i;
 
@@ -41,6 +56,14 @@ export const REPLIES: ScriptedReply[] = [
     match: comparesCreator("mei"),
     reply: MEI_COMPARE,
   },
+  {
+    // Answered with a widget from the rail library, not a paragraph (principles §8).
+    // Before the broad compare entries, so "similar campaigns" never gets Mei's Reel.
+    match: /\bsimilar campaigns?\b/i,
+    where: onOneCampaign,
+    reply: "Here's this campaign against similar ones. It's the same compare widget as the rail.",
+    widget: "compare",
+  },
   // Entries that name their subject come first, so "How does Ana compare with Ben?"
   // gets Ana wherever it's asked. The broad risk summary comes last.
   {
@@ -65,12 +88,16 @@ export const REPLIES: ScriptedReply[] = [
 /** Suggests only questions that make sense where the conversation started. */
 export function fallbackFor(route: Route): string {
   const tries = onSparklingCitrus(route)
-    ? "how Mei's Reel compares with her last three, why Ana is late, or what's at risk this week"
-    : "why Ana is late or what's at risk this week";
+    ? "how Mei's Reel compares with her last three, how this campaign compares with similar campaigns, why Ana is late, or what's at risk this week"
+    : onOneCampaign(route)
+      ? "how this campaign compares with similar campaigns, why Ana is late, or what's at risk this week"
+      : "why Ana is late or what's at risk this week";
   return `I can't answer that one in this prototype. Try asking ${tries}.`;
 }
 
-export function replyTo(question: string, route: Route): string {
+export function answerTo(question: string, route: Route): Answer {
   const hit = REPLIES.find((r) => r.match.test(question) && (r.where?.(route) ?? true));
-  return hit?.reply ?? fallbackFor(route);
+  return hit ? { text: hit.reply, widget: hit.widget } : { text: fallbackFor(route) };
 }
+
+export const replyTo = (question: string, route: Route): string => answerTo(question, route).text;
