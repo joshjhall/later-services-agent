@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { AGENT_POLICY, deriveProposals } from "@/agent/rules";
 import * as fx from "@/domain/fixtures";
-import { StoreProvider } from "@/domain/store";
+import { autoRun, StoreProvider } from "@/domain/store";
 import { ProposalCard } from "./ProposalCard";
 
 const review = deriveProposals(fx).find((p) => p.kind === "review-draft");
@@ -105,4 +105,24 @@ test("a card the CM resolves is never attributed to the agent", () => {
   fireEvent.click(screen.getByRole("button", { name: "Not now" }));
   expect(screen.getByText(/Not now · logged/)).toBeInTheDocument();
   expect(screen.queryByText(/done by the agent/)).toBeNull();
+});
+
+test("a boost the campaign total holds back shows Needs approval, never Pre-approved", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 10_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (x) => x.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  // A second boost in the same campaign, after the agent already ran $8,000.
+  const held = autoRun([boost, { ...boost, id: `${boost.id}:twin` }], policy).proposals[1];
+  render(
+    <StoreProvider policy={policy}>
+      <ProposalCard proposal={held} />
+    </StoreProvider>,
+  );
+  const group = (name: string) => screen.getByRole("button", { name }).parentElement;
+  expect(group("Boost $8,000")).toHaveTextContent("Needs approval");
+  expect(group("Boost $4,000")).toHaveTextContent("Needs approval");
+  expect(screen.queryByText("Pre-approved")).toBeNull();
+  expect(screen.getByText(/\$8,000 already spent · above it, so it needs you/)).toBeInTheDocument();
 });

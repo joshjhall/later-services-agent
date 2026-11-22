@@ -131,16 +131,19 @@ export const withinCap = (
  * The "Agent cap" evidence row for a boost: the daily cap, then which amounts fit under it.
  * Each amount is compared as if spent in one day, and the row says so: the fixtures carry no
  * boost duration, so a daily rate would be invented. The per-test cap is left out because a
- * boost is not a test. The same check (`withinCap`) decides each boost option's lane, so the
- * row and the buttons never disagree. No amounts reads as above the cap.
+ * boost is not a test. The same check (`withinCap`, on `spent` plus the amount) decides each
+ * boost option's lane, so the row and the buttons never disagree. `spent` is what the agent
+ * has already spent in the same campaign (see `withSpent`); the row names it when there is
+ * any. No amounts reads as above the cap.
  */
 export function capEvidence(
   amounts: number[],
   policy: Pick<AgentPolicy, "maxDailySpend"> = AGENT_POLICY,
+  spent = 0,
 ): Evidence {
   // Shown rounded down, as withinCap compares it, so the row never contradicts itself.
   const cap = Math.floor(policy.maxDailySpend);
-  const within = amounts.filter((n) => withinCap(n, policy));
+  const within = amounts.filter((n) => withinCap(spent + n, policy));
   const verdict =
     amounts.length === 0 || within.length === 0
       ? "above it, so it needs you"
@@ -151,9 +154,44 @@ export function capEvidence(
     label: "Agent cap",
     // A malformed cap has no amount to show; withinCap already sends every option to a person.
     value: isAmount(policy.maxDailySpend)
-      ? `${usd(cap)}/day, if spent in one day · ${verdict}`
+      ? `${usd(cap)}/day, if spent in one day${spent ? ` · ${usd(spent)} already spent` : ""} · ${verdict}`
       : "Not set · every amount needs you",
     tone: "neutral",
+  };
+}
+
+/**
+ * The proposal as it stands once the agent has already spent `spent` in its campaign today:
+ * each spend option keeps the auto lane only while `spent` plus its amount stays within the
+ * cap, and the "Agent cap" row is recomputed the same way. So an option the campaign total
+ * holds back reads as needing approval, never as pre-approved. No prior spend, or no spend
+ * options, returns the proposal unchanged.
+ */
+export function withSpent(
+  p: Proposal,
+  spent: number,
+  policy: Pick<AgentPolicy, "maxDailySpend"> = AGENT_POLICY,
+): Proposal {
+  const spends = p.options.filter((o) => o.effect === "spend");
+  if (spent === 0 || spends.length === 0) return p;
+  return {
+    ...p,
+    options: p.options.map((o) =>
+      o.effect === "spend" &&
+      o.lane === "auto" &&
+      !withinCap(spent + (o.amount ?? Number.NaN), policy)
+        ? { ...o, lane: "propose" }
+        : o,
+    ),
+    evidence: p.evidence.map((e) =>
+      e.label === "Agent cap"
+        ? capEvidence(
+            spends.map((o) => o.amount ?? Number.NaN),
+            policy,
+            spent,
+          )
+        : e,
+    ),
   };
 }
 
