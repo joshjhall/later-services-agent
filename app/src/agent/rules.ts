@@ -133,7 +133,10 @@ export function capEvidence(
         : `${list(within.map(usd))} ${within.length === 1 ? "is" : "are"} within it; the rest needs you`;
   return {
     label: "Agent cap",
-    value: `${usd(cap)}/day, if spent in one day · ${verdict}`,
+    // A malformed cap has no amount to show; withinCap already sends every option to a person.
+    value: Number.isFinite(cap)
+      ? `${usd(cap)}/day, if spent in one day · ${verdict}`
+      : "Not set · every amount needs you",
     tone: "neutral",
   };
 }

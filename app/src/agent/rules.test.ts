@@ -86,6 +86,14 @@ describe("deriveProposals", () => {
     expect(withinCap(-1, { maxDailySpend: 5000 })).toBe(false);
   });
 
+  test("cap evidence shows a malformed cap as not set, not as a dollar amount", () => {
+    for (const maxDailySpend of [Number.POSITIVE_INFINITY, Number.NaN]) {
+      expect(capEvidence([8000, 4000], { maxDailySpend }).value).toBe(
+        "Not set · every amount needs you",
+      );
+    }
+  });
+
   test("the cap row, the proposed spend, the boost buttons, and their lanes share one list of amounts", () => {
     const boost = proposals.find((p) => p.kind === "boost-post");
     const boosts = (boost?.options ?? []).filter((o) => o.effect === "spend");
