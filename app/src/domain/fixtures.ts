@@ -280,6 +280,7 @@ export const activity: ActivityEntry[] = [
     actor: "system",
     action: "Draft reminder sent to Ana · from Maya's team",
     target: "Ana Reyes · Sparkling Citrus",
+    campaignId: "cmp-sparkling-launch",
     effect: "external",
   },
   {
@@ -288,6 +289,7 @@ export const activity: ActivityEntry[] = [
     actor: "agent",
     action: "Logged draft receipt; started brief-compliance check",
     target: "Rio Castillo · Sparkling Citrus",
+    campaignId: "cmp-sparkling-launch",
     effect: "internal",
   },
   {
@@ -296,6 +298,7 @@ export const activity: ActivityEntry[] = [
     actor: "agent",
     action: "Pulled 72h metrics; updated pacing",
     target: "Trail season",
+    campaignId: "cmp-trail-season",
     effect: "internal",
   },
   {
@@ -305,6 +308,7 @@ export const activity: ActivityEntry[] = [
     // Unanswered, so it agrees with the "Ana is quiet" escalation on Today.
     action: "Called Ana · no answer, left voicemail",
     target: "Ana Reyes · Sparkling Citrus",
+    campaignId: "cmp-sparkling-launch",
     effect: "external",
   },
   {
@@ -314,6 +318,7 @@ export const activity: ActivityEntry[] = [
     // Mei's post is live, not yet verified; verification follows the 72h check.
     action: "Started live-post check: link, code, #ad disclosure",
     target: "Mei Tanaka · Sparkling Citrus",
+    campaignId: "cmp-sparkling-launch",
     effect: "internal",
   },
   {
@@ -323,6 +328,7 @@ export const activity: ActivityEntry[] = [
     // The approval reached Mei, so it is permanent; a correction would be a new entry.
     action: "Approved Mei's draft",
     target: "Mei Tanaka · Sparkling Citrus",
+    campaignId: "cmp-sparkling-launch",
     effect: "external",
   },
 ];

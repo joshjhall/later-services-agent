@@ -47,3 +47,21 @@ test("scopeOf: goal is one campaign; unknown ids are empty, which hides the rail
     selectRail({ view: "campaign", id: "nope" }, { campaigns: unknown.length, scheduled: 0 }),
   ).toEqual([]);
 });
+
+test("activityIn scopes by campaign id when names share a prefix", () => {
+  const campaigns = [
+    { id: "a", name: "Sparkling Citrus" },
+    { id: "b", name: "Sparkling Citrus relaunch" },
+  ];
+  const entries = [
+    { id: "x", target: "Ana Reyes · Sparkling Citrus", campaignId: "a" },
+    { id: "y", target: "Ana Reyes · Sparkling Citrus relaunch", campaignId: "b" },
+    { id: "z", target: "Sparkling Citrus relaunch" },
+  ] as ActivityEntry[];
+  // With an id, an entry lands only in its own campaign.
+  // Without one, "z" falls back to name matching, which is loose: its target contains both names.
+  expect(activityIn(entries, campaigns, ["a"]).map((e) => e.id)).toEqual(["x", "z"]);
+  expect(activityIn(entries, campaigns, ["b"]).map((e) => e.id)).toEqual(["y", "z"]);
+  // An account scope holding both counts each entry once.
+  expect(activityIn(entries, campaigns, ["a", "b"]).map((e) => e.id)).toEqual(["x", "y", "z"]);
+});

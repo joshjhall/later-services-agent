@@ -73,6 +73,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             actor: CURRENT_USER,
             action: action ?? `Chose "${label}"`,
             target: p.title,
+            campaignId: p.campaignId,
             // An unknown option is treated as permanent: undo is opt-in, never a default.
             effect: option?.effect ?? "external",
           },
@@ -101,6 +102,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             actor: CURRENT_USER,
             action: `Sent ${draft.kind} to ${draft.to} · from ${CURRENT_USER}'s team`,
             target: draft.target,
+            campaignId: answers?.proposal.campaignId ?? draft.campaignId,
             // It left the system: permanent, and a correction is a new message.
             effect: "external",
           },

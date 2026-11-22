@@ -222,6 +222,8 @@ export interface MessageDraft {
   target: string;
   subject: string;
   body: string;
+  /** The campaign it is about, carried onto the activity entry when it is sent. */
+  campaignId?: string;
 }
 
 export const messageDrafts: Record<string, MessageDraft> = {
