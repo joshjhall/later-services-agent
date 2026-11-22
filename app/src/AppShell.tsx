@@ -66,7 +66,7 @@ export function AppShell() {
         <Sidebar>
           <SidebarHeader className="px-4 py-3">
             <span className="text-sm font-semibold">Services Agent</span>
-            <span className="text-xs text-muted-foreground">Alex Kim · Account Manager</span>
+            <span className="text-xs text-muted-foreground">Maya · Account Manager</span>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
