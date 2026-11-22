@@ -290,7 +290,8 @@ export const activity: ActivityEntry[] = [
     id: "act-4",
     at: "2026-11-17",
     actor: "Jordan",
-    action: "Called Ana · draft moved to Thursday",
+    // Unanswered, so it agrees with the "Ana is quiet" escalation on Today.
+    action: "Called Ana · no answer, left voicemail",
     target: "Ana Reyes · Sparkling Citrus",
     effect: "external",
   },

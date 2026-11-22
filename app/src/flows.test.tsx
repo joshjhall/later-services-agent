@@ -112,10 +112,13 @@ test("open-item copy uses the Oxford comma and plural wording", async () => {
 
 /** One record, any actor: explicit actors, and undo only for what never left the system. */
 
-const entry = (text: RegExp) =>
-  screen
+const entry = (text: RegExp): HTMLElement => {
+  const found = screen
     .getAllByTestId("activity-entry")
-    .find((el) => text.test(el.textContent ?? "")) as HTMLElement;
+    .find((el) => text.test(el.textContent ?? ""));
+  if (!found) throw new Error(`No activity entry matches ${text}`);
+  return found;
+};
 
 test("activity: one record shows system, agent, and named people as explicit actors", () => {
   renderApp();
