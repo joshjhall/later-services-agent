@@ -50,6 +50,8 @@ export interface Creator {
   responsiveHours: number; // median reply time
   rate: number;
   representedBy?: string; // talent manager
+  /** Where the audience split came from. "profile" means self-reported and unconfirmed. */
+  audienceSource?: "verified" | "profile";
 }
 
 /** Later Influence draft-review states, plus the stages around them. */

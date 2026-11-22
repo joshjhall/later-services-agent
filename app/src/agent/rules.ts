@@ -8,6 +8,7 @@
  */
 import { DEMO_TODAY } from "@/domain/fixtures";
 import type { Campaign, Creator, Deliverable, Effect, Partnership } from "@/domain/types";
+import { lineupDrafts as defaultLineups, type LineupDraft } from "./drafts";
 
 export const AGENT_POLICY = {
   /** Escalate a quiet creator when go-live is this many days away or fewer. */
@@ -47,7 +48,8 @@ export interface Proposal {
     | "boost-post"
     | "below-forecast"
     | "approve-lineup"
-    | "state-goal";
+    | "state-goal"
+    | "info-request";
   severity: Severity;
   campaignId: string;
   title: string;
@@ -56,6 +58,9 @@ export interface Proposal {
   options: Option[];
   confidence: "high" | "medium" | "low";
   dueInDays: number;
+  /** Information requests only: what the agent assumed, and what changes if that's wrong. */
+  assumption?: string;
+  ifWrong?: string;
 }
 
 const day = 86_400_000;
@@ -69,7 +74,11 @@ interface World {
   deliverables: Deliverable[];
 }
 
-export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
+export function deriveProposals(
+  w: World,
+  today = DEMO_TODAY,
+  lineups: Record<string, LineupDraft> = defaultLineups,
+): Proposal[] {
   const creator = (id: string) => w.creators.find((c) => c.id === id);
   const partnership = (id: string) => w.partnerships.find((p) => p.id === id);
   const out: Proposal[] = [];
@@ -278,6 +287,42 @@ export function deriveProposals(w: World, today = DEMO_TODAY): Proposal[] {
           dueInDays: 3,
         });
       }
+    }
+  }
+
+  // Information requests: a lineup member whose audience split is only self-reported.
+  for (const cmp of w.campaigns) {
+    if (cmp.stage !== "lineup") continue;
+    for (const cand of lineups[cmp.id]?.candidates ?? []) {
+      const c = w.creators.find((x) => x.handle === cand.handle);
+      if (cand.role !== "core" || c?.audienceSource !== "profile") continue;
+      const first = c.name.split(" ")[0];
+      out.push({
+        id: `info:${cmp.id}:${c.id}`,
+        kind: "info-request",
+        severity: "info",
+        campaignId: cmp.id,
+        title: `Confirm ${first}'s audience is mostly US`,
+        summary: `${first} is in the proposed lineup at ${cand.forecastReach} forecast reach.`,
+        assumption: `I assumed ${first}'s audience is mostly US from the ${c.platform} profile.`,
+        ifWrong: "If it's mostly UK, the lineup's reach estimate drops.",
+        evidence: [
+          { label: "Profile says", value: c.audience, tone: "neutral" },
+          { label: "Who can confirm", value: c.representedBy ?? first, tone: "neutral" },
+        ],
+        options: [
+          {
+            id: "draft-email",
+            label: "Draft the email",
+            primary: true,
+            lane: "propose",
+            effect: "external",
+          },
+          { id: "confirmed", label: "Mark confirmed", lane: "human", effect: "internal" },
+        ],
+        confidence: "low",
+        dueInDays: 2,
+      });
     }
   }
 

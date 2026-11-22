@@ -94,6 +94,8 @@ export const creators: Creator[] = [
     avgRevisions: 1.1,
     responsiveHours: 6,
     rate: 14_000,
+    representedBy: "Northstar Talent",
+    audienceSource: "profile",
   },
   {
     id: "cr-ben",

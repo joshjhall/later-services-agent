@@ -50,4 +50,19 @@ describe("deriveProposals", () => {
     expect(review?.options.find((o) => o.primary)?.id).toBe("send-fix");
     expect(review?.evidence[0].tone).toBe("bad");
   });
+
+  test("information request: states its assumption and what changes if it's wrong", () => {
+    const requests = proposals.filter((p) => p.kind === "info-request");
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({ id: "info:cmp-holiday-gifting:cr-ana" });
+    expect(requests[0].assumption).toMatch(/assumed Ana's audience is mostly US/);
+    expect(requests[0].ifWrong).toMatch(/reach estimate drops/);
+  });
+
+  test("information request: none once the audience split is verified", () => {
+    const verified = creators.map((c) => ({ ...c, audienceSource: "verified" as const }));
+    expect(
+      deriveProposals({ ...world, creators: verified }).some((p) => p.kind === "info-request"),
+    ).toBe(false);
+  });
 });
