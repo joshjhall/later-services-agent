@@ -61,6 +61,21 @@ export function groupByNeed<P extends Pick<Proposal, "kind" | "severity">>(
     .filter((g) => g.items.length > 0);
 }
 
+/**
+ * Today's split: need groups for what isn't settled, and the settled ones (Handled today),
+ * both in input order. What counts as settled is the caller's choice; Today uses "resolved
+ * before this visit", so a card resolved in place keeps its confirmation until you leave.
+ */
+export function splitToday<P extends Pick<Proposal, "kind" | "severity">>(
+  proposals: P[],
+  settled: (p: P) => boolean,
+): { groups: NeedGroup<P>[]; handled: P[] } {
+  return {
+    groups: groupByNeed(proposals.filter((p) => !settled(p))),
+    handled: proposals.filter(settled),
+  };
+}
+
 /** Which campaign tab a proposal belongs on. */
 export const PROPOSAL_PHASE: Record<Proposal["kind"], CampaignPhase> = {
   "state-goal": "Plan",
