@@ -1,8 +1,9 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { App } from "@/App";
 import { AppShell } from "@/AppShell";
-import { AGENT_POLICY } from "@/agent/rules";
+import { AGENT_POLICY, deriveProposals } from "@/agent/rules";
 import { ConversationProvider } from "@/components/palette/chat";
+import * as fx from "@/domain/fixtures";
 import { StoreProvider } from "@/domain/store";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 
@@ -607,4 +608,27 @@ test("Today: with a cap of $8,000 the agent's boost is under Handled today, not 
   expect(ready).toHaveTextContent(/Rio Castillo/);
   expect(ready).not.toHaveTextContent(/Mei Tanaka/);
   expect(handledToday()).toHaveTextContent(/Boost \$8,000 · done by the agent/);
+});
+
+test("Today: a campaign whose only proposals are resolved is on track, not an empty group", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 8_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const campaign = fx.campaigns.find((c) => c.id === boost.campaignId);
+  render(
+    <ThemeProvider>
+      <StoreProvider policy={policy} proposals={[boost]}>
+        <ConversationProvider>
+          <AppShell />
+        </ConversationProvider>
+      </StoreProvider>
+    </ThemeProvider>,
+  );
+  expect(screen.queryByRole("region", { name: /Ready to move/ })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: /On track/ }));
+  expect(screen.getByRole("region", { name: /On track/ })).toHaveTextContent(
+    campaign?.name ?? "missing campaign",
+  );
 });

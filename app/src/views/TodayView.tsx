@@ -51,7 +51,10 @@ export function TodayView() {
   // Settled = resolved before this visit (the agent's auto-run included): it goes to Handled
   // today. A card resolved here stays in its group, showing "logged", until you navigate away.
   const [settledIds] = useState(() => new Set(Object.keys(resolved)));
-  const { groups, handled } = splitToday(proposals, (p) => settledIds.has(p.id));
+  const { groups, handled } = splitToday(
+    proposals,
+    (p) => settledIds.has(p.id) && Boolean(resolved[p.id]),
+  );
   // On track = no card in a need group, so a campaign never shows twice in the queue.
   const onTrack = world.campaigns.filter(
     (c) => !groups.some((g) => g.items.some((p) => p.campaignId === c.id)),
