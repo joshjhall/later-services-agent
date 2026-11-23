@@ -1,5 +1,10 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { App } from "@/App";
+import { AppShell } from "@/AppShell";
+import { AGENT_POLICY, deriveProposals } from "@/agent/rules";
+import { ConversationProvider } from "@/components/palette/chat";
+import * as fx from "@/domain/fixtures";
+import { StoreProvider } from "@/domain/store";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 
 /** The three moments the brief requires: state the goal, review the lineup, the hard moment. */
@@ -12,6 +17,12 @@ const go = (hash: string) =>
 
 /** The core view, not the context rail. The innermost <main> is ShellLayout's. */
 const core = () => screen.getAllByRole("main").at(-1) as HTMLElement;
+
+/** Opens Today's collapsed "Handled today" group and returns it. */
+const handledToday = () => {
+  fireEvent.click(screen.getByRole("button", { name: /Handled today/ }));
+  return screen.getByRole("region", { name: /Handled today/ });
+};
 
 const renderApp = () =>
   render(
@@ -298,7 +309,7 @@ test("reviewing the lineup: approving records the decision, not the queue card's
   expect(within(entry(/Approved lineup/)).getByText("Maya")).toBeInTheDocument();
   expect(screen.queryByText(/Chose "Review lineup"/)).toBeNull();
   go("");
-  expect(screen.getByText(/Approved lineup · logged/)).toBeInTheDocument();
+  expect(handledToday()).toHaveTextContent(/Approved lineup · by Maya/);
 });
 
 test("stating the goal: confirming records the decision, not the queue card's button", () => {
@@ -314,7 +325,7 @@ test("stating the goal: confirming records the decision, not the queue card's bu
   expect(within(entry(/Sent client email to Priya Rao/)).getByText("Maya")).toBeInTheDocument();
   expect(screen.queryByText(/Chose "Review goal"/)).toBeNull();
   go("");
-  expect(screen.getByText(/Confirmed goal · logged/)).toBeInTheDocument();
+  expect(handledToday()).toHaveTextContent(/Confirmed goal · by Maya/);
 });
 
 test("draft: a double-click on Send records one entry", () => {
@@ -561,4 +572,63 @@ test("today: each card links to the campaign tab that holds it, even off the def
   });
   expect(onPage.length).toBeGreaterThan(0);
   for (const a of onPage) expect(a).toHaveAttribute("href", "#campaign/cmp-sparkling-launch/run");
+});
+
+test("Today: at the default cap nothing is handled yet, so there is no Handled today group", () => {
+  renderApp();
+  expect(screen.queryByRole("button", { name: /Handled today/ })).toBeNull();
+});
+
+test("Today: a card Maya resolves keeps its confirmation, then moves to Handled today", () => {
+  renderApp();
+  const card = within(core())
+    .getByText(/Ana Reyes is quiet/)
+    .closest("[data-severity]") as HTMLElement;
+  fireEvent.click(within(card).getByRole("button", { name: "Extend 2 days" }));
+  expect(within(card).getByText(/Extend 2 days · logged/)).toBeInTheDocument();
+  go("#activity");
+  go("");
+  expect(within(core()).queryByText(/Extend 2 days · logged/)).toBeNull();
+  expect(handledToday()).toHaveTextContent(/Extend 2 days · by Maya · Ana Reyes is quiet/);
+});
+
+test("Today: with a cap of $8,000 the agent's boost is under Handled today, not Ready to move", () => {
+  render(
+    <ThemeProvider>
+      <StoreProvider policy={{ ...AGENT_POLICY, maxDailySpend: 8_000 }}>
+        <ConversationProvider>
+          <AppShell />
+        </ConversationProvider>
+      </StoreProvider>
+    </ThemeProvider>,
+  );
+  expect(within(core()).queryByText(/done by the agent · logged/)).toBeNull();
+  // Rio's draft keeps Ready to move on screen; the boost has left it.
+  const ready = screen.getByRole("region", { name: /Ready to move/ });
+  expect(ready).toHaveTextContent(/Rio Castillo/);
+  expect(ready).not.toHaveTextContent(/Mei Tanaka/);
+  expect(handledToday()).toHaveTextContent(/Boost \$8,000 · done by the agent/);
+});
+
+test("Today: a campaign whose only proposals are resolved is on track, not an empty group", () => {
+  const policy = { ...AGENT_POLICY, maxDailySpend: 8_000 };
+  const boost = deriveProposals(fx, fx.DEMO_TODAY, undefined, policy).find(
+    (p) => p.kind === "boost-post",
+  );
+  if (!boost) throw new Error("fixtures should yield a boost-post proposal");
+  const campaign = fx.campaigns.find((c) => c.id === boost.campaignId);
+  render(
+    <ThemeProvider>
+      <StoreProvider policy={policy} proposals={[boost]}>
+        <ConversationProvider>
+          <AppShell />
+        </ConversationProvider>
+      </StoreProvider>
+    </ThemeProvider>,
+  );
+  expect(screen.queryByRole("region", { name: /Ready to move/ })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: /On track/ }));
+  expect(screen.getByRole("region", { name: /On track/ })).toHaveTextContent(
+    campaign?.name ?? "missing campaign",
+  );
 });

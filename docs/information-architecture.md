@@ -62,6 +62,7 @@ The portfolio is a dashboard organized by **state and next need**, not an alphab
 | **Ready to move** | The next step is yours and it's ready | Three drafts passed checks; approve to schedule |
 | **Waiting on someone** | Someone isn't responding | Ana hasn't replied in 4 days; brand review at 72h |
 | **Do a thing** | A task with a date | Send Brightside's weekly status |
+| **Handled today** | Resolved today, by the agent or you; collapsed to a count | Boost $8,000 · done by the agent |
 | **On track** | Nothing needed; collapsed to a count | 11 campaigns |
 
 This is the [decision queue](discovery/key-paths.md#path-1-start-the-day) seen from the portfolio level. **Today** (in the personas, key paths and prototype) and **Portfolio** are the same screen: "Today" names the habit (start the day here) and "Portfolio" names the object. Account and campaign screens apply the same grouping to their own scope.

@@ -1,4 +1,12 @@
-import { groupByNeed, NEED_LABEL, needOf, PHASE_TAB, PROPOSAL_PHASE, proposalTab } from "./needs";
+import {
+  groupByNeed,
+  NEED_LABEL,
+  needOf,
+  PHASE_TAB,
+  PROPOSAL_PHASE,
+  proposalTab,
+  splitToday,
+} from "./needs";
 import type { Proposal } from "./rules";
 
 type Kind = Proposal["kind"];
@@ -32,6 +40,18 @@ test("groupByNeed keeps display order, drops empty groups, and keeps rank within
   expect(groups[0].items).toEqual([b]);
   expect(groups[1].items).toEqual([a, c]);
   expect(groupByNeed([])).toEqual([]);
+});
+
+test("splitToday moves settled proposals out of their group, hiding a group left empty", () => {
+  const a = { id: "a", ...p("review-draft") };
+  const b = { id: "b", ...p("quiet-creator") };
+  const c = { id: "c", ...p("boost-post") };
+  const d = { id: "d", ...p("review-draft") };
+  const { groups, handled } = splitToday([a, b, c, d], (x) => x.id === "b" || x.id === "c");
+  expect(groups.map((g) => g.label)).toEqual([NEED_LABEL.ready]);
+  expect(groups[0].items).toEqual([a, d]);
+  expect(handled).toEqual([b, c]);
+  expect(splitToday([a], () => false)).toEqual({ groups: groupByNeed([a]), handled: [] });
 });
 
 test("each proposal kind lands on the tab of its phase", () => {
