@@ -151,6 +151,15 @@ test("asking about similar campaigns answers with the compare widget, only on on
   ]) {
     expect(answerTo(q, citrus).widget, q).toBe("compare");
   }
+  // Typos and other wording still mean the campaign, not Mei's Reel.
+  for (const q of [
+    "how does this compare with similr campagns",
+    "how does this compare with similar campaign",
+    "how does this compare with past campaigns",
+    "how does this compare to comparable campaigns",
+  ]) {
+    expect(answerTo(q, citrus).widget, q).toBe("compare");
+  }
   // Off a campaign it still asks which campaign, rather than declining about the creator.
   expect(answerTo("Compare Ben with similar campaigns", today).text).toMatch(/^Which campaign\?/);
   // Ana comes first: naming her gets her story, without a widget.

@@ -31,6 +31,13 @@ export const onSparklingCitrus = (route: Route) =>
 
 const COMPARE = /\bcompare\b|\blast three\b/i;
 
+/**
+ * A question about this campaign against others. Loose on purpose: a typo or
+ * other wording ("past campaigns") must not fall through to the
+ * broader compare entries, which answer about Mei's Reel instead.
+ */
+const SIMILAR_CAMPAIGNS = /\b(simi\w*|comparable|other|past|previous)\s+camp\w*/i;
+
 /** True when the question names one of these creators and asks to compare. */
 const comparesCreator = (names: string) =>
   new RegExp(`^(?=.*\\b(${names})\\b)(?=.*(\\bcompare\\b|\\blast three\\b))`, "is");
@@ -48,14 +55,14 @@ export const REPLIES: ScriptedReply[] = [
     // Answered with a widget from the rail library, not a paragraph (principles §8).
     // Before the creator and compare entries, so "similar campaigns" stays about
     // the campaign when it names Mei, Ben, or others (tested). Ana still wins: her story first.
-    match: /\bsimilar campaigns?\b/i,
+    match: SIMILAR_CAMPAIGNS,
     where: onOneCampaign,
     reply: "Here's this campaign against similar ones. It's the same compare widget as the rail.",
     widget: "compare",
   },
   {
     // Nothing single to compare from here; the same pointer as the compare widget's empty state.
-    match: /\bsimilar campaigns?\b/i,
+    match: SIMILAR_CAMPAIGNS,
     reply: "Which campaign? Open one and ask again, and I'll compare it with similar campaigns.",
   },
   {
