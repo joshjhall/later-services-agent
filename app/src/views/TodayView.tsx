@@ -73,7 +73,7 @@ export function TodayView() {
           <h2 id={`need-${g.need}`} className="text-sm font-semibold">
             {g.label}{" "}
             <span className="font-normal text-muted-foreground">
-              · {g.items.filter((p) => !resolved[p.id]).length}
+              · {g.items.filter((p) => !resolved[p.id]).length} open
             </span>
           </h2>
           <div className="grid items-start gap-4 xl:grid-cols-2">
