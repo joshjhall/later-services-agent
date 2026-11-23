@@ -60,4 +60,7 @@ test("goal: a changed objective carries into the client email without the old KP
   const body = (openEmail().getByLabelText("Message") as HTMLTextAreaElement).value;
   expect(body).toContain("Objective: consideration.");
   expect(body).not.toContain("KPIs:");
+  // The awareness-only question leaves the page and the email together.
+  expect(body).not.toContain("brand-lift");
+  expect(screen.queryByText(/brand-lift/)).toBeNull();
 });

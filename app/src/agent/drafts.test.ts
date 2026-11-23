@@ -13,6 +13,7 @@ import {
   goalDrafts,
   infoRequestDraft,
   messageDrafts,
+  questionsFor,
 } from "./drafts";
 import { deriveProposals } from "./rules";
 
@@ -107,8 +108,8 @@ describe("client email draft", () => {
         "KPIs: reach 25M, video views 8M, and engagement rate 4.0%.",
         "",
         "Two questions before we lock it in:",
-        `1. ${goal.questions[0]}`,
-        `2. ${goal.questions[1]}`,
+        `1. ${goal.questions[0].text}`,
+        `2. ${goal.questions[1].text}`,
         "",
         "Happy to walk through it on a call.",
         "",
@@ -128,9 +129,19 @@ describe("client email draft", () => {
     expect(d.body).not.toContain("25M");
   });
 
+  test("with every target blank, neither the body nor the subject promises KPIs", () => {
+    const blank = Object.fromEntries(goal.kpis.map((k) => [k.metric, " "]));
+    const d = build(goal.objective.proposed, blank);
+    expect(d.body).not.toContain("KPIs:");
+    expect(d.subject).toBe("Spring serum: proposed goal and two questions");
+  });
+
   test("a changed objective is named, with KPIs to follow rather than the old ones", () => {
     const d = build("consideration");
-    expect(d.subject).toBe("Spring serum: proposed goal and two questions");
+    // The awareness-only question drops out, so one question is left.
+    expect(d.subject).toBe("Spring serum: proposed goal and one question");
+    expect(d.body).toContain(`One question before we lock it in:\n1. ${goal.questions[0].text}`);
+    expect(d.body).not.toContain("brand-lift");
     expect(d.body).toContain("Objective: consideration.");
     expect(d.body).toContain(
       "We're revisiting the KPIs for a consideration objective and will send them shortly.",
@@ -140,11 +151,16 @@ describe("client email draft", () => {
     expect(d.body).not.toContain(goal.objective.summary);
   });
 
+  test("a question tagged with an objective applies only while it is selected", () => {
+    expect(questionsFor(goal, "awareness")).toHaveLength(2);
+    expect(questionsFor(goal, "conversion")).toEqual([goal.questions[0].text]);
+  });
+
   test("the questions come from the goal draft", () => {
     const one = build(goal.objective.proposed, asDrafted);
-    for (const q of goal.questions) expect(one.body).toContain(q);
+    for (const q of questionsFor(goal, goal.objective.proposed)) expect(one.body).toContain(q);
     const solo = clientEmailDraft({
-      goal: { ...goal, questions: ["Only this?"] },
+      goal: { ...goal, questions: [{ text: "Only this?" }] },
       campaign,
       account,
       objective: goal.objective.proposed,

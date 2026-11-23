@@ -1,6 +1,6 @@
 import { CheckCircle2, FileText, MessageSquareText } from "lucide-react";
 import { useState } from "react";
-import { clientEmailDraft, goalDrafts } from "@/agent/drafts";
+import { clientEmailDraft, goalDrafts, questionsFor } from "@/agent/drafts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -169,7 +169,7 @@ export function GoalView({ id }: { id: string }) {
         </CardHeader>
         <CardContent>
           <ol className="grid list-decimal gap-2 pl-5 text-sm">
-            {draft.questions.map((q) => (
+            {questionsFor(draft, objective).map((q) => (
               <li key={q}>{q}</li>
             ))}
           </ol>

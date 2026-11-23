@@ -12,8 +12,13 @@ export interface GoalDraft {
   /** `summary` finishes the client email's objective line, e.g. "awareness, <summary>." */
   objective: { proposed: Objective; why: string; summary: string };
   kpis: { metric: string; target: string; benchmark: string; method: string }[];
-  questions: string[];
+  /** A question tagged with an objective only applies while that objective is selected. */
+  questions: { text: string; objective?: Objective }[];
 }
+
+/** The goal's questions that apply to the selected objective, as the page and the email show them. */
+export const questionsFor = (goal: GoalDraft, objective: Objective): string[] =>
+  goal.questions.filter((q) => !q.objective || q.objective === objective).map((q) => q.text);
 
 export const goalDrafts: Record<string, GoalDraft> = {
   "cmp-spring-serum": {
@@ -52,8 +57,11 @@ export const goalDrafts: Record<string, GoalDraft> = {
       },
     ],
     questions: [
-      "Is Canada really out? Two shortlisted creators have 30%+ Canadian audiences.",
-      "Does “awareness” need a brand-lift study, or are platform metrics enough for the wrap report?",
+      { text: "Is Canada really out? Two shortlisted creators have 30%+ Canadian audiences." },
+      {
+        text: "Does “awareness” need a brand-lift study, or are platform metrics enough for the wrap report?",
+        objective: "awareness",
+      },
     ],
   },
 };
@@ -323,7 +331,8 @@ const count = (n: number, noun: string) => `${countWords[n] ?? n} ${noun}${n ===
  * The client email for a goal, built from what the CM has on screen: the
  * objective as selected, each KPI target as typed, and the agent's questions.
  * If the CM changed the objective, the KPIs were drafted for the old one, so
- * the email names the new objective and says revised KPIs will follow.
+ * the email names the new objective and says revised KPIs will follow, and
+ * asks only the questions that apply to it (`questionsFor`).
  */
 export function clientEmailDraft({
   goal,
@@ -354,15 +363,17 @@ export function clientEmailDraft({
         `Objective: ${objective}, ${goal.objective.summary}.`,
         ...(kpis.length ? [`KPIs: ${listFormat.format(kpis)}.`] : []),
       ];
-  const n = goal.questions.length;
+  const asked = questionsFor(goal, objective);
+  const n = asked.length;
   const questions = n
     ? [
         "",
         `${count(n, "question").replace(/^./, (c) => c.toUpperCase())} before we lock it in:`,
-        ...goal.questions.map((q, i) => `${i + 1}. ${q}`),
+        ...asked.map((q, i) => `${i + 1}. ${q}`),
       ]
     : [];
-  const parts = changed ? ["proposed goal"] : ["proposed goal", "KPIs"];
+  // The subject promises KPIs only when the body lists them.
+  const parts = !changed && kpis.length ? ["proposed goal", "KPIs"] : ["proposed goal"];
   if (n) parts.push(count(n, "question"));
   return {
     id: `client:${campaign.id}`,
