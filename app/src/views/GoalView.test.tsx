@@ -1,29 +1,63 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { messageDrafts } from "@/agent/drafts";
+import { clientEmailDraft, goalDrafts } from "@/agent/drafts";
 import { StoreProvider } from "@/domain/store";
 import { GoalView } from "./GoalView";
 
-const agentDraft = messageDrafts["client:cmp-spring-serum"];
+const goal = goalDrafts["cmp-spring-serum"];
+const agentDraft = clientEmailDraft({
+  goal,
+  campaign: { id: "cmp-spring-serum", name: "Spring serum" },
+  account: { name: "Lumen Skin", contact: "Priya Rao, VP Marketing" },
+  objective: goal.objective.proposed,
+  targets: Object.fromEntries(goal.kpis.map((k) => [k.metric, k.target])),
+});
 
-test("goal: reopening the client email after Not yet shows the agent's draft again", () => {
+const renderGoal = () =>
   render(
     <StoreProvider>
       <GoalView id="cmp-spring-serum" />
     </StoreProvider>,
   );
-  const open = () => fireEvent.click(screen.getByRole("button", { name: /Confirm and draft/ }));
+const openEmail = () => {
+  fireEvent.click(screen.getByRole("button", { name: /Confirm and draft/ }));
+  return within(screen.getByRole("dialog"));
+};
 
-  open();
-  let sheet = within(screen.getByRole("dialog"));
+test("goal: reopening the client email after Not yet shows the agent's draft again", () => {
+  renderGoal();
+
+  let sheet = openEmail();
   fireEvent.change(sheet.getByLabelText("Subject"), {
     target: { value: "Edited, then abandoned" },
   });
   fireEvent.click(sheet.getByRole("button", { name: "Not yet" }));
   expect(screen.queryByRole("dialog")).toBeNull();
 
-  open();
-  sheet = within(screen.getByRole("dialog"));
+  sheet = openEmail();
   expect(sheet.getByLabelText("Subject")).toHaveValue(agentDraft.subject);
+  expect(sheet.getByLabelText("Message")).toHaveValue(agentDraft.body);
   // Not yet records nothing: the goal is still open.
   expect(screen.queryByText(/Ready for client/)).toBeNull();
+});
+
+test("goal: an edited target carries into the client email, and Send logs the goal", () => {
+  renderGoal();
+  fireEvent.change(screen.getByLabelText("Reach target"), { target: { value: "20M" } });
+
+  const sheet = openEmail();
+  const body = (sheet.getByLabelText("Message") as HTMLTextAreaElement).value;
+  expect(body).toContain("reach 20M");
+  expect(body).not.toContain("25M");
+
+  fireEvent.click(sheet.getByRole("button", { name: "Send" }));
+  expect(screen.getByText(/Ready for client · logged/)).toBeInTheDocument();
+});
+
+test("goal: a changed objective carries into the client email without the old KPIs", () => {
+  renderGoal();
+  fireEvent.click(screen.getByRole("radio", { name: "Consideration" }));
+
+  const body = (openEmail().getByLabelText("Message") as HTMLTextAreaElement).value;
+  expect(body).toContain("Objective: consideration.");
+  expect(body).not.toContain("KPIs:");
 });

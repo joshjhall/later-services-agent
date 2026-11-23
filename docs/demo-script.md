@@ -57,9 +57,9 @@ Leave the cap at $8,000 for the rest of the demo, so the agent's entry stays in 
 *Get there:* close the conversation, go to **Today**, and under **Needs you now** choose **Review goal** on "Confirm goal and KPIs for Spring serum". (The long way, to show Plan · Make · Run: **Lumen Skin › Spring serum**, the **Plan** tab, then **Goal and KPIs**.)
 
 - The agent shows what it read (brief and kickoff notes), what it extracted, a proposed objective with its reasoning, and KPIs with the benchmark it used.
-- Change the objective to show the downstream redraft flag. Edit a target.
-- **Until #94 lands:** the client email is fixed text, so it ignores both edits. Change the objective back and don't edit a target before opening the email, or the draft will contradict the screen.
-- **Confirm and draft client email** opens a draft sheet to Priya Rao with the two clarifying questions. "Confirm" means ready for the client, not final. **Not yet** closes it and records nothing.
+- Edit a target (Reach 25M → 20M), then **Confirm and draft client email**. The draft to Priya Rao says "reach 20M": the agent drafts from what's on screen, not from what it proposed. The two clarifying questions are the ones on the page. **Not yet** closes it and records nothing.
+- Change the objective to Consideration to show the downstream redraft flag, then open the email again. It names the new objective and says revised KPIs will follow, instead of pairing it with KPIs drafted for awareness. Switch back to Awareness before moving on.
+- "Confirm" means ready for the client, not final.
 
 ## 6. Reviewing the lineup (`#lineup/cmp-holiday-gifting`)
 

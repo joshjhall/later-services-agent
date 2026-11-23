@@ -3,13 +3,14 @@
  * (flows §2) and the proposed lineup (flows §4). Deterministic stand-ins for
  * what an LLM would produce from the brief and the roster.
  */
-import type { Campaign, Creator, Deliverable, Objective } from "@/domain/types";
+import type { Account, Campaign, Creator, Deliverable, Objective } from "@/domain/types";
 
 export interface GoalDraft {
   campaignId: string;
   source: string; // what the agent read
   extracted: { label: string; value: string }[];
-  objective: { proposed: Objective; why: string };
+  /** `summary` finishes the client email's objective line, e.g. "awareness, <summary>." */
+  objective: { proposed: Objective; why: string; summary: string };
   kpis: { metric: string; target: string; benchmark: string; method: string }[];
   questions: string[];
 }
@@ -28,6 +29,7 @@ export const goalDrafts: Record<string, GoalDraft> = {
     objective: {
       proposed: "awareness",
       why: "The brief says “introduce the serum to people who don't know Lumen” and sets no sales target. Awareness fits; conversion can be a secondary read via the landing page.",
+      summary: "introducing the serum to people who don't know Lumen yet",
     },
     kpis: [
       {
@@ -245,31 +247,6 @@ export const messageDrafts: Record<string, MessageDraft> = {
       "Maya",
     ].join("\n"),
   },
-  "client:cmp-spring-serum": {
-    id: "client:cmp-spring-serum",
-    kind: "client email",
-    to: "Priya Rao, Lumen Skin",
-    target: "Spring serum",
-    campaignId: "cmp-spring-serum",
-    subject: "Spring serum: proposed goal, KPIs, and two questions",
-    body: [
-      "Hi Priya,",
-      "",
-      "Here's the framework we propose for the Spring serum launch, based on your brief and our kickoff call.",
-      "",
-      "Objective: awareness, introducing the serum to people who don't know Lumen yet.",
-      "KPIs: reach 25M, video views 8M, and engagement rate 4.0%.",
-      "",
-      "Two questions before we lock it in:",
-      "1. Is Canada really out? Two shortlisted creators have 30%+ Canadian audiences.",
-      "2. Does awareness need a brand-lift study, or are platform metrics enough for the wrap report?",
-      "",
-      "Happy to walk through it on a call.",
-      "",
-      "Best,",
-      "Maya",
-    ].join("\n"),
-  },
   // Not wired to a button yet: briefs go out after the client approves the lineup.
   "brief:cr-ana": {
     id: "brief:cr-ana",
@@ -333,6 +310,78 @@ export function fixRequestDraft({
       `Could you send the updated version soon? Go-live stays ${shortDate(d.goLive)}.`,
       "",
       "Thanks,",
+      "Maya",
+    ].join("\n"),
+  };
+}
+
+const listFormat = new Intl.ListFormat("en-US", { type: "conjunction" });
+const countWords = ["no", "one", "two", "three", "four", "five"];
+const count = (n: number, noun: string) => `${countWords[n] ?? n} ${noun}${n === 1 ? "" : "s"}`;
+
+/**
+ * The client email for a goal, built from what the CM has on screen: the
+ * objective as selected, each KPI target as typed, and the agent's questions.
+ * If the CM changed the objective, the KPIs were drafted for the old one, so
+ * the email names the new objective and says revised KPIs will follow.
+ */
+export function clientEmailDraft({
+  goal,
+  campaign,
+  account,
+  objective,
+  targets,
+}: {
+  goal: GoalDraft;
+  campaign: Pick<Campaign, "id" | "name">;
+  account: Pick<Account, "name" | "contact">;
+  objective: Objective;
+  /** Target per KPI metric, as typed. A missing or blank one is left out. */
+  targets: Record<string, string>;
+}): MessageDraft {
+  const contact = account.contact.split(",")[0].trim();
+  const changed = objective !== goal.objective.proposed;
+  const kpis = goal.kpis
+    .map((k) => ({ metric: k.metric, target: (targets[k.metric] ?? "").trim() }))
+    .filter((k) => k.target)
+    .map((k) => `${k.metric.toLowerCase()} ${k.target}`);
+  const framework = changed
+    ? [
+        `Objective: ${objective}.`,
+        `We're revisiting the KPIs for a ${objective} objective and will send them shortly.`,
+      ]
+    : [
+        `Objective: ${objective}, ${goal.objective.summary}.`,
+        ...(kpis.length ? [`KPIs: ${listFormat.format(kpis)}.`] : []),
+      ];
+  const n = goal.questions.length;
+  const questions = n
+    ? [
+        "",
+        `${count(n, "question").replace(/^./, (c) => c.toUpperCase())} before we lock it in:`,
+        ...goal.questions.map((q, i) => `${i + 1}. ${q}`),
+      ]
+    : [];
+  const parts = changed ? ["proposed goal"] : ["proposed goal", "KPIs"];
+  if (n) parts.push(count(n, "question"));
+  return {
+    id: `client:${campaign.id}`,
+    kind: "client email",
+    to: `${contact}, ${account.name}`,
+    target: campaign.name,
+    campaignId: campaign.id,
+    subject: `${campaign.name}: ${listFormat.format(parts)}`,
+    body: [
+      `Hi ${contact.split(" ")[0]},`,
+      "",
+      `Here's the framework we propose for the ${campaign.name} launch, based on your brief and our kickoff call.`,
+      "",
+      ...framework,
+      ...questions,
+      "",
+      "Happy to walk through it on a call.",
+      "",
+      "Best,",
       "Maya",
     ].join("\n"),
   };

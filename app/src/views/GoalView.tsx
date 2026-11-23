@@ -1,7 +1,6 @@
 import { CheckCircle2, FileText, MessageSquareText } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
-import { goalDrafts, messageDrafts } from "@/agent/drafts";
+import { clientEmailDraft, goalDrafts } from "@/agent/drafts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +33,7 @@ import { PageHeader } from "./PageHeader";
  * "ready to send", not "final".
  */
 export function GoalView({ id }: { id: string }) {
-  const { world, proposals, resolve, resolved } = useStore();
+  const { world, proposals, resolved } = useStore();
   const draft = goalDrafts[id];
   const campaign = world.campaigns.find((c) => c.id === id);
   const [objective, setObjective] = useState<Objective>(draft?.objective.proposed ?? "awareness");
@@ -43,10 +42,11 @@ export function GoalView({ id }: { id: string }) {
   );
   const proposal = proposals.find((p) => p.id === `goal:${id}`);
   const done = proposal && resolved[proposal.id];
-  const clientEmail = messageDrafts[`client:${id}`];
+  const account = world.accounts.find((a) => a.id === campaign?.accountId);
   const [drafting, setDrafting] = useState(false);
 
-  if (!draft || !campaign) return <PageHeader title="No goal draft for this campaign" />;
+  if (!draft || !campaign || !account)
+    return <PageHeader title="No goal draft for this campaign" />;
 
   return (
     <div className="flex flex-col gap-6">
@@ -181,17 +181,7 @@ export function GoalView({ id }: { id: string }) {
             </span>
           ) : (
             <>
-              <Button
-                onClick={() => {
-                  if (clientEmail) setDrafting(true);
-                  else if (proposal) {
-                    resolve(proposal, "open", "Confirmed goal");
-                    toast("Goal marked ready. No client email draft yet for this campaign.");
-                  }
-                }}
-              >
-                Confirm and draft client email
-              </Button>
+              <Button onClick={() => setDrafting(true)}>Confirm and draft client email</Button>
               <LaneBadge lane="human" />
               <Badge variant="outline" className="ml-auto">
                 Targets are agreed with the client, not here
@@ -200,10 +190,10 @@ export function GoalView({ id }: { id: string }) {
           )}
         </CardFooter>
       </Card>
-      {/* Mounted only while open, so "Not yet" drops edits and reopening shows the agent's draft. */}
-      {clientEmail && drafting && (
+      {/* Mounted only while open, so "Not yet" drops edits and reopening redrafts from the screen. */}
+      {drafting && (
         <DraftSheet
-          draft={clientEmail}
+          draft={clientEmailDraft({ goal: draft, campaign, account, objective, targets })}
           answers={proposal && { proposal, optionId: "open", action: "Confirmed goal" }}
           open
           onOpenChange={setDrafting}
