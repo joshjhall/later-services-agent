@@ -85,8 +85,15 @@ describe("client email draft", () => {
   const account = accounts.find((a) => a.id === campaign?.accountId);
   if (!campaign || !account) throw new Error("fixtures changed");
   const asDrafted = Object.fromEntries(goal.kpis.map((k) => [k.metric, k.target]));
+  const args = (objective = goal.objective.proposed, targets = asDrafted) => ({
+    goal,
+    campaign,
+    account,
+    objective,
+    targets,
+  });
   const build = (objective = goal.objective.proposed, targets = asDrafted) =>
-    clientEmailDraft({ goal, campaign, account, objective, targets });
+    clientEmailDraft(args(objective, targets));
 
   test("with no edits, it reads as the agent drafted it", () => {
     const d = build();
@@ -149,6 +156,23 @@ describe("client email draft", () => {
     expect(d.body).not.toContain("KPIs:");
     expect(d.body).not.toContain("25M");
     expect(d.body).not.toContain(goal.objective.summary);
+  });
+
+  test("the recipient and greeting fit any contact shape", () => {
+    const to = (contact: string) =>
+      clientEmailDraft({ ...args(), account: { ...account, contact } });
+    expect(to("Priya Rao").to).toBe("Priya Rao, Lumen Skin");
+    expect(to("Priya").body.startsWith("Hi Priya,")).toBe(true);
+    const none = to("");
+    expect(none.to).toBe("Lumen Skin");
+    expect(none.body.startsWith("Hi,\n")).toBe(true);
+  });
+
+  test("past five questions, the count is a numeral", () => {
+    const six = Array.from({ length: 6 }, (_, i) => ({ text: `Question ${i + 1}?` }));
+    const d = clientEmailDraft({ ...args(), goal: { ...goal, questions: six } });
+    expect(d.subject).toBe("Spring serum: proposed goal, KPIs, and 6 questions");
+    expect(d.body).toContain("6 questions before we lock it in:");
   });
 
   test("a question tagged with an objective applies only while it is selected", () => {

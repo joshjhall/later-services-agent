@@ -349,6 +349,7 @@ export function clientEmailDraft({
   targets: Record<string, string>;
 }): MessageDraft {
   const contact = account.contact.split(",")[0].trim();
+  const first = contact.split(" ")[0];
   const changed = objective !== goal.objective.proposed;
   const kpis = goal.kpis
     .map((k) => ({ metric: k.metric, target: (targets[k.metric] ?? "").trim() }))
@@ -378,12 +379,12 @@ export function clientEmailDraft({
   return {
     id: `client:${campaign.id}`,
     kind: "client email",
-    to: `${contact}, ${account.name}`,
+    to: contact ? `${contact}, ${account.name}` : account.name,
     target: campaign.name,
     campaignId: campaign.id,
     subject: `${campaign.name}: ${listFormat.format(parts)}`,
     body: [
-      `Hi ${contact.split(" ")[0]},`,
+      first ? `Hi ${first},` : "Hi,",
       "",
       `Here's the framework we propose for the ${campaign.name} launch, based on your brief and our kickoff call.`,
       "",

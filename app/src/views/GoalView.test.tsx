@@ -63,4 +63,21 @@ test("goal: a changed objective carries into the client email without the old KP
   // The awareness-only question leaves the page and the email together.
   expect(body).not.toContain("brand-lift");
   expect(screen.queryByText(/brand-lift/)).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Not yet" }));
+
+  // Switching back restores the agent's draft: KPIs, summary, and the awareness question.
+  fireEvent.click(screen.getByRole("radio", { name: "Awareness" }));
+  expect(openEmail().getByLabelText("Message")).toHaveValue(agentDraft.body);
+  expect(screen.getAllByText(/brand-lift/).length).toBeGreaterThan(0);
+});
+
+test("goal: a campaign with no goal draft shows the fallback heading", () => {
+  render(
+    <StoreProvider>
+      <GoalView id="cmp-holiday-gifting" />
+    </StoreProvider>,
+  );
+  expect(
+    screen.getByRole("heading", { name: "No goal draft for this campaign" }),
+  ).toBeInTheDocument();
 });
