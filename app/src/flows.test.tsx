@@ -18,11 +18,8 @@ const go = (hash: string) =>
 /** The core view, not the context rail. The innermost <main> is ShellLayout's. */
 const core = () => screen.getAllByRole("main").at(-1) as HTMLElement;
 
-/** Opens Today's collapsed "Handled today" group and returns it. */
-const handledToday = () => {
-  fireEvent.click(screen.getByRole("button", { name: /Handled today/ }));
-  return screen.getByRole("region", { name: /Handled today/ });
-};
+/** Today's "Handled today" group, open by default: resolved cards move here as they resolve. */
+const handledToday = () => screen.getByRole("region", { name: /Handled today/ });
 
 const renderApp = () =>
   render(
@@ -94,7 +91,7 @@ test("hard moment: Call opens the brief, and the outcome resolves the escalation
   // Same action, same label on the card and in the sheet.
   expect(within(sheet).getByRole("button", { name: "Swap to Ben" })).toBeInTheDocument();
   fireEvent.click(within(sheet).getByRole("button", { name: /She'll deliver Friday/ }));
-  expect(within(card).getByText(/Extend 2 days · logged/)).toBeInTheDocument();
+  expect(handledToday()).toHaveTextContent(/Extend 2 days · logged/);
 });
 
 test("lineup totals block approval when creator fees exceed the budget", async () => {
@@ -222,7 +219,7 @@ test("draft: a fix request opens an editable draft, and sending records it once"
   fireEvent.change(body, { target: { value: "Hi Rio, one fix: #ad on screen, please." } });
   expect(body.value).toMatch(/one fix/);
   fireEvent.click(within(sheet).getByRole("button", { name: /Send/ }));
-  expect(within(card).getByText(/Send fix request · logged/)).toBeInTheDocument();
+  expect(handledToday()).toHaveTextContent(/Send fix request · logged/);
   go("#activity");
   const sent = entry(/Sent fix request to Rio Castillo · from Maya's team/);
   expect(within(sent).getByText("Maya")).toBeInTheDocument();
@@ -309,7 +306,7 @@ test("reviewing the lineup: approving records the decision, not the queue card's
   expect(within(entry(/Approved lineup/)).getByText("Maya")).toBeInTheDocument();
   expect(screen.queryByText(/Chose "Review lineup"/)).toBeNull();
   go("");
-  expect(handledToday()).toHaveTextContent(/Approved lineup · by Maya/);
+  expect(handledToday()).toHaveTextContent(/Approved lineup · logged/);
 });
 
 test("stating the goal: confirming records the decision, not the queue card's button", () => {
@@ -325,7 +322,7 @@ test("stating the goal: confirming records the decision, not the queue card's bu
   expect(within(entry(/Sent client email to Priya Rao/)).getByText("Maya")).toBeInTheDocument();
   expect(screen.queryByText(/Chose "Review goal"/)).toBeNull();
   go("");
-  expect(handledToday()).toHaveTextContent(/Confirmed goal · by Maya/);
+  expect(handledToday()).toHaveTextContent(/Confirmed goal · logged/);
 });
 
 test("draft: a double-click on Send records one entry", () => {
@@ -579,17 +576,29 @@ test("Today: at the default cap nothing is handled yet, so there is no Handled t
   expect(screen.queryByRole("button", { name: /Handled today/ })).toBeNull();
 });
 
-test("Today: a card Maya resolves keeps its confirmation, then moves to Handled today", () => {
+test("Today: a card Maya resolves moves to Handled today at once, as a full card, and stays there", () => {
   renderApp();
   const card = within(core())
     .getByText(/Ana Reyes is quiet/)
     .closest("[data-severity]") as HTMLElement;
   fireEvent.click(within(card).getByRole("button", { name: "Extend 2 days" }));
-  expect(within(card).getByText(/Extend 2 days · logged/)).toBeInTheDocument();
+  // Ana was the only card waiting on someone, so that group is gone.
+  expect(screen.queryByRole("region", { name: /Waiting on someone/ })).toBeNull();
+  const moved = within(handledToday())
+    .getByText(/Ana Reyes is quiet/)
+    .closest("[data-severity]") as HTMLElement;
+  expect(within(moved).getByText(/Extend 2 days · logged/)).toBeInTheDocument();
   go("#activity");
   go("");
-  expect(within(core()).queryByText(/Extend 2 days · logged/)).toBeNull();
-  expect(handledToday()).toHaveTextContent(/Extend 2 days · by Maya · Ana Reyes is quiet/);
+  expect(handledToday()).toHaveTextContent(/Extend 2 days · logged/);
+});
+
+test("Today: Handled today starts open and folds away to make room", () => {
+  renderApp();
+  fireEvent.click(within(core()).getByRole("button", { name: "Extend 2 days" }));
+  expect(handledToday()).toHaveTextContent(/Ana Reyes is quiet/);
+  fireEvent.click(screen.getByRole("button", { name: /Handled today · 1/ }));
+  expect(handledToday()).not.toHaveTextContent(/Ana Reyes is quiet/);
 });
 
 test("Today: with a cap of $8,000 the agent's boost is under Handled today, not Ready to move", () => {
@@ -602,12 +611,11 @@ test("Today: with a cap of $8,000 the agent's boost is under Handled today, not 
       </StoreProvider>
     </ThemeProvider>,
   );
-  expect(within(core()).queryByText(/done by the agent · logged/)).toBeNull();
   // Rio's draft keeps Ready to move on screen; the boost has left it.
   const ready = screen.getByRole("region", { name: /Ready to move/ });
   expect(ready).toHaveTextContent(/Rio Castillo/);
   expect(ready).not.toHaveTextContent(/Mei Tanaka/);
-  expect(handledToday()).toHaveTextContent(/Boost \$8,000 · done by the agent/);
+  expect(handledToday()).toHaveTextContent(/Boost \$8,000 · done by the agent · logged/);
 });
 
 test("Today: a campaign whose only proposals are resolved is on track, not an empty group", () => {

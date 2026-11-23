@@ -22,7 +22,7 @@ A path through the prototype for the 15–20 minute walkthrough, in the deck's o
 ## 1. Today, grouped by need (`#today`)
 
 - The header counts the decisions that need Maya and the things the agent handled on its own. Say the number; step 2 changes it.
-- Cards are grouped by what they need, not by account: **Needs you now**, **Ready to move**, **Waiting on someone**, **Things to do**, and a collapsed **On track** list. Within a group, consequence × time sets the order. Groups hold only what still needs Maya: once something is resolved, a collapsed **Handled today** list appears above On track.
+- Cards are grouped by what they need, not by account: **Needs you now**, **Ready to move**, **Waiting on someone**, **Things to do**, and a collapsed **On track** list. Within a group, consequence × time sets the order. Groups hold only what still needs Maya: each card moves down to an open **Handled today** group the moment it's resolved, still a full card marked logged. By the end of the walkthrough most cards sit there; collapse it to show how a section folds away to make room.
 - Card anatomy: severity, context, confidence in words, per-criterion evidence, and every option tagged with who can do it: **Automatic**, **Needs approval**, or **A person only**.
 - The rail shows a summary, the next scheduled message (Edit or Send now), and recent activity.
 
@@ -31,7 +31,7 @@ A path through the prototype for the 15–20 minute walkthrough, in the deck's o
 This is slide 2 made real, and it comes early on purpose: changing the cap reloads the app, which clears any decisions made so far. Do it before Maya decides anything, so everything she does afterwards adds to the record. Find the boost card in **Ready to move**: "Boost Mei Tanaka's post from reserve". Every option reads **Needs approval**, and the **Agent cap** row says $1,000/day, above it, so it needs you.
 
 1. **Raise the cap to $5,000.** In `rules.ts`, set `maxDailySpend: 5000` and save. The app reloads by itself (if the card doesn't change, reload the tab). The $4,000 option now reads **Pre-approved**: it fits under the cap. But nothing happened on its own, because the agent *recommends* $8,000, and that's still over the cap. It asks, and says why. *"The limit is in code, not in a prompt. The agent can't talk its way past it."*
-2. **Raise it to $8,000** and save. The boost card leaves **Ready to move**: the agent already ran it, so it sits under a new collapsed **Handled today · 1** group. Open it to show **"Boost $8,000 · done by the agent"**. In the Today header, decisions needing Maya drop by one and things the agent handled go up by one. *"Fewer asks, so the ones left get read. That's the whole trade."*
+2. **Raise it to $8,000** and save. The boost card leaves **Ready to move**: the agent already ran it, so it sits under a new **Handled today · 1** group, reading **"Boost $8,000 · done by the agent · logged"**. In the Today header, decisions needing Maya drop by one and things the agent handled go up by one. *"Fewer asks, so the ones left get read. That's the whole trade."*
 3. **Say what still waits.** Messages and offers never run on their own, whatever the cap: anything that leaves the building waits for a person. And spend is totalled per campaign, so a second boost that would go over the cap stays open.
 
 If asked about the $200 per-test cap from the slides: it's in `AGENT_POLICY` but nothing reads it yet, because the prototype has no test-spend proposal. Say so.
@@ -72,10 +72,10 @@ Leave the cap at $8,000 for the rest of the demo, so the agent's entry stays in 
 
 ## 7. The hard moment: a creator goes quiet (`#today`, Needs you now)
 
-*Get there:* after **Approve lineup**, go to **Today**. Ana's card is first under **Needs you now**. Point out that the lineup and goal cards you just handled now read as logged.
+*Get there:* after **Approve lineup**, go to **Today**. Ana's card is first under **Needs you now**. Point out that the lineup and goal cards you just handled have moved down to **Handled today**, each still a full card that reads as logged.
 
 - "Ana Reyes is quiet, draft 1 day late." The agent already sent two reminders on its own. It escalates now because slack, history, and backup availability crossed the policy line.
-- **Call Ana** (A person only) opens a call brief: what the agent knows, what to ask, and what each answer means. Choose **She'll deliver Friday**, **Swap to Ben**, or **No answer yet**. The card resolves once and the decision is logged.
+- **Call Ana** (A person only) opens a call brief: what the agent knows, what to ask, and what each answer means. Choose **She'll deliver Friday**, **Swap to Ben**, or **No answer yet**. The card resolves once, the decision is logged, and the card moves down to **Handled today**.
 - Swapping is one click because Ben was approved as the backup during the lineup review.
 
 ## 8. Drafts and information requests

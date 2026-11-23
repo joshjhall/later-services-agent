@@ -41,8 +41,9 @@ test("resolving a proposal records it once and logs it", () => {
     .getByText(/Ana Reyes is quiet/)
     .closest("[data-severity]") as HTMLElement;
   fireEvent.click(within(card).getByRole("button", { name: "Extend 2 days" }));
-  expect(within(card).getByText(/Extend 2 days · logged/)).toBeInTheDocument();
-  expect(within(card).queryByRole("button", { name: "Swap to Ben" })).toBeNull();
+  const handled = screen.getByRole("region", { name: /Handled today/ });
+  expect(within(handled).getByText(/Extend 2 days · logged/)).toBeInTheDocument();
+  expect(within(core()).queryByRole("button", { name: "Swap to Ben" })).toBeNull();
 });
 
 test("the top bar breadcrumb follows the route", async () => {
