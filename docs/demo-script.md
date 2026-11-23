@@ -2,6 +2,8 @@
 
 A path through the prototype for the 15–20 minute walkthrough, in the deck's order. Run `just present` (or `just dev`) and open <http://localhost:5173>. All data is fictional; the demo date is Nov 18, 2026. The signed-in user is Maya, on the account management team.
 
+**Moving between steps:** Today is home. Most steps start by going back to **Today** (top bar or sidebar) and opening the card that needs Maya, which is the deck's point: she works from what needs her, not from a menu. Each step's first line says how to get there; the routes in the headings are fallbacks if a click goes wrong.
+
 **The through-line:** the slides argue for one record, guardrails in code, and asking less so the asks matter. Step 2 shows all three live by raising the agent's spending cap until it acts on its own, and step 9 shows the result in the record. If time runs short, cut steps 3 and 4, never 2 or 9.
 
 ## Before you start
@@ -43,19 +45,25 @@ Leave the cap at $8,000 for the rest of the demo, so the agent's entry stays in 
 
 ## 4. A conversation docked in the rail
 
+*Get there:* continue from step 3, with the conversation still open.
+
 - Choose **Dock**. The conversation moves into the rail and follows you from page to page.
 - Open the **Sparkling Citrus launch** campaign (breadcrumb or palette) and ask `how does this compare with similar campaigns`. The answer is the **compare widget**, the same widget the rail uses. One library serves the rail, chat answers, and later the core screens.
 - Ask `compare` with nobody named on another page and the agent asks whose post you mean, instead of guessing.
 - Close the conversation; the rail's widgets come back.
 
-## 5. Stating the goal (Plan tab → `#goal/cmp-spring-serum`)
+## 5. Stating the goal (`#goal/cmp-spring-serum`)
 
-- From **Lumen Skin › Spring serum**, the **Plan** tab shows the campaign's phase and links to **Goal and KPIs**.
+*Get there:* close the conversation, go to **Today**, and under **Needs you now** choose **Review goal** on "Confirm goal and KPIs for Spring serum". (The long way, to show Plan · Make · Run: **Lumen Skin › Spring serum**, the **Plan** tab, then **Goal and KPIs**.)
+
 - The agent shows what it read (brief and kickoff notes), what it extracted, a proposed objective with its reasoning, and KPIs with the benchmark it used.
 - Change the objective to show the downstream redraft flag. Edit a target.
+- **Until #94 lands:** the client email is fixed text, so it ignores both edits. Change the objective back and don't edit a target before opening the email, or the draft will contradict the screen.
 - **Confirm and draft client email** opens a draft sheet to Priya Rao with the two clarifying questions. "Confirm" means ready for the client, not final. **Not yet** closes it and records nothing.
 
 ## 6. Reviewing the lineup (`#lineup/cmp-holiday-gifting`)
+
+*Get there:* this is a different client (Brightside Beverages), so there's no link from the goal screen. Press ⌘K and type `lineup`, then choose **Review the Holiday gifting lineup**. Saying "different client, so I'll jump" shows the palette doing its job. (Or go to **Today** and choose **Review lineup** under **Needs you now**.)
 
 - Roster first, then the wider index, against criteria the CM approved earlier.
 - **Met**, **Partly**, or **Not met** per criterion instead of a fit score. Ana's flag (late elsewhere) connects to the hard moment. Theo starts removed because of a competitor conflict.
@@ -64,17 +72,23 @@ Leave the cap at $8,000 for the rest of the demo, so the agent's entry stays in 
 
 ## 7. The hard moment: a creator goes quiet (`#today`, Needs you now)
 
+*Get there:* after **Approve lineup**, go to **Today**. Ana's card is first under **Needs you now**. Point out that the lineup and goal cards you just handled now read as logged.
+
 - "Ana Reyes is quiet, draft 1 day late." The agent already sent two reminders on its own. It escalates now because slack, history, and backup availability crossed the policy line.
 - **Call Ana** (A person only) opens a call brief: what the agent knows, what to ask, and what each answer means. Choose **She'll deliver Friday**, **Swap to Ben**, or **No answer yet**. The card resolves once and the decision is logged.
 - Swapping is one click because Ben was approved as the backup during the lineup review.
 
 ## 8. Drafts and information requests
 
+*Get there:* stay on **Today** and scroll to **Ready to move**. Rio's draft and Ana's audience request are both there, next to the boost the agent ran in step 2.
+
 - **Rio's draft** ("misses 1 of 7 brief checks"): the card leads with the one failed check, disclosure on screen; the six passes collapse to one row. The options follow Later's own review states: **Send fix request** (decline unless fixed), **Approve with changes**, and **Approve**. Send fix request opens the agent's draft in a sheet: edit it, then **Send** or **Not yet**.
 - **Ana's audience** is a different class of output, an **Information request**: the agent says what it assumed (a mostly US audience, from her profile), what happens if it's wrong, and offers **Draft the email** to her manager or **Mark confirmed**.
 - The label on each card says which class it is. Sending writes a permanent entry; closing the sheet records nothing.
 
 ## 9. One record, any actor (`#activity`)
+
+*Get there:* **Activity** in the sidebar, or ⌘K and type `activity`.
 
 - **Activity** is one history for the whole pod: the system, the agent, and people (Maya and Jordan). It's the log on slide 2, live.
 - The agent's own entry from step 2, **Ran "Boost $8,000" on its own · within the agent's cap**, marked **Spent**. Above it, Maya's decisions from steps 5–8, Jordan's call to Ana, and the system's reminder. Different authors, one history.
